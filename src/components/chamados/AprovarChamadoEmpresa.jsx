@@ -23,6 +23,8 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
   const [observacoesTecnico, setObservacoesTecnico] = useState(chamado.observacoes_tecnico || "");
   const [modoEdicao, setModoEdicao] = useState(false);
+  const [nomeCliente, setNomeCliente] = useState(cliente?.nome || "");
+  const [editandoCliente, setEditandoCliente] = useState(false);
   const queryClient = useQueryClient();
 
   const aprovarMutation = useMutation({
