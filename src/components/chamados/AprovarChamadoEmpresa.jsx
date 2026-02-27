@@ -151,7 +151,23 @@ ClimaPro`
               <div className="grid md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-xs text-gray-600">Cliente</p>
-                  <p className="font-semibold">{cliente?.nome}</p>
+                  {editandoCliente ? (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Input
+                        value={nomeCliente}
+                        onChange={(e) => setNomeCliente(e.target.value)}
+                        className="h-7 text-sm"
+                      />
+                      <Button size="sm" className="h-7 px-2" onClick={() => setEditandoCliente(false)}>✓</Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <p className="font-semibold">{nomeCliente}</p>
+                      <button onClick={() => setEditandoCliente(true)} className="text-gray-400 hover:text-blue-600">
+                        <Edit className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-gray-600">Técnico</p>
