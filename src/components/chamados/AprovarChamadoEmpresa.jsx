@@ -54,7 +54,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
         await base44.integrations.Core.SendEmail({
           to: cliente.email,
           subject: `✅ Chamado Concluído - ${chamado.titulo} - ClimaPro`,
-          body: `Prezado(a) ${cliente.nome},
+          body: `Prezado(a) ${nomeCliente},
 
 O chamado de serviço foi concluído com sucesso:
 
