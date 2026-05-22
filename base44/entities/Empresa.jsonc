@@ -1,0 +1,205 @@
+{
+  "name": "Empresa",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome da empresa"
+    },
+    "slug_empresa": {
+      "type": "string",
+      "description": "Slug \u00fanico para identifica\u00e7\u00e3o (ex: gelax)"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "URL da logo da empresa para documentos e relat\u00f3rios"
+    },
+    "cnpj": {
+      "type": "string",
+      "description": "CNPJ da empresa"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "email_contato": {
+      "type": "string",
+      "format": "email"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "free",
+        "essencial",
+        "profissional",
+        "corporativo",
+        "enterprise"
+      ],
+      "default": "free",
+      "description": "Plano contratado"
+    },
+    "data_vencimento_plano": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de vencimento do plano (mensal)"
+    },
+    "limite_chamados_mes": {
+      "type": "number",
+      "default": 5
+    },
+    "limite_tecnicos": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantidade m\u00e1xima de t\u00e9cnicos"
+    },
+    "limite_empresas": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantidade m\u00e1xima de empresas (multiempresa)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "suspensa",
+        "inativa"
+      ],
+      "default": "ativa"
+    },
+    "status_pagamento": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "pendente",
+        "bloqueado"
+      ],
+      "default": "ativo",
+      "description": "Status do pagamento: ativo (em dia), pendente (at\u00e9 7 dias atraso), bloqueado (mais de 7 dias)"
+    },
+    "usuario_principal_email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email do usu\u00e1rio principal da empresa"
+    },
+    "modulos_ativos": {
+      "type": "object",
+      "properties": {
+        "chamados": {
+          "type": "boolean",
+          "default": true
+        },
+        "clientes": {
+          "type": "boolean",
+          "default": true
+        },
+        "equipamentos": {
+          "type": "boolean",
+          "default": true
+        },
+        "tecnicos": {
+          "type": "boolean",
+          "default": true
+        },
+        "pmoc": {
+          "type": "boolean",
+          "default": true
+        },
+        "agenda": {
+          "type": "boolean",
+          "default": true
+        },
+        "ponto_eletronico": {
+          "type": "boolean",
+          "default": true
+        },
+        "financeiro": {
+          "type": "boolean",
+          "default": false
+        },
+        "notas_fiscais": {
+          "type": "boolean",
+          "default": false
+        },
+        "multiempresa": {
+          "type": "boolean",
+          "default": false
+        },
+        "api": {
+          "type": "boolean",
+          "default": false
+        },
+        "white_label": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "description": "M\u00f3dulos ativos para esta empresa"
+    }
+  },
+  "required": [
+    "nome",
+    "slug_empresa",
+    "cnpj"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "user_condition": {
+                "tipo_usuario": "admin_empresa"
+              }
+            },
+            {
+              "created_by": "{{user.email}}"
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
