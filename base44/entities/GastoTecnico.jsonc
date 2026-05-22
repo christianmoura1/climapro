@@ -1,0 +1,147 @@
+{
+  "name": "GastoTecnico",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "tecnico_id": {
+      "type": "string"
+    },
+    "chamado_id": {
+      "type": "string"
+    },
+    "tipo_gasto": {
+      "type": "string",
+      "enum": [
+        "combustivel",
+        "alimentacao",
+        "pedagio",
+        "estacionamento",
+        "outro"
+      ]
+    },
+    "valor": {
+      "type": "number"
+    },
+    "data_gasto": {
+      "type": "string",
+      "format": "date"
+    },
+    "comprovante_url": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "status_aprovacao": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aprovado",
+        "rejeitado"
+      ],
+      "default": "pendente"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tecnico_id",
+    "tipo_gasto",
+    "valor"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
