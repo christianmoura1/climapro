@@ -1,0 +1,178 @@
+{
+  "name": "NotaFiscal",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "chamado_id": {
+      "type": "string"
+    },
+    "financeiro_id": {
+      "type": "string"
+    },
+    "cliente_id": {
+      "type": "string"
+    },
+    "numero_nota": {
+      "type": "string"
+    },
+    "codigo_verificacao": {
+      "type": "string"
+    },
+    "valor_bruto": {
+      "type": "number"
+    },
+    "valor_liquido": {
+      "type": "number"
+    },
+    "descricao_servico": {
+      "type": "string"
+    },
+    "data_emissao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_prestacao": {
+      "type": "string",
+      "format": "date"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "nfse",
+        "nfe"
+      ],
+      "default": "nfse"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "emitida",
+        "cancelada",
+        "processando",
+        "erro"
+      ],
+      "default": "processando"
+    },
+    "retencoes": {
+      "type": "object",
+      "properties": {
+        "inss": {
+          "type": "number"
+        },
+        "ir": {
+          "type": "number"
+        },
+        "pis": {
+          "type": "number"
+        },
+        "cofins": {
+          "type": "number"
+        },
+        "csll": {
+          "type": "number"
+        }
+      }
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "arquivo_pdf_url": {
+      "type": "string"
+    },
+    "arquivo_xml_url": {
+      "type": "string"
+    },
+    "motivo_cancelamento": {
+      "type": "string"
+    },
+    "log_erro": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "cliente_id",
+    "valor_bruto",
+    "descricao_servico"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "cliente"
+                  },
+                  "data.cliente_id": "{{user.data.cliente_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
