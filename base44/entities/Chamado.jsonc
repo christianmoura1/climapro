@@ -1,0 +1,249 @@
+{
+  "name": "Chamado",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "cliente_id": {
+      "type": "string"
+    },
+    "tecnico_id": {
+      "type": "string"
+    },
+    "equipamento_id": {
+      "type": "string",
+      "description": "ID do equipamento principal relacionado ao chamado"
+    },
+    "equipamentos_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de m\u00faltiplos equipamentos relacionados ao chamado"
+    },
+    "numero_chamado": {
+      "type": "string"
+    },
+    "titulo": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "local": {
+      "type": "string",
+      "description": "Local/endere\u00e7o onde o servi\u00e7o ser\u00e1 realizado"
+    },
+    "tipo_problema": {
+      "type": "string",
+      "enum": [
+        "manutencao_preventiva",
+        "manutencao_corretiva",
+        "instalacao",
+        "emergencia",
+        "outro"
+      ]
+    },
+    "prioridade": {
+      "type": "string",
+      "enum": [
+        "baixa",
+        "media",
+        "alta",
+        "urgente"
+      ],
+      "default": "media"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "em_andamento",
+        "aguardando_pecas",
+        "aguardando_aprovacao_empresa",
+        "finalizado",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "data_abertura": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_agendamento": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_finalizacao": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data e hora em que o chamado foi finalizado"
+    },
+    "fotos_anexos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das fotos anexadas ao chamado"
+    },
+    "fotos_finalizacao": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs das fotos do servi\u00e7o finalizado (at\u00e9 10)"
+    },
+    "videos_finalizacao": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs dos v\u00eddeos do servi\u00e7o finalizado (at\u00e9 2)"
+    },
+    "nome_cliente_confirmacao": {
+      "type": "string",
+      "description": "Nome do cliente que confirmou o recebimento do servi\u00e7o"
+    },
+    "assinatura_cliente": {
+      "type": "string",
+      "description": "Base64 da assinatura digital do cliente na finaliza\u00e7\u00e3o"
+    },
+    "observacoes_tecnico": {
+      "type": "string"
+    },
+    "observacoes_empresa": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es da empresa na aprova\u00e7\u00e3o"
+    },
+    "motivo_reabertura": {
+      "type": "string",
+      "description": "Motivo caso chamado seja reaberto"
+    },
+    "valor_servico": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "cliente_id",
+    "titulo",
+    "descricao"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "cliente"
+                  },
+                  "data.cliente_id": "{{user.data.cliente_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "cliente"
+                  },
+                  "data.cliente_id": "{{user.data.cliente_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
