@@ -1,0 +1,146 @@
+{
+  "name": "OrcamentoTecnico",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string"
+    },
+    "tecnico_id": {
+      "type": "string"
+    },
+    "mes_referencia": {
+      "type": "string",
+      "format": "date",
+      "description": "M\u00eas de refer\u00eancia (YYYY-MM-01)"
+    },
+    "valor_orcamento": {
+      "type": "number",
+      "description": "Valor do or\u00e7amento mensal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aprovado",
+        "rejeitado"
+      ],
+      "default": "pendente"
+    },
+    "data_envio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_resposta": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "tecnico_id",
+    "mes_referencia",
+    "valor_orcamento"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "tipo_usuario": "tecnico"
+                      },
+                      "data.tecnico_id": "{{user.data.tecnico_id}}",
+                      "data.status": "pendente"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
