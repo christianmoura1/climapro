@@ -42,5 +42,59 @@
     "nome",
     "email"
   ],
-  "rls": {}
+  "rls": {
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "tipo_usuario": "tecnico"
+                      }
+                    },
+                    {
+                      "id": "{{user.data.tecnico_id}}"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
 }
