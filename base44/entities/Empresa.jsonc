@@ -145,23 +145,14 @@
   ],
   "rls": {
     "create": {
-      "$or": [
+      "$and": [
         {
           "user_condition": {
-            "tipo_usuario": "admin_global"
+            "tipo_usuario": "admin_empresa"
           }
         },
         {
-          "$and": [
-            {
-              "user_condition": {
-                "tipo_usuario": "admin_empresa"
-              }
-            },
-            {
-              "created_by": "{{user.email}}"
-            }
-          ]
+          "created_by": "{{user.email}}"
         }
       ]
     },
@@ -190,6 +181,18 @@
       ]
     },
     "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "write": {
       "$or": [
         {
           "user_condition": {
