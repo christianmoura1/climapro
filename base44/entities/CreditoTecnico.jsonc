@@ -68,21 +68,6 @@
     "descricao"
   ],
   "rls": {
-    "create": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_empresa"
-          },
-          "data.empresa_id": "{{user.data.empresa_id}}"
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
