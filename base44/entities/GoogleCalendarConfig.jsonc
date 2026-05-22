@@ -1,0 +1,124 @@
+{
+  "name": "GoogleCalendarConfig",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string",
+      "description": "ID da empresa"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio que conectou"
+    },
+    "access_token": {
+      "type": "string",
+      "description": "Token de acesso do Google"
+    },
+    "refresh_token": {
+      "type": "string",
+      "description": "Token de refresh do Google"
+    },
+    "calendar_id": {
+      "type": "string",
+      "description": "ID do calend\u00e1rio Google"
+    },
+    "sincronizacao_ativa": {
+      "type": "boolean",
+      "default": true
+    },
+    "ultima_sincronizacao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tipo_usuario": {
+      "type": "string",
+      "enum": [
+        "empresa",
+        "tecnico"
+      ],
+      "description": "Tipo de usu\u00e1rio que conectou"
+    }
+  },
+  "required": [
+    "empresa_id",
+    "user_id"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
