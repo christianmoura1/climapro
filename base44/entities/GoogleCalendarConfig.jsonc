@@ -45,21 +45,12 @@
   ],
   "rls": {
     "create": {
-      "$or": [
+      "$and": [
         {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
+          "data.empresa_id": "{{user.data.empresa_id}}"
         },
         {
-          "$and": [
-            {
-              "data.empresa_id": "{{user.data.empresa_id}}"
-            },
-            {
-              "data.user_id": "{{user.id}}"
-            }
-          ]
+          "data.user_id": "{{user.id}}"
         }
       ]
     },
@@ -102,6 +93,25 @@
       ]
     },
     "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "write": {
       "$or": [
         {
           "user_condition": {
