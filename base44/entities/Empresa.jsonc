@@ -144,18 +144,6 @@
     "cnpj"
   ],
   "rls": {
-    "create": {
-      "$and": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_empresa"
-          }
-        },
-        {
-          "created_by": "{{user.email}}"
-        }
-      ]
-    },
     "read": {
       "$or": [
         {
