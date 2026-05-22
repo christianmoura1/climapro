@@ -1,0 +1,128 @@
+{
+  "name": "Tecnico",
+  "type": "object",
+  "properties": {
+    "empresa_id": {
+      "type": "string",
+      "description": "ID da empresa"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "especialidade": {
+      "type": "string",
+      "enum": [
+        "refrigeracao",
+        "climatizacao",
+        "ambos"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "inativo"
+      ],
+      "default": "ativo"
+    },
+    "total_atendimentos": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "empresa_id",
+    "nome",
+    "email"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "$and": [
+            {
+              "data.empresa_id": "{{user.data.empresa_id}}"
+            },
+            {
+              "$or": [
+                {
+                  "user_condition": {
+                    "tipo_usuario": "admin_empresa"
+                  }
+                },
+                {
+                  "user_condition": {
+                    "tipo_usuario": "tecnico"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "tecnico"
+          },
+          "data.email": "{{user.email}}"
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
+        },
+        {
+          "user_condition": {
+            "tipo_usuario": "admin_empresa"
+          },
+          "data.empresa_id": "{{user.data.empresa_id}}"
+        }
+      ]
+    }
+  }
+}
