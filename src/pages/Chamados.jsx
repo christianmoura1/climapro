@@ -70,64 +70,59 @@ export default function ChamadosPage() {
 
   // FILTRAR CHAMADOS POR EMPRESA
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
-    queryKey: ['chamados', user?.empresa_id, forceRender],
+    queryKey: ['chamados', user?.email, forceRender],
     queryFn: async () => {
-      if (!user) {
-        console.log("[CHAMADOS-DEBUG] User não carregado");
-        return [];
-      }
+      if (!user) return [];
       
       try {
-        console.log("[CHAMADOS-DEBUG] User email:", user.email);
-        console.log("[CHAMADOS-DEBUG] User empresa_id:", user.empresa_id);
+        // Log detalhado do usuário
+        console.log("[DEBUG] User tipo:", user.tipo_usuario);
+        console.log("[DEBUG] User empresa_id:", user.empresa_id);
+        console.log("[DEBUG] User email:", user.email);
         
-        // Busca TODOS os chamados sem filtro
-        console.log("[CHAMADOS-DEBUG] Iniciando lista de todos os chamados...");
-        const todos = await base44.entities.Chamado.list();
+        // Listar TODOS os chamados - RLS será aplicado pelo servidor
+        const todosChamados = await base44.entities.Chamado.list('-created_date', 100);
         
-        console.log("[CHAMADOS-DEBUG] ✅ CHAMADOS ENCONTRADOS:", todos.length);
-        console.log("[CHAMADOS-DEBUG] DADOS COMPLETOS:", JSON.stringify(todos, null, 2));
-        
-        if (user.email === "christianmoura2014@gmail.com") {
-          console.log("[CHAMADOS-DEBUG] Admin detectado, retornando todos os chamados");
-          return todos;
+        console.log("[DEBUG] ✅ CHAMADOS RETORNADOS:", todosChamados.length);
+        if (todosChamados.length > 0) {
+          console.log("[DEBUG] Primeiro chamado:", todosChamados[0]);
         }
         
-        // Filtrar por empresa
-        const filtered = todos.filter(c => c.empresa_id === user.empresa_id);
-        console.log("[CHAMADOS-DEBUG] Chamados após filtro de empresa:", filtered.length);
-        return filtered;
+        return todosChamados;
       } catch (err) {
-        console.error("[CHAMADOS-DEBUG] ❌ ERRO NA QUERY:", err.message, err);
-        return [];
+        console.error("[DEBUG] ❌ ERRO:", err);
+        throw err;
       }
     },
-    enabled: !!user,
-    retry: 1
+    enabled: !!user
   });
 
   // FILTRAR CLIENTES POR EMPRESA
   const { data: clientes = [] } = useQuery({
-    queryKey: ['clientes', user?.empresa_id],
+    queryKey: ['clientes', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
-        return base44.entities.Cliente.list();
+      try {
+        return await base44.entities.Cliente.list('-created_date', 100);
+      } catch (err) {
+        console.error("[DEBUG] Erro ao listar clientes:", err);
+        return [];
       }
-      return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
     },
     enabled: !!user
   });
 
   // FILTRAR TÉCNICOS POR EMPRESA
   const { data: tecnicos = [] } = useQuery({
-    queryKey: ['tecnicos', user?.empresa_id],
+    queryKey: ['tecnicos', user?.email],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
-        return base44.entities.Tecnico.list();
+      try {
+        return await base44.entities.Tecnico.list('-created_date', 100);
+      } catch (err) {
+        console.error("[DEBUG] Erro ao listar técnicos:", err);
+        return [];
       }
-      return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
     },
     enabled: !!user
   });
