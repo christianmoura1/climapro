@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -118,7 +117,7 @@ ClimaPro - Sistema de Gestão`
     },
     onError: (error) => {
       console.error("Erro ao finalizar chamado:", error);
-      alert("❌ Erro ao finalizar chamado. Tente novamente.");
+      alert("❌ Erro ao finalizar chamado: " + (error?.message || JSON.stringify(error)));
     }
   });
 
