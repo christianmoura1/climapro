@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Phone, User, Navigation, Image as ImageIcon, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, User, Navigation, Image as ImageIcon, CheckCircle, Download } from "lucide-react";
 
 // Função para formatar data no horário de Brasília
 const formatarDataBrasil = (dataISO) => {
@@ -31,6 +30,25 @@ const formatarDataBrasil = (dataISO) => {
 };
 
 export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onFinalizar }) {
+  const handleExportarJSON = () => {
+    const dados = {
+      chamado,
+      cliente,
+      exportadoEm: new Date().toISOString()
+    };
+    
+    const json = JSON.stringify(dados, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chamado-${chamado.numero_chamado}-${new Date().getTime()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleAbrirGPS = () => {
     // Prioriza coordenadas do cliente
     if (cliente?.latitude && cliente?.longitude) {
@@ -60,6 +78,14 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
           <h2 className="text-2xl font-bold text-gray-900">{chamado.titulo}</h2>
           <p className="text-sm text-gray-600">#{chamado.numero_chamado}</p>
         </div>
+        <Button
+          variant="outline"
+          onClick={handleExportarJSON}
+          title="Exportar chamado como JSON"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Exportar JSON
+        </Button>
         {(chamado.status === 'em_andamento' || chamado.status === 'pendente') && (
           <Button
             className="bg-green-600 hover:bg-green-700"
