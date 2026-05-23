@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft, AlertCircle } from "lucide-react"; // Added AlertCircle
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { getChamados } from "@/functions/getChamados";
 
 // New imports for date formatting
 import { format } from "date-fns";
@@ -73,27 +74,11 @@ export default function ChamadosPage() {
     queryKey: ['chamados', user?.email, forceRender],
     queryFn: async () => {
       if (!user) return [];
-      
       try {
-        // Usar service role para contornar RLS
-        const todosChamados = await base44.asServiceRole.entities.Chamado.list('-created_date', 100);
-        
-        console.log("[DEBUG] Total de chamados:", todosChamados.length);
-        console.log("[DEBUG] User email:", user.email, "empresa_id:", user.empresa_id);
-        
-        // Admin global vê tudo
-        if (user.email === "christianmoura2014@gmail.com") {
-          console.log("[DEBUG] Admin global - retornando todos os chamados");
-          return todosChamados;
-        }
-        
-        // Usuários normais: filtrar por empresa_id
-        const chamadosFiltrados = todosChamados.filter(c => c.empresa_id === user.empresa_id);
-        console.log("[DEBUG] Chamados após filtro de empresa:", chamadosFiltrados.length);
-        
-        return chamadosFiltrados;
+        const response = await getChamados();
+        return response.chamados || [];
       } catch (err) {
-        console.error("[DEBUG] ❌ ERRO:", err.message);
+        console.error("[DEBUG] Erro ao buscar chamados:", err.message);
         return [];
       }
     },
