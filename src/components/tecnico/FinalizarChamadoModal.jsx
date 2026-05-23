@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -182,10 +181,11 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     setHasSignature(false);
   };
 
-  const handleConfirmar = (e) => {
-    e.preventDefault(); // Prevent default form submission
+  const [uploadingSignature, setUploadingSignature] = useState(false);
 
-    // Validações
+  const handleConfirmar = async (e) => {
+    e.preventDefault();
+
     if (!formData.nome_cliente_confirmacao.trim()) {
       alert("⚠️ Por favor, informe o nome da pessoa que acompanhou o atendimento.");
       return;
@@ -196,19 +196,29 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
       return;
     }
 
-    if (!hasSignature) { // Check if signature has been drawn
+    if (!hasSignature) {
       alert("⚠️ Por favor, colete a assinatura digital.");
       return;
     }
 
-    const canvas = canvasRef.current;
-    const assinaturaBase64 = canvas.toDataURL('image/png');
-    
-    onConfirm({
-      ...formData,
-      assinatura_cliente: assinaturaBase64,
-      status: 'aguardando_aprovacao_empresa' // Novo status: aguarda aprovação da empresa
-    });
+    setUploadingSignature(true);
+    try {
+      const canvas = canvasRef.current;
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'assinatura.png', { type: 'image/png' });
+      const result = await base44.integrations.Core.UploadFile({ file });
+
+      onConfirm({
+        ...formData,
+        assinatura_cliente: result.file_url,
+        status: 'aguardando_aprovacao_empresa'
+      });
+    } catch (error) {
+      console.error('Erro ao salvar assinatura:', error);
+      alert("❌ Erro ao salvar assinatura. Tente novamente.");
+    } finally {
+      setUploadingSignature(false);
+    }
   };
 
   return (
@@ -425,11 +435,11 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 Cancelar
               </Button>
               <Button
-                type="submit" // Changed to type="submit" to trigger form submission
-                disabled={isLoading || uploadingFile}
+                type="submit"
+                disabled={isLoading || uploadingFile || uploadingSignature}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
-                {isLoading ? (
+                {(isLoading || uploadingSignature) ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Finalizando...
