@@ -107,7 +107,7 @@
     },
     "assinatura_cliente": {
       "type": "string",
-      "description": "Base64 da assinatura digital do cliente na finaliza\u00e7\u00e3o"
+      "description": "URL da assinatura digital do cliente na finaliza\u00e7\u00e3o"
     },
     "observacoes_tecnico": {
       "type": "string"
@@ -132,21 +132,44 @@
   ],
   "rls": {
     "create": {
-      "$and": [
+      "$or": [
         {
-          "data.empresa_id": "{{user.data.empresa_id}}"
+          "user_condition": {
+            "tipo_usuario": "admin_global"
+          }
         },
         {
-          "$or": [
+          "$and": [
             {
               "user_condition": {
                 "tipo_usuario": "admin_empresa"
               }
             },
             {
+              "data.empresa_id": "{{user.empresa_id}}"
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
+              "user_condition": {
+                "tipo_usuario": "tecnico"
+              }
+            },
+            {
+              "data.tecnico_id": "{{user.tecnico_id}}"
+            }
+          ]
+        },
+        {
+          "$and": [
+            {
               "user_condition": {
                 "tipo_usuario": "cliente"
-              },
+              }
+            },
+            {
               "data.cliente_id": "{{user.data.cliente_id}}"
             }
           ]
@@ -163,7 +186,7 @@
         {
           "$and": [
             {
-              "data.empresa_id": "{{user.data.empresa_id}}"
+              "data.empresa_id": "{{user.empresa_id}}"
             },
             {
               "$or": [
@@ -173,16 +196,28 @@
                   }
                 },
                 {
-                  "user_condition": {
-                    "tipo_usuario": "tecnico"
-                  },
-                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "tipo_usuario": "tecnico"
+                      }
+                    },
+                    {
+                      "data.tecnico_id": "{{user.tecnico_id}}"
+                    }
+                  ]
                 },
                 {
-                  "user_condition": {
-                    "tipo_usuario": "cliente"
-                  },
-                  "data.cliente_id": "{{user.data.cliente_id}}"
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "tipo_usuario": "cliente"
+                      }
+                    },
+                    {
+                      "data.cliente_id": "{{user.data.cliente_id}}"
+                    }
+                  ]
                 }
               ]
             }
@@ -200,7 +235,7 @@
         {
           "$and": [
             {
-              "data.empresa_id": "{{user.data.empresa_id}}"
+              "data.empresa_id": "{{user.empresa_id}}"
             },
             {
               "$or": [
@@ -210,10 +245,16 @@
                   }
                 },
                 {
-                  "user_condition": {
-                    "tipo_usuario": "tecnico"
-                  },
-                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "tipo_usuario": "tecnico"
+                      }
+                    },
+                    {
+                      "data.tecnico_id": "{{user.tecnico_id}}"
+                    }
+                  ]
                 }
               ]
             }
@@ -229,10 +270,16 @@
           }
         },
         {
-          "user_condition": {
-            "tipo_usuario": "admin_empresa"
-          },
-          "data.empresa_id": "{{user.data.empresa_id}}"
+          "$and": [
+            {
+              "user_condition": {
+                "tipo_usuario": "admin_empresa"
+              }
+            },
+            {
+              "data.empresa_id": "{{user.empresa_id}}"
+            }
+          ]
         }
       ]
     }
