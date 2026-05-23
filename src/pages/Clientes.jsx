@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,49 +36,51 @@ export default function ClientesPage() {
     loadUser();
   }, []);
 
+  const empresaId = user?.data?.empresa_id || user?.empresa_id;
+
   const { data: clientes = [], isLoading } = useQuery({
-    queryKey: ['clientes', user?.empresa_id],
+    queryKey: ['clientes', empresaId],
     queryFn: async () => {
-      if (!user) return []; // Ensure user is loaded before attempting to fetch
+      if (!user) return [];
       if (user.email === "christianmoura2014@gmail.com") {
         return base44.entities.Cliente.list();
       }
-      return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
+      return base44.entities.Cliente.filter({ empresa_id: empresaId });
     },
-    enabled: !!user // Only run if user is available
+    enabled: !!user
   });
 
   const { data: equipamentos = [] } = useQuery({
-    queryKey: ['equipamentos', user?.empresa_id],
+    queryKey: ['equipamentos', empresaId],
     queryFn: async () => {
-      if (!user) return []; // Ensure user is loaded before attempting to fetch
+      if (!user) return [];
       if (user.email === "christianmoura2014@gmail.com") {
         return base44.entities.Equipamento.list();
       }
-      return base44.entities.Equipamento.filter({ empresa_id: user.empresa_id });
+      return base44.entities.Equipamento.filter({ empresa_id: empresaId });
     },
-    enabled: !!user // Only run if user is available
+    enabled: !!user
   });
 
   // Buscar tecnicos
   const { data: tecnicos = [] } = useQuery({
-    queryKey: ['tecnicos', user?.empresa_id],
+    queryKey: ['tecnicos', empresaId],
     queryFn: async () => {
-      if (!user?.empresa_id) return [];
-      return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
+      if (!empresaId) return [];
+      return base44.entities.Tecnico.filter({ empresa_id: empresaId });
     },
-    enabled: !!user?.empresa_id
+    enabled: !!empresaId
   });
 
   // Buscar empresa para PDF
   const { data: empresa } = useQuery({
-    queryKey: ['empresa', user?.empresa_id],
+    queryKey: ['empresa', empresaId],
     queryFn: async () => {
-      if (!user?.empresa_id) return null;
+      if (!empresaId) return null;
       const empresas = await base44.entities.Empresa.list();
-      return empresas.find(e => e.id === user.empresa_id);
+      return empresas.find(e => e.id === empresaId);
     },
-    enabled: !!user?.empresa_id
+    enabled: !!empresaId
   });
 
   // Buscar chamados do equipamento visualizado
@@ -96,7 +97,7 @@ export default function ClientesPage() {
 
   const createMutation = useMutation({
     mutationFn: async (clienteData) => {
-      if (!user?.empresa_id) {
+      if (!empresaId) {
         throw new Error("Erro: Usuário não está vinculado a nenhuma empresa.");
       }
 
@@ -109,7 +110,7 @@ export default function ClientesPage() {
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
         tem_acesso_portal: clienteData.tem_acesso_portal,
-        empresa_id: user.empresa_id
+        empresa_id: empresaId
       });
 
       return { cliente, temAcessoPortal: clienteData.tem_acesso_portal };
@@ -301,7 +302,7 @@ ${mensagemParaEnviar}`);
   });
 
   const handleSubmit = (clienteData) => {
-    if (!user?.empresa_id) {
+    if (!empresaId) {
       alert("Erro: Usuário não está vinculado a nenhuma empresa.");
       return;
     }
