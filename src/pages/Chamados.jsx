@@ -72,31 +72,24 @@ export default function ChamadosPage() {
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
     queryKey: ['chamados', user?.empresa_id, forceRender],
     queryFn: async () => {
-      if (!user) {
-        console.log("[Chamados] User não carregado ainda");
+      if (!user) return [];
+      
+      try {
+        // Admin vê todos
+        if (user.email === "christianmoura2014@gmail.com") {
+          return await base44.entities.Chamado.list('-created_date', 1000);
+        }
+        
+        // Usuários normais: busca todos e filtra em memória
+        const todos = await base44.entities.Chamado.list('-created_date', 1000);
+        return todos.filter(c => c.empresa_id === user.empresa_id);
+      } catch (err) {
+        console.error("[Chamados] Erro na query:", err);
         return [];
       }
-      
-      console.log("[Chamados] Buscando chamados para empresa_id:", user.empresa_id);
-      
-      // LISTA TODOS OS CHAMADOS (sem filtro)
-      const todosChamados = await base44.entities.Chamado.list('-created_date');
-      console.log("[Chamados] Total de chamados no sistema:", todosChamados.length, todosChamados);
-      
-      if (user.email === "christianmoura2014@gmail.com") {
-        console.log("[Chamados] Admin vendo todos os chamados");
-        return todosChamados;
-      }
-      
-      // Para usuários normais, filtrar por empresa_id em memória
-      const chamadosDaEmpresa = todosChamados.filter(c => c.empresa_id === user.empresa_id);
-      console.log("[Chamados] Chamados da empresa do usuário:", chamadosDaEmpresa.length, chamadosDaEmpresa);
-      
-      return chamadosDaEmpresa;
     },
     enabled: !!user,
-    retry: 3,
-    retryDelay: 1000
+    retry: 1
   });
 
   // FILTRAR CLIENTES POR EMPRESA
