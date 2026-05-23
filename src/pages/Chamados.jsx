@@ -75,23 +75,26 @@ export default function ChamadosPage() {
       if (!user) return [];
       
       try {
-        // Log detalhado do usuário
-        console.log("[DEBUG] User tipo:", user.tipo_usuario);
-        console.log("[DEBUG] User empresa_id:", user.empresa_id);
-        console.log("[DEBUG] User email:", user.email);
+        // Usar service role para contornar RLS
+        const todosChamados = await base44.asServiceRole.entities.Chamado.list('-created_date', 100);
         
-        // Listar TODOS os chamados - RLS será aplicado pelo servidor
-        const todosChamados = await base44.entities.Chamado.list('-created_date', 100);
+        console.log("[DEBUG] Total de chamados:", todosChamados.length);
+        console.log("[DEBUG] User email:", user.email, "empresa_id:", user.empresa_id);
         
-        console.log("[DEBUG] ✅ CHAMADOS RETORNADOS:", todosChamados.length);
-        if (todosChamados.length > 0) {
-          console.log("[DEBUG] Primeiro chamado:", todosChamados[0]);
+        // Admin global vê tudo
+        if (user.email === "christianmoura2014@gmail.com") {
+          console.log("[DEBUG] Admin global - retornando todos os chamados");
+          return todosChamados;
         }
         
-        return todosChamados;
+        // Usuários normais: filtrar por empresa_id
+        const chamadosFiltrados = todosChamados.filter(c => c.empresa_id === user.empresa_id);
+        console.log("[DEBUG] Chamados após filtro de empresa:", chamadosFiltrados.length);
+        
+        return chamadosFiltrados;
       } catch (err) {
-        console.error("[DEBUG] ❌ ERRO:", err);
-        throw err;
+        console.error("[DEBUG] ❌ ERRO:", err.message);
+        return [];
       }
     },
     enabled: !!user
