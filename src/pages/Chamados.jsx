@@ -79,27 +79,18 @@ export default function ChamadosPage() {
       
       console.log("[Chamados] Buscando chamados para empresa_id:", user.empresa_id);
       
+      // LISTA TODOS OS CHAMADOS (sem filtro)
+      const todosChamados = await base44.entities.Chamado.list('-created_date');
+      console.log("[Chamados] Total de chamados no sistema:", todosChamados.length, todosChamados);
+      
       if (user.email === "christianmoura2014@gmail.com") {
-        const todosChamados = await base44.entities.Chamado.list('-created_date');
-        console.log("[Chamados] Admin vendo todos os chamados:", todosChamados);
+        console.log("[Chamados] Admin vendo todos os chamados");
         return todosChamados;
       }
       
-      // Tentar buscar por empresa_id, mas se vazio, listar todos (fallback)
-      const chamadosDaEmpresa = await base44.entities.Chamado.filter(
-        { empresa_id: user.empresa_id },
-        '-created_date'
-      );
-      
-      console.log("[Chamados] Chamados filtrados da empresa:", chamadosDaEmpresa);
-      console.log("[Chamados] Total de chamados encontrados:", chamadosDaEmpresa.length);
-      
-      // Se nenhum encontrado e empresa_id existe, listar todos como fallback de debug
-      if (chamadosDaEmpresa.length === 0 && user.empresa_id) {
-        console.warn("[Chamados] Nenhum chamado encontrado para empresa_id. Buscando todos os chamados para debug...");
-        const todosChamados = await base44.entities.Chamado.list('-created_date');
-        console.log("[Chamados] Total de chamados no sistema:", todosChamados.length);
-      }
+      // Para usuários normais, filtrar por empresa_id em memória
+      const chamadosDaEmpresa = todosChamados.filter(c => c.empresa_id === user.empresa_id);
+      console.log("[Chamados] Chamados da empresa do usuário:", chamadosDaEmpresa.length, chamadosDaEmpresa);
       
       return chamadosDaEmpresa;
     },
