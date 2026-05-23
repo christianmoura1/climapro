@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
@@ -57,12 +56,12 @@ export default function Dashboard() {
     queryKey: ['chamados', user?.empresa_id],
     queryFn: async () => {
       if (isAdmin) {
-        return base44.entities.Chamado.list('-created_date', 50);
+        return base44.entities.Chamado.list('-created_date', 1000);
       }
       return base44.entities.Chamado.filter(
         { empresa_id: user.empresa_id },
         '-created_date',
-        50
+        1000
       );
     },
     enabled: !!user && (!!user.empresa_id || isAdmin)
@@ -109,7 +108,7 @@ export default function Dashboard() {
   // Estatísticas
   const chamadosPendentes = chamados.filter(c => c.status === 'pendente').length;
   const chamadosEmAndamento = chamados.filter(c => c.status === 'em_andamento').length;
-  const chamadosFinalizados = chamados.filter(c => c.status === 'finalizado').length;
+  const chamadosFinalizados = chamados.filter(c => c.status === 'finalizado' || c.status === 'aguardando_aprovacao_empresa').length;
 
   const receitaTotal = financeiro
     .filter(f => f.tipo === 'entrada' && f.status === 'pago')
