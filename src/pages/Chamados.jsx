@@ -72,19 +72,33 @@ export default function ChamadosPage() {
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
     queryKey: ['chamados', user?.empresa_id, forceRender],
     queryFn: async () => {
-      if (!user) return [];
+      if (!user) {
+        console.log("[CHAMADOS-DEBUG] User não carregado");
+        return [];
+      }
       
       try {
-        // Admin vê todos
+        console.log("[CHAMADOS-DEBUG] User email:", user.email);
+        console.log("[CHAMADOS-DEBUG] User empresa_id:", user.empresa_id);
+        
+        // Busca TODOS os chamados sem filtro
+        console.log("[CHAMADOS-DEBUG] Iniciando lista de todos os chamados...");
+        const todos = await base44.entities.Chamado.list();
+        
+        console.log("[CHAMADOS-DEBUG] ✅ CHAMADOS ENCONTRADOS:", todos.length);
+        console.log("[CHAMADOS-DEBUG] DADOS COMPLETOS:", JSON.stringify(todos, null, 2));
+        
         if (user.email === "christianmoura2014@gmail.com") {
-          return await base44.entities.Chamado.list('-created_date', 1000);
+          console.log("[CHAMADOS-DEBUG] Admin detectado, retornando todos os chamados");
+          return todos;
         }
         
-        // Usuários normais: busca todos e filtra em memória
-        const todos = await base44.entities.Chamado.list('-created_date', 1000);
-        return todos.filter(c => c.empresa_id === user.empresa_id);
+        // Filtrar por empresa
+        const filtered = todos.filter(c => c.empresa_id === user.empresa_id);
+        console.log("[CHAMADOS-DEBUG] Chamados após filtro de empresa:", filtered.length);
+        return filtered;
       } catch (err) {
-        console.error("[Chamados] Erro na query:", err);
+        console.error("[CHAMADOS-DEBUG] ❌ ERRO NA QUERY:", err.message, err);
         return [];
       }
     },
