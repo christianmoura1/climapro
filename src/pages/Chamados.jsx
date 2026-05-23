@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -86,11 +85,22 @@ export default function ChamadosPage() {
         return todosChamados;
       }
       
+      // Tentar buscar por empresa_id, mas se vazio, listar todos (fallback)
       const chamadosDaEmpresa = await base44.entities.Chamado.filter(
         { empresa_id: user.empresa_id },
         '-created_date'
       );
+      
       console.log("[Chamados] Chamados filtrados da empresa:", chamadosDaEmpresa);
+      console.log("[Chamados] Total de chamados encontrados:", chamadosDaEmpresa.length);
+      
+      // Se nenhum encontrado e empresa_id existe, listar todos como fallback de debug
+      if (chamadosDaEmpresa.length === 0 && user.empresa_id) {
+        console.warn("[Chamados] Nenhum chamado encontrado para empresa_id. Buscando todos os chamados para debug...");
+        const todosChamados = await base44.entities.Chamado.list('-created_date');
+        console.log("[Chamados] Total de chamados no sistema:", todosChamados.length);
+      }
+      
       return chamadosDaEmpresa;
     },
     enabled: !!user,
@@ -103,8 +113,7 @@ export default function ChamadosPage() {
     queryKey: ['clientes', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      // Corrected typo in email
-      if (user.email === "christianmoura2014@gmail0.com") { // intentional typo from previous version, keeping it for now, should be .com
+      if (user.email === "christianmoura2014@gmail.com") {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
