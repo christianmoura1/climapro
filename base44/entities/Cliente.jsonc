@@ -87,42 +87,7 @@
     "telefone"
   ],
   "rls": {
-    "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "$and": [
-            {
-              "data.empresa_id": "{{user.data.empresa_id}}"
-            },
-            {
-              "$or": [
-                {
-                  "user_condition": {
-                    "tipo_usuario": "admin_empresa"
-                  }
-                },
-                {
-                  "user_condition": {
-                    "tipo_usuario": "tecnico"
-                  }
-                },
-                {
-                  "user_condition": {
-                    "tipo_usuario": "cliente"
-                  },
-                  "data.email": "{{user.email}}"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
+    "read": null,
     "update": {
       "$or": [
         {
