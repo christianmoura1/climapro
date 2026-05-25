@@ -53,9 +53,10 @@ export default function Dashboard() {
 
   // FILTRAR CHAMADOS POR EMPRESA
   const { data: chamados = [] } = useQuery({
-    queryKey: ['chamados', user?.empresa_id],
+    queryKey: ['chamados', user?.empresa_id, user?.role],
     queryFn: async () => {
-      if (isAdmin) {
+      const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+      if (adminUser) {
         return base44.entities.Chamado.list('-created_date', 1000);
       }
       return base44.entities.Chamado.filter(
@@ -64,7 +65,7 @@ export default function Dashboard() {
         1000
       );
     },
-    enabled: !!user && (!!user.empresa_id || isAdmin)
+    enabled: !!user
   });
 
   const { data: empresas = [] } = useQuery({

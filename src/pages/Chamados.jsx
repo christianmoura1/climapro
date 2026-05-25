@@ -71,10 +71,11 @@ export default function ChamadosPage() {
 
   // FILTRAR CHAMADOS POR EMPRESA - mesma lógica do Dashboard
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
-    queryKey: ['chamados', user?.empresa_id, isAdmin, forceRender],
+    queryKey: ['chamados', user?.empresa_id, user?.role, forceRender],
     queryFn: async () => {
       if (!user) return [];
-      if (isAdmin) {
+      const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+      if (adminUser) {
         return base44.entities.Chamado.list('-created_date', 1000);
       }
       return base44.entities.Chamado.filter(
@@ -83,7 +84,7 @@ export default function ChamadosPage() {
         1000
       );
     },
-    enabled: !!user && (!!user.empresa_id || isAdmin)
+    enabled: !!user
   });
 
   // FILTRAR CLIENTES POR EMPRESA
