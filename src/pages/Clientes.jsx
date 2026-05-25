@@ -434,7 +434,9 @@ ${mensagemParaEnviar}`);
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
-              <p className="text-gray-600 mt-1">Gerencie seus clientes e acessos ao portal</p>
+              <p className="text-gray-600 mt-1">
+                {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''} · Gerencie seus clientes e acessos ao portal
+              </p>
             </div>
           </div>
           <Button 

@@ -89,11 +89,15 @@ export default function ChamadosPage() {
 
   // FILTRAR CLIENTES POR EMPRESA
   const { data: clientes = [] } = useQuery({
-    queryKey: ['clientes', user?.email],
+    queryKey: ['clientes', user?.empresa_id, user?.role],
     queryFn: async () => {
       if (!user) return [];
       try {
-        return await base44.entities.Cliente.list('-created_date', 100);
+        const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+        if (adminUser) {
+          return await base44.entities.Cliente.list('-created_date', 500);
+        }
+        return await base44.entities.Cliente.filter({ empresa_id: user.empresa_id }, '-created_date', 500);
       } catch (err) {
         console.error("[DEBUG] Erro ao listar clientes:", err);
         return [];
@@ -432,7 +436,7 @@ ClimaPro - Sistema de Gestão`
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Chamados</h1>
               <p className="text-gray-600 mt-1">
-                {chamados.length} chamado{chamados.length !== 1 ? 's' : ''} encontrado{chamados.length !== 1 ? 's' : ''}
+                {chamados.length} chamado{chamados.length !== 1 ? 's' : ''} encontrado{chamados.length !== 1 ? 's' : ''} · {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
