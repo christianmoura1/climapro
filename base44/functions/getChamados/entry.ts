@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     // Se não tiver service token, volta para list() normal
     let chamados = [];
     try {
-      chamados = await base44.asServiceRole.entities.Chamado.filter({ empresa_id: empresaId });
+      chamados = await base44.asServiceRole.entities.Chamado.filter({ empresa_id: empresaId }, '-created_date', 1000);
     } catch {
       // Fallback: list() normal (respeitará RLS, pode retornar vazio)
       chamados = await base44.entities.Chamado.list('-created_date', 1000);
