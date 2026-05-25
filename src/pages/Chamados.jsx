@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, ArrowLeft, AlertCircle } from "lucide-react"; // Added AlertCircle
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { getChamados } from "@/functions/getChamados";
-
 // New imports for date formatting
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -69,20 +67,18 @@ export default function ChamadosPage() {
     };
   }, []);
 
-  // FILTRAR CHAMADOS POR EMPRESA
+  // FILTRAR CHAMADOS POR EMPRESA - mesma query do Dashboard
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
-    queryKey: ['chamados', user?.email, forceRender],
+    queryKey: ['chamados', user?.empresa_id, forceRender],
     queryFn: async () => {
       if (!user) return [];
-      try {
-        const response = await getChamados();
-        return response.chamados || [];
-      } catch (err) {
-        console.error("[DEBUG] Erro ao buscar chamados:", err.message);
-        return [];
-      }
+      return base44.entities.Chamado.filter(
+        { empresa_id: user.empresa_id },
+        '-created_date',
+        1000
+      );
     },
-    enabled: !!user
+    enabled: !!user && !!user.empresa_id
   });
 
   // FILTRAR CLIENTES POR EMPRESA
