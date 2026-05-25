@@ -402,7 +402,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="">Selecione o técnico</option>
-                {tecnicos.filter(t => t.status === 'ativo').map((tecnico) => (
+                {tecnicos.filter(t => t.status === 'ativo' && ['Fred Santana', 'Danyel Farias', 'Warner', 'ALEX MOURA'].some(nome => t.nome.includes(nome))).map((tecnico) => (
                   <option key={tecnico.id} value={tecnico.id}>
                     {tecnico.nome}
                   </option>
