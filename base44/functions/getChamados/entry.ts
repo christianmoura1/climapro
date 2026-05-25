@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
       chamados = await base44.asServiceRole.entities.Chamado.filter({ empresa_id: empresaId });
     } catch {
       // Fallback: list() normal (respeitará RLS, pode retornar vazio)
-      chamados = await base44.entities.Chamado.list('-created_date', 500);
+      chamados = await base44.entities.Chamado.list('-created_date', 1000);
       chamados = chamados.filter(c => c.empresa_id === empresaId);
     }
 

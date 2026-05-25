@@ -135,18 +135,18 @@
       "$or": [
         {
           "user_condition": {
-            "tipo_usuario": "admin_global"
+            "role": "admin"
           }
         },
         {
           "$and": [
             {
               "user_condition": {
-                "tipo_usuario": "admin_empresa"
+                "data.tipo_usuario": "tecnico"
               }
             },
             {
-              "data.empresa_id": "{{user.empresa_id}}"
+              "data.tecnico_id": "{{user.data.tecnico_id}}"
             }
           ]
         },
@@ -154,19 +154,7 @@
           "$and": [
             {
               "user_condition": {
-                "tipo_usuario": "tecnico"
-              }
-            },
-            {
-              "data.tecnico_id": "{{user.tecnico_id}}"
-            }
-          ]
-        },
-        {
-          "$and": [
-            {
-              "user_condition": {
-                "tipo_usuario": "cliente"
+                "data.tipo_usuario": "cliente"
               }
             },
             {
@@ -180,44 +168,27 @@
       "$or": [
         {
           "user_condition": {
-            "tipo_usuario": "admin_global"
+            "role": "admin"
           }
         },
         {
           "$and": [
             {
-              "data.empresa_id": "{{user.empresa_id}}"
+              "data.empresa_id": "{{user.data.empresa_id}}"
             },
             {
               "$or": [
                 {
                   "user_condition": {
-                    "tipo_usuario": "admin_empresa"
-                  }
+                    "data.tipo_usuario": "tecnico"
+                  },
+                  "data.tecnico_id": "{{user.data.tecnico_id}}"
                 },
                 {
-                  "$and": [
-                    {
-                      "user_condition": {
-                        "tipo_usuario": "tecnico"
-                      }
-                    },
-                    {
-                      "data.tecnico_id": "{{user.tecnico_id}}"
-                    }
-                  ]
-                },
-                {
-                  "$and": [
-                    {
-                      "user_condition": {
-                        "tipo_usuario": "cliente"
-                      }
-                    },
-                    {
-                      "data.cliente_id": "{{user.data.cliente_id}}"
-                    }
-                  ]
+                  "user_condition": {
+                    "data.tipo_usuario": "cliente"
+                  },
+                  "data.cliente_id": "{{user.data.cliente_id}}"
                 }
               ]
             }
@@ -229,34 +200,19 @@
       "$or": [
         {
           "user_condition": {
-            "tipo_usuario": "admin_global"
+            "role": "admin"
           }
         },
         {
           "$and": [
             {
-              "data.empresa_id": "{{user.empresa_id}}"
+              "data.empresa_id": "{{user.data.empresa_id}}"
             },
             {
-              "$or": [
-                {
-                  "user_condition": {
-                    "tipo_usuario": "admin_empresa"
-                  }
-                },
-                {
-                  "$and": [
-                    {
-                      "user_condition": {
-                        "tipo_usuario": "tecnico"
-                      }
-                    },
-                    {
-                      "data.tecnico_id": "{{user.tecnico_id}}"
-                    }
-                  ]
-                }
-              ]
+              "user_condition": {
+                "data.tipo_usuario": "tecnico"
+              },
+              "data.tecnico_id": "{{user.data.tecnico_id}}"
             }
           ]
         }
@@ -266,20 +222,8 @@
       "$or": [
         {
           "user_condition": {
-            "tipo_usuario": "admin_global"
+            "role": "admin"
           }
-        },
-        {
-          "$and": [
-            {
-              "user_condition": {
-                "tipo_usuario": "admin_empresa"
-              }
-            },
-            {
-              "data.empresa_id": "{{user.empresa_id}}"
-            }
-          ]
         }
       ]
     }
