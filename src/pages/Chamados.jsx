@@ -27,6 +27,7 @@ export default function ChamadosPage() {
   const queryClient = useQueryClient();
 
   const [visualizacao, setVisualizacao] = useState('kanban'); // 'kanban' ou 'lista'
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -37,6 +38,7 @@ export default function ChamadosPage() {
         if (isMounted) {
           console.log("[Chamados] Usuário logado:", currentUser);
           setUser(currentUser);
+          setIsAdmin(currentUser.role === 'admin' || currentUser.email === "christianmoura2014@gmail.com");
         }
       } catch (error) {
         console.error("[Chamados] Erro ao carregar usuário:", error);
@@ -67,18 +69,21 @@ export default function ChamadosPage() {
     };
   }, []);
 
-  // FILTRAR CHAMADOS POR EMPRESA - mesma query do Dashboard
+  // FILTRAR CHAMADOS POR EMPRESA - mesma lógica do Dashboard
   const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
-    queryKey: ['chamados', user?.empresa_id, forceRender],
+    queryKey: ['chamados', user?.empresa_id, isAdmin, forceRender],
     queryFn: async () => {
       if (!user) return [];
+      if (isAdmin) {
+        return base44.entities.Chamado.list('-created_date', 1000);
+      }
       return base44.entities.Chamado.filter(
         { empresa_id: user.empresa_id },
         '-created_date',
         1000
       );
     },
-    enabled: !!user && !!user.empresa_id
+    enabled: !!user && (!!user.empresa_id || isAdmin)
   });
 
   // FILTRAR CLIENTES POR EMPRESA
