@@ -13,15 +13,34 @@ Deno.serve(async (req) => {
       return Response.json({ chamados: [] });
     }
 
-    // A RLS está bloqueando a leitura, então vamos tentar buscar SEM RLS via asServiceRole
-    // Se não tiver service token, volta para list() normal
+    // Buscar todos os chamados com paginação para superar o limite de 100
     let chamados = [];
-    try {
-      chamados = await base44.asServiceRole.entities.Chamado.filter({ empresa_id: empresaId }, '-created_date', 1000);
-    } catch {
-      // Fallback: list() normal (respeitará RLS, pode retornar vazio)
-      chamados = await base44.entities.Chamado.list('-created_date', 1000);
-      chamados = chamados.filter(c => c.empresa_id === empresaId);
+    let skip = 0;
+    const pageSize = 100;
+
+    while (true) {
+      let page = [];
+      try {
+        page = await base44.asServiceRole.entities.Chamado.filter(
+          { empresa_id: empresaId },
+          '-created_date',
+          pageSize,
+          skip
+        );
+      } catch {
+        // Fallback sem paginação
+        page = await base44.entities.Chamado.filter(
+          { empresa_id: empresaId },
+          '-created_date',
+          pageSize,
+          skip
+        );
+      }
+
+      if (!page || page.length === 0) break;
+      chamados = chamados.concat(page);
+      if (page.length < pageSize) break;
+      skip += pageSize;
     }
 
     return Response.json({ chamados });
