@@ -124,7 +124,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                     if (!e.target.value) handleClienteChange("");
                   }}
                   onFocus={() => setShowSugestoes(true)}
-                  onBlur={() => setTimeout(() => setShowSugestoes(false), 150)}
+                  onBlur={() => setTimeout(() => setShowSugestoes(false), 200)}
                   placeholder="Digite para buscar cliente..."
                   required={!formData.cliente_id}
                 />

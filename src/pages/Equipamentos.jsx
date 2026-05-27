@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,10 @@ export default function EquipamentosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingEquipamento, setEditingEquipamento] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filtroCliente, setFiltroCliente] = useState(""); // Changed default from "todos" to ""
+  const [filtroCliente, setFiltroCliente] = useState("");
   const [buscaCliente, setBuscaCliente] = useState("");
+  const [showClienteSugestoes, setShowClienteSugestoes] = useState(false);
+  const buscaClienteRef = useRef(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
@@ -288,31 +290,49 @@ export default function EquipamentosPage() {
               className="pl-10"
             />
           </div>
-          <div className="space-y-2">
+          <div className="relative" ref={buscaClienteRef}>
             <Input
               type="text"
-              placeholder="Digite para buscar cliente..."
+              placeholder="Filtrar por cliente..."
               value={buscaCliente}
-              onChange={(e) => setBuscaCliente(e.target.value)}
-            />
-            <select
-              value={filtroCliente}
               onChange={(e) => {
-                setFiltroCliente(e.target.value);
-                setBuscaCliente("");
+                setBuscaCliente(e.target.value);
+                setShowClienteSugestoes(true);
+                if (!e.target.value) setFiltroCliente("");
               }}
-              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              size="15"
-            >
-              <option value="">Todos os Clientes</option> {/* Value changed to empty string */}
-              {clientesFiltrados.map((cliente) => (
-                <option key={cliente.id} value={cliente.id}>
-                  {cliente.nome}
-                </option>
-              ))}
-            </select>
-            {buscaCliente && clientesFiltrados.length === 0 && (
-              <p className="text-sm text-gray-500 mt-1">Nenhum cliente encontrado</p>
+              onFocus={() => setShowClienteSugestoes(true)}
+              onBlur={() => setTimeout(() => setShowClienteSugestoes(false), 200)}
+            />
+            {buscaCliente && (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onMouseDown={() => { setBuscaCliente(""); setFiltroCliente(""); }}
+              >
+                ✕
+              </button>
+            )}
+            {showClienteSugestoes && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${filtroCliente === "" ? 'bg-blue-100 font-semibold' : ''}`}
+                  onMouseDown={() => { setFiltroCliente(""); setBuscaCliente(""); setShowClienteSugestoes(false); }}
+                >
+                  Todos os Clientes
+                </div>
+                {clientesFiltrados.map((cliente) => (
+                  <div
+                    key={cliente.id}
+                    className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${filtroCliente === cliente.id ? 'bg-blue-100 font-semibold' : ''}`}
+                    onMouseDown={() => { setFiltroCliente(cliente.id); setBuscaCliente(cliente.nome); setShowClienteSugestoes(false); }}
+                  >
+                    {cliente.nome}
+                  </div>
+                ))}
+                {buscaCliente && clientesFiltrados.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-gray-400">Nenhum cliente encontrado</div>
+                )}
+              </div>
             )}
           </div>
         </div>
