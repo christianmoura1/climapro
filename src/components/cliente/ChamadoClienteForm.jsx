@@ -20,6 +20,22 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [estabelecimentoSelecionado, setEstabelecimentoSelecionado] = useState("");
+
+  // Obter lista única de estabelecimentos dos equipamentos
+  const estabelecimentos = [...new Set(equipamentos.filter(e => e.estabelecimento_nome).map(e => e.estabelecimento_nome))];
+  const temEstabelecimentos = estabelecimentos.length > 0;
+
+  // Filtrar equipamentos pelo estabelecimento selecionado
+  const equipamentosFiltrados = temEstabelecimentos && estabelecimentoSelecionado
+    ? equipamentos.filter(e => e.estabelecimento_nome === estabelecimentoSelecionado)
+    : equipamentos;
+
+  const handleEstabelecimentoChange = (nome) => {
+    setEstabelecimentoSelecionado(nome);
+    // Limpar equipamento selecionado ao trocar estabelecimento
+    setFormData(prev => ({ ...prev, equipamento_id: "", local: "" }));
+  };
 
   // Quando selecionar um equipamento, preencher o local automaticamente
   const handleEquipamentoChange = (equipamentoId) => {
@@ -93,7 +109,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
         />
       </div>
 
-      {/* Seleção de Equipamento */}
+      {/* Seleção de Estabelecimento + Equipamento */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-gray-500" />
@@ -110,19 +126,52 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
           </div>
         ) : (
           <>
-            <select
-              value={formData.equipamento_id}
-              onChange={(e) => handleEquipamentoChange(e.target.value)}
-              required
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="">Selecione o equipamento</option>
-              {equipamentos.map((equipamento) => (
-                <option key={equipamento.id} value={equipamento.id}>
-                  {equipamento.numero_equipamento || `${equipamento.tipo} ${equipamento.marca} ${equipamento.modelo}`} - {equipamento.localizacao}
-                </option>
-              ))}
-            </select>
+            {/* Seleção de Estabelecimento */}
+            {temEstabelecimentos && (
+              <div className="space-y-1">
+                <Label className="text-xs text-gray-500">1. Selecione o Estabelecimento</Label>
+                <div className="flex flex-wrap gap-2">
+                  {estabelecimentos.map((nome) => (
+                    <button
+                      key={nome}
+                      type="button"
+                      onClick={() => handleEstabelecimentoChange(nome)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        estabelecimentoSelecionado === nome
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      📍 {nome}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Seleção de Equipamento */}
+            {(!temEstabelecimentos || estabelecimentoSelecionado) && (
+              <div className="space-y-1">
+                {temEstabelecimentos && <Label className="text-xs text-gray-500">2. Selecione o Equipamento</Label>}
+                <select
+                  value={formData.equipamento_id}
+                  onChange={(e) => handleEquipamentoChange(e.target.value)}
+                  required
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Selecione o equipamento</option>
+                  {equipamentosFiltrados.map((equipamento) => (
+                    <option key={equipamento.id} value={equipamento.id}>
+                      {equipamento.numero_equipamento || `${equipamento.tipo} ${equipamento.marca} ${equipamento.modelo}`} - {equipamento.localizacao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {temEstabelecimentos && !estabelecimentoSelecionado && (
+              <p className="text-xs text-gray-400 italic">👆 Selecione um estabelecimento para ver os equipamentos disponíveis.</p>
+            )}
 
             {/* Mostrar detalhes do equipamento selecionado */}
             {equipamentoSelecionado && (
