@@ -65,21 +65,22 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
       const cliente = clientes.find(c => c.id === currentChamado.cliente_id);
       if (cliente) {
         setClienteSelecionado(cliente);
-        setEstabelecimentoAtivo(null); // reset ao trocar cliente
+        setEstabelecimentoAtivo(null);
+        setHistoricoEquipamento(null);
 
         // Buscar equipamentos do cliente
         base44.entities.Equipamento.filter({ cliente_id: cliente.id })
           .then(setEquipamentosCliente)
           .catch(() => setEquipamentosCliente([]));
 
-        // Usar primeiro estabelecimento ou endereço legado
+        // Selecionar primeiro estabelecimento ou endereço legado
         const ests = cliente.estabelecimentos || [];
-        const primeiroEst = ests[0] || null;
-        if (primeiroEst) {
+        if (ests.length > 0) {
+          const primeiroEst = ests[0];
           setEstabelecimentoAtivo(primeiroEst);
-          setCurrentChamado(prev => ({ ...prev, local: primeiroEst.endereco || prev.local }));
+          setCurrentChamado(prev => ({ ...prev, local: primeiroEst.endereco || "" }));
           setMostrarMapa(!!(primeiroEst.latitude && primeiroEst.longitude));
-        } else if (cliente.endereco && !currentChamado.local) {
+        } else if (cliente.endereco) {
           setCurrentChamado(prev => ({ ...prev, local: cliente.endereco }));
           setMostrarMapa(!!(cliente.latitude && cliente.longitude));
         }
@@ -94,13 +95,24 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   };
 
   const handleVerHistoricoEquipamento = async (equipamento) => {
+    // toggle: se já está aberto para este equipamento, fecha
+    if (historicoEquipamento?.equipamento?.id === equipamento.id) {
+      setHistoricoEquipamento(null);
+      return;
+    }
     setLoadingHistorico(true);
     setHistoricoEquipamento({ equipamento, chamados: [] });
     try {
+      // Busca por equipamento_id principal
       const chamados = await base44.entities.Chamado.filter(
-        { equipamento_id: equipamento.id }, '-created_date'
+        { cliente_id: clienteSelecionado.id }, '-created_date', 100
       );
-      setHistoricoEquipamento({ equipamento, chamados });
+      // Filtra os que têm este equipamento em equipamento_id ou equipamentos_ids
+      const filtrados = chamados.filter(c =>
+        c.equipamento_id === equipamento.id ||
+        (Array.isArray(c.equipamentos_ids) && c.equipamentos_ids.includes(equipamento.id))
+      );
+      setHistoricoEquipamento({ equipamento, chamados: filtrados });
     } finally {
       setLoadingHistorico(false);
     }
@@ -343,7 +355,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               </div>
 
               {/* Abas de Estabelecimentos */}
-              {clienteSelecionado.estabelecimentos?.length > 0 && (
+              {(clienteSelecionado.estabelecimentos?.length > 0) ? (
                 <div>
                   <p className="text-xs font-semibold text-blue-700 mb-2">🏠 Selecione o Estabelecimento:</p>
                   <div className="flex flex-wrap gap-2">
@@ -352,17 +364,32 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                         key={idx}
                         type="button"
                         onClick={() => handleSelecionarEstabelecimento(est)}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border shadow-sm ${
                           estabelecimentoAtivo?.nome === est.nome
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-100'
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
                         }`}
                       >
-                        {est.nome}
+                        {est.nome === 'casa' || est.nome === 'Casa' ? '🏠' :
+                         est.nome === 'loja' || est.nome === 'Loja' ? '🏪' :
+                         est.nome === 'escritorio' || est.nome === 'Escritório' || est.nome === 'escritório' ? '🏢' :
+                         est.nome === 'trabalho' || est.nome === 'Trabalho' ? '💼' :
+                         est.nome === 'empresa' || est.nome === 'Empresa' ? '🏭' : '📍'} {est.nome}
                       </button>
                     ))}
                   </div>
+                  {estabelecimentoAtivo && (
+                    <div className="mt-2 text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                      📌 <strong>{estabelecimentoAtivo.nome}:</strong> {estabelecimentoAtivo.endereco || 'Sem endereço cadastrado'}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                clienteSelecionado.endereco && (
+                  <div className="text-xs text-blue-700 bg-blue-100 rounded px-2 py-1">
+                    📌 <strong>Endereço:</strong> {clienteSelecionado.endereco}
+                  </div>
+                )
               )}
 
               {/* Mapa do estabelecimento ativo */}
@@ -392,13 +419,14 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                         key={eq.id}
                         type="button"
                         onClick={() => handleVerHistoricoEquipamento(eq)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border shadow-sm transition-colors ${
                           historicoEquipamento?.equipamento?.id === eq.id
                             ? 'bg-indigo-600 text-white border-indigo-600'
                             : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
                         }`}
                       >
-                        {eq.marca} {eq.modelo}
+                        ❄️ {eq.marca} {eq.modelo}
+                        {eq.localizacao && <span className="ml-1 opacity-70">({eq.localizacao})</span>}
                       </button>
                     ))}
                   </div>
