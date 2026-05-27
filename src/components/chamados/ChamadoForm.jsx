@@ -3,9 +3,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2, Cpu, ChevronLeft, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+const STATUS_CHAMADO = {
+  pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
+  em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
+  aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
+  finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
+  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+};
 
 export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onCancel }) {
   const [currentChamado, setCurrentChamado] = useState(chamado || {
@@ -35,6 +46,12 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   const [criarEvento, setCriarEvento] = useState(true);
   const [buscaCliente, setBuscaCliente] = useState("");
 
+  // Estabelecimentos e equipamentos
+  const [estabelecimentoAtivo, setEstabelecimentoAtivo] = useState(null);
+  const [equipamentosCliente, setEquipamentosCliente] = useState([]);
+  const [historicoEquipamento, setHistoricoEquipamento] = useState(null); // { equipamento, chamados }
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
+
   const ehChamadoFinalizado = chamado && chamado.status === 'finalizado';
 
   // Filtrar clientes pela busca
@@ -48,22 +65,46 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
       const cliente = clientes.find(c => c.id === currentChamado.cliente_id);
       if (cliente) {
         setClienteSelecionado(cliente);
-        
-        if (cliente.endereco && !currentChamado.local) {
-          setCurrentChamado(prev => ({
-            ...prev,
-            local: cliente.endereco
-          }));
-        }
+        setEstabelecimentoAtivo(null); // reset ao trocar cliente
 
-        if (cliente.latitude && cliente.longitude) {
-          setMostrarMapa(true);
-        } else {
-          setMostrarMapa(false);
+        // Buscar equipamentos do cliente
+        base44.entities.Equipamento.filter({ cliente_id: cliente.id })
+          .then(setEquipamentosCliente)
+          .catch(() => setEquipamentosCliente([]));
+
+        // Usar primeiro estabelecimento ou endereço legado
+        const ests = cliente.estabelecimentos || [];
+        const primeiroEst = ests[0] || null;
+        if (primeiroEst) {
+          setEstabelecimentoAtivo(primeiroEst);
+          setCurrentChamado(prev => ({ ...prev, local: primeiroEst.endereco || prev.local }));
+          setMostrarMapa(!!(primeiroEst.latitude && primeiroEst.longitude));
+        } else if (cliente.endereco && !currentChamado.local) {
+          setCurrentChamado(prev => ({ ...prev, local: cliente.endereco }));
+          setMostrarMapa(!!(cliente.latitude && cliente.longitude));
         }
       }
     }
   }, [currentChamado.cliente_id, clientes]);
+
+  const handleSelecionarEstabelecimento = (est) => {
+    setEstabelecimentoAtivo(est);
+    setCurrentChamado(prev => ({ ...prev, local: est.endereco || "" }));
+    setMostrarMapa(!!(est.latitude && est.longitude));
+  };
+
+  const handleVerHistoricoEquipamento = async (equipamento) => {
+    setLoadingHistorico(true);
+    setHistoricoEquipamento({ equipamento, chamados: [] });
+    try {
+      const chamados = await base44.entities.Chamado.filter(
+        { equipamento_id: equipamento.id }, '-created_date'
+      );
+      setHistoricoEquipamento({ equipamento, chamados });
+    } finally {
+      setLoadingHistorico(false);
+    }
+  };
 
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -204,9 +245,10 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   };
 
   const handleAbrirGPS = () => {
-    if (clienteSelecionado?.latitude && clienteSelecionado?.longitude) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${clienteSelecionado.latitude},${clienteSelecionado.longitude}`;
-      window.open(url, '_blank');
+    const lat = estabelecimentoAtivo?.latitude || clienteSelecionado?.latitude;
+    const lng = estabelecimentoAtivo?.longitude || clienteSelecionado?.longitude;
+    if (lat && lng) {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
     }
   };
 
@@ -273,55 +315,132 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
           </div>
 
           {clienteSelecionado && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+              {/* Info básica */}
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-blue-900 mb-2">📍 Informações do Cliente</h4>
                   <div className="space-y-1 text-sm">
-                    <p className="text-blue-800">
-                      <strong>Nome:</strong> {clienteSelecionado.nome}
-                    </p>
+                    <p className="text-blue-800"><strong>Nome:</strong> {clienteSelecionado.nome}</p>
                     {clienteSelecionado.telefone && (
-                      <p className="text-blue-800">
-                        <strong>Telefone:</strong> {clienteSelecionado.telefone}
-                      </p>
+                      <p className="text-blue-800"><strong>Telefone:</strong> {clienteSelecionado.telefone}</p>
                     )}
-                    {clienteSelecionado.endereco ? (
-                      <p className="text-blue-800">
-                        <strong>Endereço:</strong> {clienteSelecionado.endereco}
-                      </p>
+                    {estabelecimentoAtivo?.endereco ? (
+                      <p className="text-blue-800"><strong>Endereço:</strong> {estabelecimentoAtivo.endereco}</p>
+                    ) : clienteSelecionado.endereco ? (
+                      <p className="text-blue-800"><strong>Endereço:</strong> {clienteSelecionado.endereco}</p>
                     ) : (
-                      <p className="text-red-600">
-                        ⚠️ Cliente sem endereço cadastrado
-                      </p>
+                      <p className="text-red-600">⚠️ Cliente sem endereço cadastrado</p>
                     )}
                   </div>
                 </div>
-                
-                {clienteSelecionado.latitude && clienteSelecionado.longitude && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAbrirGPS}
-                    className="ml-4"
-                  >
+                {(estabelecimentoAtivo?.latitude || clienteSelecionado.latitude) && (
+                  <Button type="button" variant="outline" size="sm" onClick={handleAbrirGPS} className="ml-4">
                     <Navigation className="w-4 h-4 mr-2" />
                     Abrir GPS
                   </Button>
                 )}
               </div>
 
-              {mostrarMapa && clienteSelecionado.latitude && clienteSelecionado.longitude && (
-                <div className="mt-4 border-2 border-blue-300 rounded-lg overflow-hidden">
+              {/* Abas de Estabelecimentos */}
+              {clienteSelecionado.estabelecimentos?.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-blue-700 mb-2">🏠 Selecione o Estabelecimento:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {clienteSelecionado.estabelecimentos.map((est, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelecionarEstabelecimento(est)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                          estabelecimentoAtivo?.nome === est.nome
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-100'
+                        }`}
+                      >
+                        {est.nome}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Mapa do estabelecimento ativo */}
+              {mostrarMapa && (estabelecimentoAtivo?.latitude || clienteSelecionado.latitude) && (
+                <div className="border-2 border-blue-300 rounded-lg overflow-hidden">
                   <iframe
                     width="100%"
-                    height="200"
+                    height="180"
                     frameBorder="0"
                     style={{ border: 0 }}
-                    src={`https://www.google.com/maps?q=${clienteSelecionado.latitude},${clienteSelecionado.longitude}&output=embed`}
+                    src={`https://www.google.com/maps?q=${estabelecimentoAtivo?.latitude || clienteSelecionado.latitude},${estabelecimentoAtivo?.longitude || clienteSelecionado.longitude}&output=embed`}
                     allowFullScreen
-                  ></iframe>
+                  />
+                </div>
+              )}
+
+              {/* Equipamentos do cliente */}
+              {equipamentosCliente.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-blue-700 mb-2">
+                    <Cpu className="w-3 h-3 inline mr-1" />
+                    Equipamentos ({equipamentosCliente.length}) — clique para ver histórico:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {equipamentosCliente.map((eq) => (
+                      <button
+                        key={eq.id}
+                        type="button"
+                        onClick={() => handleVerHistoricoEquipamento(eq)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                          historicoEquipamento?.equipamento?.id === eq.id
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
+                        }`}
+                      >
+                        {eq.marca} {eq.modelo}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Histórico do equipamento selecionado */}
+                  {historicoEquipamento && (
+                    <div className="mt-3 border border-indigo-200 rounded-lg bg-white overflow-hidden">
+                      <div className="bg-indigo-50 px-3 py-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold text-indigo-800">
+                          📋 Histórico: {historicoEquipamento.equipamento.marca} {historicoEquipamento.equipamento.modelo}
+                        </span>
+                        <button type="button" onClick={() => setHistoricoEquipamento(null)} className="text-indigo-500 hover:text-indigo-700">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="p-2 max-h-48 overflow-y-auto">
+                        {loadingHistorico ? (
+                          <p className="text-xs text-gray-500 text-center py-3">Carregando...</p>
+                        ) : historicoEquipamento.chamados.length === 0 ? (
+                          <p className="text-xs text-gray-500 text-center py-3">Nenhum chamado registrado para este equipamento.</p>
+                        ) : (
+                          <div className="divide-y">
+                            {historicoEquipamento.chamados.map((c) => {
+                              const cfg = STATUS_CHAMADO[c.status] || STATUS_CHAMADO.pendente;
+                              return (
+                                <div key={c.id} className="py-2 flex items-center justify-between gap-2">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-gray-800 truncate">{c.numero_chamado} — {c.titulo}</p>
+                                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                      <Clock className="w-3 h-3" />
+                                      {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
+                                    </p>
+                                  </div>
+                                  <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
