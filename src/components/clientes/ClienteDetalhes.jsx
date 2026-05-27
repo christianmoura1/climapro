@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 import HistoricoChamadosCliente from "./HistoricoChamadosCliente";
@@ -129,10 +128,29 @@ export default function ClienteDetalhes({
               {cliente.tem_acesso_portal && (
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Acesso ao Portal</p>
-                  <Badge className="bg-blue-100 text-blue-800">
-                    <Key className="w-3 h-3 mr-1" />
-                    Portal Ativo
-                  </Badge>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge className="bg-blue-100 text-blue-800">
+                      <Key className="w-3 h-3 mr-1" />
+                      Portal Ativo
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                      onClick={() => {
+                        const linkPortal = `https://climapro.base44.app`;
+                        const msg = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro\n\nOlá ${cliente.nome}!\n\nVocê tem acesso ao nosso portal do cliente. Siga o passo a passo:\n\n📱 PASSO 1: ACESSE O LINK\n👉 ${linkPortal}\n\n✍️ PASSO 2: CRIAR SUA CONTA\nClique em "Sign up" na página inicial.\n\n📧 PASSO 3: USE SEU EMAIL\nEmail: ${cliente.email || '(sem email cadastrado)'}\n⚠️ Use EXATAMENTE este email!\n\n🔒 PASSO 4: CRIE UMA SENHA\nMínimo 8 caracteres. Guarde bem!\n\n✅ PASSO 5: CONFIRMAR\nClique em "Sign up" para criar sua conta e entrar no portal.\n\n📱 Dúvidas? WhatsApp: ${cliente.whatsapp || cliente.telefone}`;
+                        navigator.clipboard.writeText(msg).then(() => {
+                          alert('✅ Instruções copiadas! Cole no WhatsApp ou Email do cliente.');
+                        }).catch(() => {
+                          alert(`Copie as instruções abaixo:\n\n${msg}`);
+                        });
+                      }}
+                    >
+                      <Copy className="w-3 h-3 mr-1" />
+                      Copiar Link de Acesso
+                    </Button>
+                  </div>
                 </div>
               )}
 

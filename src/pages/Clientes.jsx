@@ -421,9 +421,9 @@ ${mensagemParaEnviar}`);
           setShowForm(true);
           setViewingCliente(null); // Close details when going to edit form
         }}
-        onDeletarCliente={(clienteId) => {
-          setViewingCliente(null); // Close details before deleting
-          handleDelete(clienteId);
+        onDeletarCliente={(cliente) => {
+          setViewingCliente(null);
+          handleDelete(cliente.id || cliente);
         }}
         onVisualizarEquipamento={handleVisualizarEquipamento}
       />
