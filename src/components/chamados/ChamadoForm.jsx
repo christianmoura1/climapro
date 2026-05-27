@@ -409,27 +409,65 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               {/* Equipamentos do cliente */}
               {equipamentosCliente.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-blue-700 mb-2">
-                    <Cpu className="w-3 h-3 inline mr-1" />
-                    Equipamentos ({equipamentosCliente.length}) — clique para ver histórico:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {equipamentosCliente.map((eq) => (
-                      <button
-                        key={eq.id}
-                        type="button"
-                        onClick={() => handleVerHistoricoEquipamento(eq)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border shadow-sm transition-colors ${
-                          historicoEquipamento?.equipamento?.id === eq.id
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
-                        }`}
-                      >
-                        ❄️ {eq.marca} {eq.modelo}
-                        {eq.localizacao && <span className="ml-1 opacity-70">({eq.localizacao})</span>}
-                      </button>
-                    ))}
-                  </div>
+                  {/* Filtro por estabelecimento */}
+                  {(() => {
+                    const nomesEstabelecimentos = [...new Set(equipamentosCliente.filter(e => e.estabelecimento_nome).map(e => e.estabelecimento_nome))];
+                    const temEstabelecimentos = nomesEstabelecimentos.length > 0;
+                    const equipamentosFiltrados = estabelecimentoAtivo
+                      ? equipamentosCliente.filter(e => e.estabelecimento_nome === estabelecimentoAtivo.nome)
+                      : equipamentosCliente;
+
+                    return (
+                      <>
+                        {temEstabelecimentos && (
+                          <div className="mb-3">
+                            <p className="text-xs font-semibold text-blue-700 mb-1">🏠 Filtrar por Estabelecimento:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {nomesEstabelecimentos.map((nome) => (
+                                <button
+                                  key={nome}
+                                  type="button"
+                                  onClick={() => {
+                                    const est = clienteSelecionado.estabelecimentos?.find(e => e.nome === nome);
+                                    if (est) handleSelecionarEstabelecimento(est);
+                                  }}
+                                  className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
+                                    estabelecimentoAtivo?.nome === nome
+                                      ? 'bg-blue-600 text-white border-blue-600'
+                                      : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  📍 {nome} ({equipamentosCliente.filter(e => e.estabelecimento_nome === nome).length})
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="text-xs font-semibold text-blue-700 mb-2">
+                          <Cpu className="w-3 h-3 inline mr-1" />
+                          Equipamentos ({equipamentosFiltrados.length}) — clique para ver histórico:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {equipamentosFiltrados.map((eq) => (
+                            <button
+                              key={eq.id}
+                              type="button"
+                              onClick={() => handleVerHistoricoEquipamento(eq)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border shadow-sm transition-colors ${
+                                historicoEquipamento?.equipamento?.id === eq.id
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
+                              }`}
+                            >
+                              ❄️ {eq.marca} {eq.modelo}
+                              {eq.localizacao && <span className="ml-1 opacity-70">({eq.localizacao})</span>}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {/* Histórico do equipamento selecionado */}
                   {historicoEquipamento && (
