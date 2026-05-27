@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -119,6 +118,13 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                 <div className="text-sm text-gray-600 mb-2 flex items-start gap-2">
                   <span className="font-medium">Cliente:</span>
                   <span>{cliente.nome}</span>
+                </div>
+              )}
+
+              {equipamento.estabelecimento_nome && (
+                <div className="flex items-center gap-2 text-sm text-indigo-600 mb-1">
+                  <MapPin className="w-4 h-4 text-indigo-400" />
+                  <span className="font-medium">📍 {equipamento.estabelecimento_nome}</span>
                 </div>
               )}
 

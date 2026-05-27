@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     modelo: "",
     capacidade: "",
     localizacao: "",
+    estabelecimento_nome: "",
     data_instalacao: "",
     numero_serie: "",
     foto_url: "",
@@ -23,6 +24,27 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Busca os estabelecimentos do cliente selecionado
+  const estabelecimentosDoCliente = useMemo(() => {
+    const cliente = clientes.find(c => c.id === formData.cliente_id);
+    return cliente?.estabelecimentos || [];
+  }, [formData.cliente_id, clientes]);
+
+  const handleClienteChange = (clienteId) => {
+    setFormData({ ...formData, cliente_id: clienteId, estabelecimento_nome: "" });
+  };
+
+  const handleEstabelecimentoChange = (nomeEst) => {
+    const cliente = clientes.find(c => c.id === formData.cliente_id);
+    const est = cliente?.estabelecimentos?.find(e => e.nome === nomeEst);
+    // Preenche automaticamente a localização com o endereço do estabelecimento
+    setFormData({
+      ...formData,
+      estabelecimento_nome: nomeEst,
+      localizacao: est ? (formData.localizacao || est.endereco || nomeEst) : formData.localizacao
+    });
+  };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -57,7 +79,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
               <Label>Cliente *</Label>
               <select
                 value={formData.cliente_id}
-                onChange={(e) => setFormData({...formData, cliente_id: e.target.value})}
+                onChange={(e) => handleClienteChange(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               >
@@ -80,6 +102,30 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
               />
             </div>
           </div>
+
+          {/* Estabelecimento do cliente */}
+          {estabelecimentosDoCliente.length > 0 && (
+            <div className="space-y-2">
+              <Label>Estabelecimento</Label>
+              <select
+                value={formData.estabelecimento_nome || ""}
+                onChange={(e) => handleEstabelecimentoChange(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Selecione o estabelecimento (opcional)</option>
+                {estabelecimentosDoCliente.map((est, idx) => (
+                  <option key={idx} value={est.nome}>
+                    {est.nome}{est.endereco ? ` — ${est.endereco}` : ''}
+                  </option>
+                ))}
+              </select>
+              {formData.estabelecimento_nome && (
+                <p className="text-xs text-gray-500">
+                  📍 Estabelecimento selecionado: <strong>{formData.estabelecimento_nome}</strong>
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid md:grid-cols-3 gap-4">
             <div className="space-y-2">

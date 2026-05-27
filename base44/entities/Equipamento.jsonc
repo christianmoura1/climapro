@@ -37,6 +37,10 @@
       "type": "string",
       "description": "Local onde o equipamento est\u00e1 instalado"
     },
+    "estabelecimento_nome": {
+      "type": "string",
+      "description": "Nome do estabelecimento do cliente onde o equipamento est\u00e1 instalado"
+    },
     "data_instalacao": {
       "type": "string",
       "format": "date"

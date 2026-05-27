@@ -1,8 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Phone, User, Navigation, Image as ImageIcon, CheckCircle, Download } from "lucide-react";
+import { ArrowLeft, MapPin, Phone, User, Navigation, Image as ImageIcon, CheckCircle, Download, Cpu, Clock, History } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+const STATUS_LABELS = {
+  pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
+  em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
+  aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
+  aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguard. Aprovação" },
+  finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
+  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+};
 
 // Função para formatar data no horário de Brasília
 const formatarDataBrasil = (dataISO) => {
@@ -30,6 +42,33 @@ const formatarDataBrasil = (dataISO) => {
 };
 
 export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onFinalizar }) {
+  const [equipamentosCliente, setEquipamentosCliente] = useState([]);
+  const [chamadosPorEquip, setChamadosPorEquip] = useState({});
+  const [equipExpandido, setEquipExpandido] = useState(null);
+  const [loadingEquip, setLoadingEquip] = useState(false);
+
+  useEffect(() => {
+    if (!cliente?.id) return;
+    setLoadingEquip(true);
+    base44.entities.Equipamento.filter({ cliente_id: cliente.id })
+      .then(async (equips) => {
+        setEquipamentosCliente(equips);
+      })
+      .finally(() => setLoadingEquip(false));
+  }, [cliente?.id]);
+
+  const handleVerHistoricoEquip = async (equipId) => {
+    if (equipExpandido === equipId) {
+      setEquipExpandido(null);
+      return;
+    }
+    setEquipExpandido(equipId);
+    if (!chamadosPorEquip[equipId]) {
+      const chs = await base44.entities.Chamado.filter({ equipamento_id: equipId }, '-created_date', 10);
+      setChamadosPorEquip(prev => ({ ...prev, [equipId]: chs }));
+    }
+  };
+
   const handleExportarJSON = () => {
     const dados = {
       chamado,
@@ -280,6 +319,80 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
           </CardContent>
         </Card>
       </div>
+
+      {/* Equipamentos do Cliente */}
+      <Card className="shadow-lg border-none">
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Cpu className="w-5 h-5" />
+            Equipamentos do Cliente {loadingEquip && <span className="text-xs text-gray-400">(carregando...)</span>}
+            {!loadingEquip && <span className="text-sm font-normal text-gray-500">({equipamentosCliente.length})</span>}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          {equipamentosCliente.length === 0 && !loadingEquip ? (
+            <p className="text-sm text-gray-500 text-center py-4">Nenhum equipamento cadastrado para este cliente.</p>
+          ) : (
+            <div className="space-y-2">
+              {equipamentosCliente.map((equip) => (
+                <div key={equip.id} className="border rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 text-left"
+                    onClick={() => handleVerHistoricoEquip(equip.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      {equip.foto_url ? (
+                        <img src={equip.foto_url} alt={equip.modelo} className="w-10 h-10 object-cover rounded border" />
+                      ) : (
+                        <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
+                          <Cpu className="w-5 h-5 text-blue-600" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium text-sm text-gray-900">{equip.marca} {equip.modelo}</p>
+                        <p className="text-xs text-gray-500">{equip.tipo?.replace('_',' ')} {equip.capacidade ? `· ${equip.capacidade}` : ''} {equip.estabelecimento_nome ? `· ${equip.estabelecimento_nome}` : equip.localizacao ? `· ${equip.localizacao}` : ''}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <History className="w-4 h-4 text-gray-400" />
+                      <span className="text-xs text-gray-500">{equipExpandido === equip.id ? '▲' : '▼'}</span>
+                    </div>
+                  </button>
+                  {equipExpandido === equip.id && (
+                    <div className="border-t bg-gray-50 p-3">
+                      {!chamadosPorEquip[equip.id] ? (
+                        <p className="text-xs text-gray-500">Carregando histórico...</p>
+                      ) : chamadosPorEquip[equip.id].length === 0 ? (
+                        <p className="text-xs text-gray-500">Nenhum chamado registrado para este equipamento.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-xs font-semibold text-gray-600 mb-1">Últimos {chamadosPorEquip[equip.id].length} chamado(s):</p>
+                          {chamadosPorEquip[equip.id].map((c) => {
+                            const cfg = STATUS_LABELS[c.status] || STATUS_LABELS.pendente;
+                            return (
+                              <div key={c.id} className="flex items-start justify-between gap-2 bg-white rounded p-2 border text-xs">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-gray-800 truncate">{c.numero_chamado} — {c.titulo}</p>
+                                  <div className="flex items-center gap-1 text-gray-400 mt-0.5">
+                                    <Clock className="w-3 h-3" />
+                                    {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
+                                  </div>
+                                </div>
+                                <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
