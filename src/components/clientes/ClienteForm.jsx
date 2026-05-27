@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Save, X, MapPin, Navigation, Plus, Trash2, Building2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Save, X, MapPin, Navigation, Plus, Building2, ClipboardList, Clock } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const ESTABELECIMENTOS_PADRAO = [
   { id: "casa", label: "🏠 Casa", tipo: "residencial" },
@@ -130,6 +134,94 @@ function EnderecoForm({ dados, onChange, label }) {
               src={`https://www.google.com/maps?q=${dados.latitude},${dados.longitude}&output=embed`}
               allowFullScreen
             />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const STATUS_CONFIG = {
+  pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
+  em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
+  aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguardando Peças" },
+  aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguardando Aprovação" },
+  finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
+  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+};
+
+function HistoricoChamadosEstabelecimento({ clienteId, estabelecimentos, abaAtiva }) {
+  const [chamados, setChamados] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!clienteId) return;
+    setLoading(true);
+    base44.entities.Chamado.filter({ cliente_id: clienteId }, '-created_date')
+      .then(setChamados)
+      .finally(() => setLoading(false));
+  }, [clienteId]);
+
+  const estAtual = estabelecimentos[abaAtiva];
+  const enderecoEst = estAtual?.endereco?.toLowerCase().trim();
+
+  // Filtra chamados cujo local contenha parte do endereço do estabelecimento ativo
+  const chamadosFiltrados = enderecoEst
+    ? chamados.filter(c => {
+        const local = (c.local || c.endereco || "").toLowerCase();
+        // Pega as primeiras palavras do endereço para comparação flexível
+        const palavras = enderecoEst.split(/[\s,]+/).filter(p => p.length > 3);
+        return palavras.some(p => local.includes(p));
+      })
+    : [];
+
+  const temEnderecoConfigurado = !!enderecoEst;
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      <div className="bg-gray-50 border-b px-4 py-3 flex items-center gap-2">
+        <ClipboardList className="w-4 h-4 text-gray-600" />
+        <span className="font-semibold text-sm text-gray-700">
+          Histórico de Chamados — {estAtual?.nome || "Estabelecimento"}
+        </span>
+        {!loading && (
+          <Badge variant="outline" className="ml-auto text-xs">
+            {chamadosFiltrados.length} chamado(s)
+          </Badge>
+        )}
+      </div>
+      <div className="p-4">
+        {loading ? (
+          <p className="text-sm text-gray-500 text-center py-3">Carregando...</p>
+        ) : !temEnderecoConfigurado ? (
+          <p className="text-sm text-gray-500 text-center py-3">
+            Configure o endereço deste estabelecimento para ver os chamados relacionados.
+          </p>
+        ) : chamadosFiltrados.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-3">
+            Nenhum chamado encontrado para <strong>{estAtual?.nome}</strong>.
+          </p>
+        ) : (
+          <div className="divide-y">
+            {chamadosFiltrados.map((chamado) => {
+              const cfg = STATUS_CONFIG[chamado.status] || STATUS_CONFIG.pendente;
+              return (
+                <div key={chamado.id} className="py-3 flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {chamado.numero_chamado} — {chamado.titulo}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                      <Clock className="w-3 h-3" />
+                      {chamado.created_date
+                        ? format(new Date(chamado.created_date), "dd/MM/yyyy", { locale: ptBR })
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -332,21 +424,14 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tipo_estabelecimento">Tipo de Estabelecimento</Label>
-            <select
-              id="tipo_estabelecimento"
-              value={formData.tipo_estabelecimento}
-              onChange={(e) => setFormData({...formData, tipo_estabelecimento: e.target.value})}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="residencial">Residencial</option>
-              <option value="comercial">Comercial</option>
-              <option value="industrial">Industrial</option>
-              <option value="hospitalar">Hospitalar</option>
-              <option value="outro">Outro</option>
-            </select>
-          </div>
+          {/* Histórico de Chamados por Estabelecimento */}
+          {cliente && estabelecimentos.length > 0 && (
+            <HistoricoChamadosEstabelecimento
+              clienteId={cliente.id}
+              estabelecimentos={estabelecimentos}
+              abaAtiva={abaAtiva}
+            />
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="observacoes">Observações</Label>
