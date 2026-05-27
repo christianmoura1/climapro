@@ -347,6 +347,8 @@ ${mensagemParaEnviar}`);
   };
 
   const filteredClientes = clientes.filter(cliente => {
+    // Remove registros com IDs da importação problemática (prefixo 6a11c234)
+    if (cliente.id?.startsWith('6a11c234')) return false;
     // Sempre filtra por empresa_id (para todos os usuários não-admin-global)
     if (user.email !== "christianmoura2014@gmail.com") {
       if (!empresaId || cliente.empresa_id !== empresaId) return false;
