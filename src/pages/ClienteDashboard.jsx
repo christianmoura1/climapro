@@ -12,8 +12,11 @@ import {
   CheckCircle,
   AlertCircle,
   Snowflake,
-  Lock, // Added Lock icon
-  Cpu // Added Cpu icon for equipment
+  Lock,
+  Cpu,
+  MapPin,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link import
 import { format } from "date-fns";
@@ -34,7 +37,8 @@ export default function ClienteDashboard() {
   const [visualizacao, setVisualizacao] = useState('kanban'); // Added state for view type
   const [visualizandoManutencao, setVisualizandoManutencao] = useState(null);
   const [visualizandoChamado, setVisualizandoChamado] = useState(null); // New state
-  const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null); // New state
+  const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
+  const [estabelecimentoAberto, setEstabelecimentoAberto] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -501,109 +505,180 @@ ${mensagem}
           </CardContent>
         </Card>
 
-        {/* Manutenções Concluídas (PMOCs) */}
-        {manutencoesConcluidas.length > 0 && (
-          <Card className="shadow-lg border-none mb-8">
-            <CardHeader className="border-b bg-gradient-to-r from-green-50 to-blue-50">
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-                Manutenções Concluídas ({manutencoesConcluidas.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y">
-                {manutencoesConcluidas.map((manutencao) => {
-                  const pmoc = meusPMOCs.find(p => p.id === manutencao.pmoc_id);
-                  const tecnico = tecnicos.find(t => t.id === manutencao.tecnico_id);
-                  
-                  return (
-                    <div key={manutencao.id} className="p-4 hover:bg-gray-50 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">
-                              PMOC {pmoc?.periodicidade || 'N/A'}
-                            </h3>
-                            <Badge className="bg-green-100 text-green-800">
-                              ✅ Concluído
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>🔧 Técnico: {tecnico?.nome || 'Não identificado'}</p>
-                            <p>📅 Executado em: {manutencao.data_execucao ? format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}</p>
-                            <p>🏢 Equipamentos: {manutencao.equipamentos_ids?.length || 0}</p>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handleVisualizarManutencao(manutencao)}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          👁️ Ver Relatório
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Meus Estabelecimentos */}
+        {(() => {
+          const estabelecimentos = cliente.estabelecimentos || [];
+          // Equipamentos sem estabelecimento vinculado
+          const equipSemEstabelecimento = equipamentos.filter(e => !e.estabelecimento_nome);
+          // Todos os estabelecimentos para mostrar (incluindo os que têm equipamentos mesmo sem estar cadastrados)
+          const nomesEstabelecimentosEquip = [...new Set(equipamentos.filter(e => e.estabelecimento_nome).map(e => e.estabelecimento_nome))];
+          const todoEstabelecimentos = [
+            ...estabelecimentos,
+            ...nomesEstabelecimentosEquip.filter(nome => !estabelecimentos.find(e => e.nome === nome)).map(nome => ({ nome, endereco: '' }))
+          ];
 
-        {/* Meus Equipamentos */}
-        <Card className="shadow-lg border-none mb-8">
-          <CardHeader className="border-b">
-            <CardTitle>Meus Equipamentos ({equipamentos.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            {equipamentos.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                Nenhum equipamento cadastrado ainda
-              </div>
-            ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {equipamentos.map((equipamento) => (
-                  <Card 
-                    key={equipamento.id} 
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => handleVisualizarEquipamento(equipamento)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        {equipamento.foto_url ? (
-                          <img
-                            src={equipamento.foto_url}
-                            alt={equipamento.modelo}
-                            className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Cpu className="w-8 h-8 text-blue-600" />
+          if (todoEstabelecimentos.length === 0 && equipamentos.length === 0) return null;
+
+          return (
+            <Card className="shadow-lg border-none mb-8">
+              <CardHeader className="border-b">
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  Meus Estabelecimentos ({todoEstabelecimentos.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {todoEstabelecimentos.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">Nenhum estabelecimento cadastrado</div>
+                ) : (
+                  <div className="divide-y">
+                    {todoEstabelecimentos.map((est, idx) => {
+                      const equipsEst = equipamentos.filter(e => e.estabelecimento_nome === est.nome);
+                      const chamadosEst = meusChamados.filter(c =>
+                        equipsEst.some(e => e.id === c.equipamento_id) || c.local === est.endereco
+                      );
+                      const isOpen = estabelecimentoAberto === est.nome;
+
+                      return (
+                        <div key={idx}>
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                            onClick={() => setEstabelecimentoAberto(isOpen ? null : est.nome)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <MapPin className="w-5 h-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-gray-900">{est.nome}</p>
+                                {est.endereco && <p className="text-sm text-gray-500">{est.endereco}</p>}
+                                <p className="text-xs text-gray-400">{equipsEst.length} equipamento(s) · {chamadosEst.length} chamado(s)</p>
+                              </div>
+                            </div>
+                            {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                          </button>
+
+                          {isOpen && (
+                            <div className="bg-gray-50 px-4 pb-4">
+                              {/* Equipamentos do estabelecimento */}
+                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-2">Equipamentos</p>
+                              {equipsEst.length === 0 ? (
+                                <p className="text-sm text-gray-400 italic mb-3">Nenhum equipamento vinculado a este estabelecimento.</p>
+                              ) : (
+                                <div className="grid sm:grid-cols-2 gap-3 mb-4">
+                                  {equipsEst.map((equip) => (
+                                    <div
+                                      key={equip.id}
+                                      className="bg-white rounded-lg border p-3 flex items-center gap-3 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all"
+                                      onClick={() => handleVisualizarEquipamento(equip)}
+                                    >
+                                      {equip.foto_url ? (
+                                        <img src={equip.foto_url} alt={equip.modelo} className="w-12 h-12 object-cover rounded border" />
+                                      ) : (
+                                        <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center shrink-0">
+                                          <Cpu className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm text-gray-900 truncate">{equip.marca} {equip.modelo}</p>
+                                        <div className="flex gap-1 mt-1 flex-wrap">
+                                          <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
+                                          {equip.capacidade && <Badge variant="outline" className="text-xs">{equip.capacidade}</Badge>}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Chamados do estabelecimento */}
+                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Histórico de Chamados</p>
+                              {chamadosEst.length === 0 ? (
+                                <p className="text-sm text-gray-400 italic">Nenhum chamado registrado para este estabelecimento.</p>
+                              ) : (
+                                <div className="space-y-2">
+                                  {chamadosEst.slice(0, 5).map((c) => {
+                                    const statusCfg = {
+                                      pendente: "bg-orange-100 text-orange-800",
+                                      em_andamento: "bg-blue-100 text-blue-800",
+                                      finalizado: "bg-green-100 text-green-800",
+                                      cancelado: "bg-gray-100 text-gray-800"
+                                    };
+                                    return (
+                                      <div key={c.id} className="bg-white rounded border p-3 flex items-start justify-between gap-2 text-sm">
+                                        <div>
+                                          <p className="font-medium text-gray-800">{c.numero_chamado} — {c.titulo}</p>
+                                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                            <Clock className="w-3 h-3" />
+                                            {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
+                                          </p>
+                                        </div>
+                                        <Badge className={statusCfg[c.status] || "bg-gray-100 text-gray-800"}>
+                                          {c.status?.replace('_', ' ')}
+                                        </Badge>
+                                      </div>
+                                    );
+                                  })}
+                                  {chamadosEst.length > 5 && (
+                                    <p className="text-xs text-gray-400 text-center">+{chamadosEst.length - 5} chamado(s) mais antigos</p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Equipamentos sem estabelecimento */}
+                    {equipSemEstabelecimento.length > 0 && (
+                      <div>
+                        <button
+                          type="button"
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                          onClick={() => setEstabelecimentoAberto(estabelecimentoAberto === '__sem_local__' ? null : '__sem_local__')}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Cpu className="w-5 h-5 text-gray-500" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-700">Sem local definido</p>
+                              <p className="text-xs text-gray-400">{equipSemEstabelecimento.length} equipamento(s)</p>
+                            </div>
+                          </div>
+                          {estabelecimentoAberto === '__sem_local__' ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                        </button>
+                        {estabelecimentoAberto === '__sem_local__' && (
+                          <div className="bg-gray-50 px-4 pb-4 grid sm:grid-cols-2 gap-3 pt-2">
+                            {equipSemEstabelecimento.map((equip) => (
+                              <div
+                                key={equip.id}
+                                className="bg-white rounded-lg border p-3 flex items-center gap-3 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all"
+                                onClick={() => handleVisualizarEquipamento(equip)}
+                              >
+                                <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center shrink-0">
+                                  <Cpu className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm text-gray-900 truncate">{equip.marca} {equip.modelo}</p>
+                                  <div className="flex gap-1 mt-1">
+                                    <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         )}
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                            {equipamento.marca} {equipamento.modelo}
-                          </h4>
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            <Badge variant="outline" className="text-xs">
-                              {equipamento.tipo.replace('_', ' ')}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {equipamento.capacidade}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-gray-600">
-                            📍 {equipamento.localizacao}
-                          </p>
-                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Meus PMOCs */}
         <Card className="shadow-lg border-none">
