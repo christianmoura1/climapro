@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ export default function ChamadosPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
+  const editOpenedRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -372,6 +373,21 @@ ClimaPro - Sistema de Gestão`
       console.error("[Chamados] Erro ao submeter chamado:", error);
     }
   };
+
+  // Abrir edição automática via query param ?edit_chamado_id=
+  useEffect(() => {
+    if (!chamados.length || editOpenedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit_chamado_id');
+    if (editId) {
+      const chamado = chamados.find(c => c.id === editId);
+      if (chamado) {
+        editOpenedRef.current = true;
+        setEditingChamado(chamado);
+        setShowForm(true);
+      }
+    }
+  }, [chamados]);
 
   // Filtrar chamados por pesquisa e status
   const chamadosFiltrados = chamados.filter(chamado => {
