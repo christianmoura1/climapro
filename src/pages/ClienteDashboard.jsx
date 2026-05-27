@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import ChamadoClienteForm from "../components/cliente/ChamadoClienteForm";
+import { criarChamadoCliente } from "@/functions/criarChamadoCliente";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // Added import
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
@@ -65,10 +66,19 @@ export default function ClienteDashboard() {
         }
         setCliente(meuCliente);
 
-        // Registrar último acesso
-        await base44.auth.updateMe({
-          ultimo_acesso: new Date().toISOString()
-        });
+        // Garantir que cliente_id está salvo no perfil do usuário (necessário para RLS)
+        if (meuCliente && !currentUser.data?.cliente_id) {
+          await base44.auth.updateMe({
+            cliente_id: meuCliente.id,
+            tipo_usuario: 'cliente',
+            empresa_id: meuCliente.empresa_id,
+            ultimo_acesso: new Date().toISOString()
+          });
+        } else {
+          await base44.auth.updateMe({
+            ultimo_acesso: new Date().toISOString()
+          });
+        }
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         navigate("/");
@@ -142,19 +152,18 @@ export default function ClienteDashboard() {
 
   const criarChamadoMutation = useMutation({
     mutationFn: async (data) => {
-      // 1. Criar chamado
-      const chamado = await base44.entities.Chamado.create({
+      // 1. Criar chamado via backend function (contorna RLS)
+      const empresaIdFinal = empresaId || cliente.empresa_id;
+      const response = await criarChamadoCliente({
         ...data,
-        empresa_id: empresaId,
+        empresa_id: empresaIdFinal,
         cliente_id: cliente.id,
-        numero_chamado: `CH${Date.now()}`,
-        data_abertura: new Date().toISOString(),
-        status: 'pendente'
       });
+      const chamado = response.data.chamado;
 
       // 2. Buscar dados da empresa
       const empresas = await base44.entities.Empresa.list();
-      const minhaEmpresa = empresas.find(e => e.id === user.empresa_id);
+      const minhaEmpresa = empresas.find(e => e.id === empresaIdFinal);
       
       return { chamado, empresa: minhaEmpresa };
     },
