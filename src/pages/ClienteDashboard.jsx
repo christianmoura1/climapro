@@ -24,8 +24,7 @@ import { ptBR } from "date-fns/locale";
 
 import ChamadoClienteForm from "../components/cliente/ChamadoClienteForm";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // Added import
-import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
-import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente"; // New import
+import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
 
 export default function ClienteDashboard() {
@@ -35,8 +34,7 @@ export default function ClienteDashboard() {
   const [showChamadoForm, setShowChamadoForm] = useState(false);
   const queryClient = useQueryClient();
   const [visualizacao, setVisualizacao] = useState('kanban'); // Added state for view type
-  const [visualizandoManutencao, setVisualizandoManutencao] = useState(null);
-  const [visualizandoChamado, setVisualizandoChamado] = useState(null); // New state
+  const [visualizandoChamado, setVisualizandoChamado] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [estabelecimentoAberto, setEstabelecimentoAberto] = useState(null);
 
@@ -97,18 +95,7 @@ export default function ClienteDashboard() {
     enabled: !!cliente
   });
 
-  // Buscar manutenções concluídas do cliente
-  const { data: manutencoesConcluidas = [] } = useQuery({
-    queryKey: ['manutencoes-concluidas-cliente', cliente?.id],
-    queryFn: async () => {
-      if (!cliente) return [];
-      return base44.entities.ManutencaoPMOC.filter({
-        cliente_id: cliente.id,
-        status: 'concluida'
-      }, '-data_execucao');
-    },
-    enabled: !!cliente
-  });
+  // manutencoesConcluidas removido — não exibido mais no portal do cliente
 
   // Buscar tecnicos
   const { data: tecnicos = [] } = useQuery({
@@ -242,21 +229,6 @@ ${mensagem}
     criarChamadoMutation.mutate(data);
   };
 
-  const handleVisualizarManutencao = (manutencao) => {
-    const pmoc = meusPMOCs.find(p => p.id === manutencao.pmoc_id);
-    const tecnico = tecnicos.find(t => t.id === manutencao.tecnico_id);
-    const equipamentosManutencao = equipamentos.filter(e => 
-      manutencao.equipamentos_ids?.includes(e.id)
-    );
-
-    setVisualizandoManutencao({
-      manutencao,
-      pmoc,
-      tecnico,
-      equipamentos: equipamentosManutencao
-    });
-  };
-
   // New handler for visualizing service order
   const handleVisualizarChamado = (chamado) => {
     const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
@@ -290,19 +262,7 @@ ${mensagem}
     );
   }
 
-  if (visualizandoManutencao) {
-    return (
-      <VisualizarPMOCCliente
-        manutencao={visualizandoManutencao.manutencao}
-        pmoc={visualizandoManutencao.pmoc}
-        tecnico={visualizandoManutencao.tecnico}
-        equipamentos={visualizandoManutencao.equipamentos}
-        onClose={() => setVisualizandoManutencao(null)}
-      />
-    );
-  }
-
-  // New: Conditional rendering for equipment history
+  // Conditional rendering for equipment history
   if (visualizandoEquipamento) {
     return (
       <HistoricoEquipamentoCliente
