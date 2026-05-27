@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,11 +24,24 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [estabelecimentosDoCliente, setEstabelecimentosDoCliente] = useState([]);
 
-  // Busca os estabelecimentos do cliente selecionado
-  const estabelecimentosDoCliente = useMemo(() => {
-    const cliente = clientes.find(c => c.id === formData.cliente_id);
-    return cliente?.estabelecimentos || [];
+  // Busca os estabelecimentos do cliente selecionado — tenta via lista local, senão busca via SDK
+  useEffect(() => {
+    if (!formData.cliente_id) {
+      setEstabelecimentosDoCliente([]);
+      return;
+    }
+    const clienteLocal = clientes.find(c => c.id === formData.cliente_id);
+    if (clienteLocal?.estabelecimentos?.length > 0) {
+      setEstabelecimentosDoCliente(clienteLocal.estabelecimentos);
+    } else {
+      // Busca direto no banco para garantir dados completos (útil na edição)
+      base44.entities.Cliente.filter({ id: formData.cliente_id }).then((result) => {
+        const c = result[0];
+        setEstabelecimentosDoCliente(c?.estabelecimentos || []);
+      }).catch(() => setEstabelecimentosDoCliente([]));
+    }
   }, [formData.cliente_id, clientes]);
 
   const handleClienteChange = (clienteId) => {
@@ -36,13 +49,11 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
   };
 
   const handleEstabelecimentoChange = (nomeEst) => {
-    const cliente = clientes.find(c => c.id === formData.cliente_id);
-    const est = cliente?.estabelecimentos?.find(e => e.nome === nomeEst);
-    // Preenche automaticamente a localização com o endereço do estabelecimento
+    const est = estabelecimentosDoCliente.find(e => e.nome === nomeEst);
     setFormData({
       ...formData,
       estabelecimento_nome: nomeEst,
-      localizacao: est ? (formData.localizacao || est.endereco || nomeEst) : formData.localizacao
+      localizacao: est?.endereco ? est.endereco : formData.localizacao
     });
   };
 
@@ -104,24 +115,28 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           </div>
 
           {/* Estabelecimento do cliente */}
-          {estabelecimentosDoCliente.length > 0 && (
+          {formData.cliente_id && (
             <div className="space-y-2">
               <Label>Estabelecimento</Label>
-              <select
-                value={formData.estabelecimento_nome || ""}
-                onChange={(e) => handleEstabelecimentoChange(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="">Selecione o estabelecimento (opcional)</option>
-                {estabelecimentosDoCliente.map((est, idx) => (
-                  <option key={idx} value={est.nome}>
-                    {est.nome}{est.endereco ? ` — ${est.endereco}` : ''}
-                  </option>
-                ))}
-              </select>
+              {estabelecimentosDoCliente.length > 0 ? (
+                <select
+                  value={formData.estabelecimento_nome || ""}
+                  onChange={(e) => handleEstabelecimentoChange(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">— Selecione o estabelecimento (opcional) —</option>
+                  {estabelecimentosDoCliente.map((est, idx) => (
+                    <option key={idx} value={est.nome}>
+                      {est.nome}{est.endereco ? ` — ${est.endereco}` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-gray-400 italic">Este cliente não possui estabelecimentos cadastrados. Cadastre na aba Clientes.</p>
+              )}
               {formData.estabelecimento_nome && (
-                <p className="text-xs text-gray-500">
-                  📍 Estabelecimento selecionado: <strong>{formData.estabelecimento_nome}</strong>
+                <p className="text-xs text-indigo-600 font-medium">
+                  📍 Vinculado a: <strong>{formData.estabelecimento_nome}</strong>
                 </p>
               )}
             </div>
