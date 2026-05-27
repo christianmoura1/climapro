@@ -347,11 +347,12 @@ ${mensagemParaEnviar}`);
   };
 
   const filteredClientes = clientes.filter(cliente => {
-    // Filtra por empresa_id se não for admin global
-    if (user.email !== "christianmoura2014@gmail.com" && cliente.empresa_id !== empresaId) {
-      return false;
+    // Sempre filtra por empresa_id (para todos os usuários não-admin-global)
+    if (user.email !== "christianmoura2014@gmail.com") {
+      if (!empresaId || cliente.empresa_id !== empresaId) return false;
     }
     // Filtra por nome ou telefone
+    if (!searchTerm) return true;
     return cliente.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cliente.telefone?.includes(searchTerm);
   });
