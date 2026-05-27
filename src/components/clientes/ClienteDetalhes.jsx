@@ -2,22 +2,36 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy, ClipboardList, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import HistoricoChamadosCliente from "./HistoricoChamadosCliente";
+
+const STATUS_CONFIG = {
+  pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
+  em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
+  aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
+  aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguard. Aprovação" },
+  finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
+  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+};
 
 // tipoConfig object removed as it is no longer used for rendering equipment badges
 
 export default function ClienteDetalhes({
   cliente,
   equipamentos,
-  onVoltar, // Changed from onClose
-  onEditarCliente, // Changed from onEdit
-  onDeletarCliente, // Changed from onDelete
-  onVisualizarEquipamento // New prop for equipment interaction
+  onVoltar,
+  onEditarCliente,
+  onDeletarCliente,
+  onVisualizarEquipamento
 }) {
   const [user, setUser] = useState(null);
+  const [estAtivaIdx, setEstAtivaIdx] = useState(null); // null = visão geral
+  const [chamadosCliente, setChamadosCliente] = useState([]);
+  const [loadingChamados, setLoadingChamados] = useState(true);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -26,6 +40,38 @@ export default function ClienteDetalhes({
     };
     loadUser();
   }, []);
+
+  useEffect(() => {
+    if (!cliente?.id) return;
+    setLoadingChamados(true);
+    base44.entities.Chamado.filter({ cliente_id: cliente.id }, '-created_date', 200)
+      .then(setChamadosCliente)
+      .finally(() => setLoadingChamados(false));
+  }, [cliente?.id]);
+
+  const estabelecimentos = cliente.estabelecimentos || [];
+  const estAtiva = estAtivaIdx !== null ? estabelecimentos[estAtivaIdx] : null;
+
+  // Equipamentos filtrados pelo estabelecimento ativo (por localizacao)
+  const equipamentosVisiveis = estAtiva
+    ? equipamentos.filter(eq => {
+        const loc = (eq.localizacao || "").toLowerCase();
+        const nome = estAtiva.nome.toLowerCase();
+        const end = (estAtiva.endereco || "").toLowerCase();
+        return loc.includes(nome) || (end && end.split(/[\s,]+/).filter(p => p.length > 3).some(p => loc.includes(p)));
+      })
+    : equipamentos;
+
+  // Chamados filtrados pelo estabelecimento ativo (por local)
+  const chamadosVisiveis = estAtiva
+    ? chamadosCliente.filter(c => {
+        const local = (c.local || "").toLowerCase();
+        const end = (estAtiva.endereco || "").toLowerCase();
+        const nome = estAtiva.nome.toLowerCase();
+        const palavras = end.split(/[\s,]+/).filter(p => p.length > 3);
+        return local.includes(nome) || palavras.some(p => local.includes(p));
+      })
+    : chamadosCliente;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-6">
@@ -59,10 +105,9 @@ export default function ClienteDetalhes({
           </div>
         </div>
 
-        {/* New wrapper for stacking major sections: Client Info, Equipments, History */}
         <div className="space-y-6">
 
-          {/* Informações do Cliente - Kept as is, now a direct child of space-y-6 */}
+          {/* Info do cliente */}
           <Card className="shadow-lg border-none">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -70,184 +115,188 @@ export default function ClienteDetalhes({
                 Informações do Cliente
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Nome/Razão Social</p>
-                <p className="font-semibold text-gray-900">{cliente.nome}</p>
+            <CardContent className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-3 text-sm">
+                {cliente.telefone && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span>{cliente.telefone}</span></div>}
+                {cliente.whatsapp && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span>{cliente.whatsapp}</span></div>}
+                {cliente.email && <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /><span>{cliente.email}</span></div>}
+                {cliente.endereco && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{cliente.endereco}</span></div>}
               </div>
-
-              {cliente.telefone && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Telefone</p>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <p className="text-gray-900">{cliente.telefone}</p>
-                  </div>
-                </div>
-              )}
-
-              {cliente.whatsapp && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">WhatsApp</p>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <p className="text-gray-900">{cliente.whatsapp}</p>
-                  </div>
-                </div>
-              )}
-
-              {cliente.email && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Email</p>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <p className="text-gray-900">{cliente.email}</p>
-                  </div>
-                </div>
-              )}
-
-              {cliente.endereco && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Endereço</p>
-                  <div className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                    <p className="text-gray-900">{cliente.endereco}</p>
-                  </div>
-                </div>
-              )}
-
-              {cliente.tipo_estabelecimento && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Tipo de Estabelecimento</p>
-                  <Badge className="bg-green-100 text-green-800 capitalize">
-                    {cliente.tipo_estabelecimento}
-                  </Badge>
-                </div>
-              )}
-
               {cliente.tem_acesso_portal && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Acesso ao Portal</p>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <Badge className="bg-blue-100 text-blue-800">
-                      <Key className="w-3 h-3 mr-1" />
-                      Portal Ativo
-                    </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                      onClick={() => {
-                        const linkPortal = `https://climapro.base44.app`;
-                        const msg = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro\n\nOlá ${cliente.nome}!\n\nVocê tem acesso ao nosso portal do cliente. Siga o passo a passo:\n\n📱 PASSO 1: ACESSE O LINK\n👉 ${linkPortal}\n\n✍️ PASSO 2: CRIAR SUA CONTA\nClique em "Sign up" na página inicial.\n\n📧 PASSO 3: USE SEU EMAIL\nEmail: ${cliente.email || '(sem email cadastrado)'}\n⚠️ Use EXATAMENTE este email!\n\n🔒 PASSO 4: CRIE UMA SENHA\nMínimo 8 caracteres. Guarde bem!\n\n✅ PASSO 5: CONFIRMAR\nClique em "Sign up" para criar sua conta e entrar no portal.\n\n📱 Dúvidas? WhatsApp: ${cliente.whatsapp || cliente.telefone}`;
-                        navigator.clipboard.writeText(msg).then(() => {
-                          alert('✅ Instruções copiadas! Cole no WhatsApp ou Email do cliente.');
-                        }).catch(() => {
-                          alert(`Copie as instruções abaixo:\n\n${msg}`);
-                        });
-                      }}
-                    >
-                      <Copy className="w-3 h-3 mr-1" />
-                      Copiar Link de Acesso
-                    </Button>
-                  </div>
+                <div className="flex items-center gap-3 pt-2">
+                  <Badge className="bg-blue-100 text-blue-800"><Key className="w-3 h-3 mr-1" />Portal Ativo</Badge>
+                  <Button size="sm" variant="outline" className="text-blue-600 border-blue-300" onClick={() => {
+                    const msg = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro\n\nOlá ${cliente.nome}!\n\nAcesse: https://climapro.base44.app\n\nEmail: ${cliente.email}\nCrie sua senha no primeiro acesso.\n\nDúvidas? ${cliente.whatsapp || cliente.telefone}`;
+                    navigator.clipboard.writeText(msg).then(() => alert('✅ Instruções copiadas!')).catch(() => alert(msg));
+                  }}>
+                    <Copy className="w-3 h-3 mr-1" />Copiar Link de Acesso
+                  </Button>
                 </div>
               )}
-
-              {cliente.observacoes && (
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Observações</p>
-                  <p className="text-gray-900 text-sm bg-gray-50 p-3 rounded-lg">
-                    {cliente.observacoes}
-                  </p>
-                </div>
-              )}
+              {cliente.observacoes && <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{cliente.observacoes}</p>}
             </CardContent>
           </Card>
 
-          {/* Equipamentos - Reworked section */}
-          <Card className="shadow-lg border-none">
-            <CardHeader className="border-b">
-              <CardTitle className="flex items-center gap-2">
-                <Cpu className="w-5 h-5" />
-                Equipamentos ({equipamentos.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {equipamentos.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Cpu className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p>Nenhum equipamento cadastrado</p>
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {equipamentos.map((equipamento) => (
-                    <Card
-                      key={equipamento.id}
-                      className="hover:shadow-lg transition-shadow cursor-pointer"
-                      onClick={() => onVisualizarEquipamento && onVisualizarEquipamento(equipamento)}
+          {/* Abas de Estabelecimentos */}
+          {estabelecimentos.length > 0 && (
+            <Card className="shadow-lg border-none">
+              <CardHeader className="border-b pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <MapPin className="w-5 h-5" />
+                  Estabelecimentos
+                </CardTitle>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setEstAtivaIdx(null)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === null ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                  >
+                    🏢 Todos ({equipamentos.length} equip.)
+                  </button>
+                  {estabelecimentos.map((est, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setEstAtivaIdx(idx)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === idx ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {equipamento.foto_url ? (
-                            <img
-                              src={equipamento.foto_url}
-                              alt={equipamento.modelo}
-                              className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200"
-                            />
-                          ) : (
-                            <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Cpu className="w-8 h-8 text-blue-600" />
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
-                              {equipamento.marca} {equipamento.modelo}
-                            </h4>
-                            <div className="flex flex-wrap gap-1 mb-2">
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {equipamento.tipo.replace('_', ' ')}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                {equipamento.capacidade}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-gray-600">
-                              📍 {equipamento.localizacao}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full"
-                            onClick={(e) => {
-                              e.stopPropagation(); // Prevent card's onClick from firing
-                              onVisualizarEquipamento && onVisualizarEquipamento(equipamento);
-                            }}
-                          >
-                            <Eye className="w-3 h-3 mr-2" />
-                            Ver Histórico
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                      {est.nome === 'Casa' || est.nome === 'casa' ? '🏠' :
+                       est.nome === 'Loja' || est.nome === 'loja' ? '🏪' :
+                       est.nome === 'Escritório' || est.nome === 'escritório' || est.nome === 'Escritorio' ? '🏢' :
+                       est.nome === 'Trabalho' || est.nome === 'trabalho' ? '💼' :
+                       est.nome === 'Empresa' || est.nome === 'empresa' ? '🏭' : '📍'} {est.nome}
+                    </button>
                   ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="p-4">
+                {estAtiva && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
+                    <p><strong>Endereço:</strong> {estAtiva.endereco || 'Não cadastrado'}</p>
+                    {estAtiva.latitude && estAtiva.longitude && (
+                      <Button size="sm" variant="outline" className="mt-2" onClick={() => window.open(`https://www.google.com/maps?q=${estAtiva.latitude},${estAtiva.longitude}`, '_blank')}>
+                        <MapPin className="w-3 h-3 mr-1" /> Ver no Mapa
+                      </Button>
+                    )}
+                  </div>
+                )}
 
-          {/* Histórico de Chamados - Kept as is, now a direct child of space-y-6 */}
-          {user && (
-            <HistoricoChamadosCliente
-              clienteId={cliente.id}
-              cliente={cliente}
-              user={user}
-            />
+                {/* Equipamentos do estabelecimento */}
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
+                    Equipamentos ({equipamentosVisiveis.length})
+                  </h4>
+                  {equipamentosVisiveis.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">Nenhum equipamento neste estabelecimento.</p>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {equipamentosVisiveis.map((equipamento) => (
+                        <Card key={equipamento.id} className="hover:shadow-md transition-shadow cursor-pointer border" onClick={() => onVisualizarEquipamento && onVisualizarEquipamento(equipamento)}>
+                          <CardContent className="p-3">
+                            <div className="flex items-start gap-3">
+                              {equipamento.foto_url ? (
+                                <img src={equipamento.foto_url} alt={equipamento.modelo} className="w-12 h-12 object-cover rounded-lg border" />
+                              ) : (
+                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <Cpu className="w-6 h-6 text-blue-600" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-semibold text-gray-900 text-sm truncate">{equipamento.marca} {equipamento.modelo}</h4>
+                                <p className="text-xs text-gray-500">{equipamento.tipo?.replace('_', ' ')}</p>
+                                {equipamento.capacidade && <p className="text-xs text-gray-500">{equipamento.capacidade}</p>}
+                              </div>
+                            </div>
+                            <Button size="sm" variant="outline" className="w-full mt-2" onClick={(e) => { e.stopPropagation(); onVisualizarEquipamento && onVisualizarEquipamento(equipamento); }}>
+                              <Eye className="w-3 h-3 mr-1" /> Ver Histórico
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Histórico de chamados do estabelecimento */}
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" />
+                    Histórico de Chamados ({chamadosVisiveis.length})
+                  </h4>
+                  {loadingChamados ? (
+                    <p className="text-sm text-gray-500 text-center py-3">Carregando...</p>
+                  ) : chamadosVisiveis.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">
+                      {estAtiva ? `Nenhum chamado encontrado para ${estAtiva.nome}.` : 'Nenhum chamado registrado.'}
+                    </p>
+                  ) : (
+                    <div className="divide-y border rounded-lg overflow-hidden">
+                      {chamadosVisiveis.map((chamado) => {
+                        const cfg = STATUS_CONFIG[chamado.status] || STATUS_CONFIG.pendente;
+                        return (
+                          <div key={chamado.id} className="py-3 px-4 flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">{chamado.numero_chamado} — {chamado.titulo}</p>
+                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                <Clock className="w-3 h-3" />
+                                {chamado.created_date ? format(new Date(chamado.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
+                                {chamado.local && <span className="truncate">· {chamado.local}</span>}
+                              </div>
+                            </div>
+                            <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </div> {/* End of space-y-6 div */}
+
+          {/* Equipamentos (quando não tem estabelecimentos) */}
+          {estabelecimentos.length === 0 && (
+            <Card className="shadow-lg border-none">
+              <CardHeader className="border-b">
+                <CardTitle className="flex items-center gap-2"><Cpu className="w-5 h-5" />Equipamentos ({equipamentos.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {equipamentos.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500"><Cpu className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p>Nenhum equipamento cadastrado</p></div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {equipamentos.map((equipamento) => (
+                      <Card key={equipamento.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onVisualizarEquipamento && onVisualizarEquipamento(equipamento)}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            {equipamento.foto_url ? <img src={equipamento.foto_url} alt={equipamento.modelo} className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200" /> : <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center"><Cpu className="w-8 h-8 text-blue-600" /></div>}
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-sm mb-1">{equipamento.marca} {equipamento.modelo}</h4>
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                <Badge variant="outline" className="text-xs capitalize">{equipamento.tipo?.replace('_', ' ')}</Badge>
+                                {equipamento.capacidade && <Badge variant="outline" className="text-xs">{equipamento.capacidade}</Badge>}
+                              </div>
+                              <p className="text-xs text-gray-600">📍 {equipamento.localizacao}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3 pt-3 border-t">
+                            <Button size="sm" variant="outline" className="w-full" onClick={(e) => { e.stopPropagation(); onVisualizarEquipamento && onVisualizarEquipamento(equipamento); }}><Eye className="w-3 h-3 mr-2" />Ver Histórico</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Histórico completo (quando não tem estabelecimentos) */}
+          {estabelecimentos.length === 0 && user && (
+            <HistoricoChamadosCliente clienteId={cliente.id} cliente={cliente} user={user} />
+          )}
+        </div>
       </div>
     </div>
   );

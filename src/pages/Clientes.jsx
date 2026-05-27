@@ -107,9 +107,12 @@ export default function ClientesPage() {
         telefone: clienteData.telefone,
         whatsapp: clienteData.whatsapp,
         endereco: clienteData.endereco,
+        latitude: clienteData.latitude,
+        longitude: clienteData.longitude,
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
         tem_acesso_portal: clienteData.tem_acesso_portal,
+        estabelecimentos: clienteData.estabelecimentos || [],
         empresa_id: empresaId
       });
 
@@ -226,9 +229,12 @@ ${mensagemParaEnviar}`);
         telefone: clienteData.telefone,
         whatsapp: clienteData.whatsapp,
         endereco: clienteData.endereco,
+        latitude: clienteData.latitude,
+        longitude: clienteData.longitude,
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
-        tem_acesso_portal: clienteData.tem_acesso_portal
+        tem_acesso_portal: clienteData.tem_acesso_portal,
+        estabelecimentos: clienteData.estabelecimentos || []
       });
     },
     onSuccess: () => {
