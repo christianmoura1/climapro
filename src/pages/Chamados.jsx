@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, AlertCircle } from "lucide-react"; // Added AlertCircle
+import { Plus, ArrowLeft, AlertCircle, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 // New imports for date formatting
@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 // New UI components for the approval section
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 import ChamadosList from "../components/chamados/ChamadosList";
 import ChamadoForm from "../components/chamados/ChamadoForm";
@@ -28,6 +29,8 @@ export default function ChamadosPage() {
 
   const [visualizacao, setVisualizacao] = useState('kanban'); // 'kanban' ou 'lista'
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
 
   useEffect(() => {
     let isMounted = true;
@@ -370,6 +373,33 @@ ClimaPro - Sistema de Gestão`
     }
   };
 
+  // Filtrar chamados por pesquisa e status
+  const chamadosFiltrados = chamados.filter(chamado => {
+    const cliente = clientes.find(c => c.id === chamado.cliente_id);
+    const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
+
+    const matchSearch = searchTerm === "" || 
+      chamado.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cliente?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tecnico?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chamado.numero_chamado?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      chamado.data_agendamento?.includes(searchTerm) ||
+      chamado.data_abertura?.includes(searchTerm);
+
+    const statusMap = {
+      "pendente": ["pendente"],
+      "em_andamento": ["em_andamento"],
+      "aguardando": ["aguardando_aprovacao_empresa", "aguardando_pecas"],
+      "finalizado": ["finalizado"],
+      "todos": null
+    };
+
+    const matchStatus = filtroStatus === "todos" || 
+      (statusMap[filtroStatus] && statusMap[filtroStatus].includes(chamado.status));
+
+    return matchSearch && matchStatus;
+  });
+
   const handleAprovarChamado = (chamado) => {
     const cliente = clientes.find(c => c.id === chamado.cliente_id);
     const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
@@ -468,6 +498,53 @@ ClimaPro - Sistema de Gestão`
           </div>
         </div>
 
+        {/* Barra de Pesquisa e Filtros */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Buscar por cliente, técnico, título ou número..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { key: "todos", label: "Todos" },
+              { key: "pendente", label: "Pendente" },
+              { key: "em_andamento", label: "Em Andamento" },
+              { key: "aguardando", label: "Aguardando Aprovação" },
+              { key: "finalizado", label: "Concluído" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setFiltroStatus(key)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  filtroStatus === key
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {label}
+                {key !== "todos" && (
+                  <span className="ml-1.5 text-xs opacity-75">
+                    ({chamados.filter(c => {
+                      const statusMap = { pendente: ["pendente"], em_andamento: ["em_andamento"], aguardando: ["aguardando_aprovacao_empresa", "aguardando_pecas"], finalizado: ["finalizado"] };
+                      return statusMap[key]?.includes(c.status);
+                    }).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Seção de Chamados Aguardando Aprovação */}
         {chamadosAguardandoAprovacao.length > 0 && (
           <Card className="mb-8 shadow-lg border-2 border-orange-200 bg-orange-50">
@@ -541,7 +618,7 @@ ClimaPro - Sistema de Gestão`
 
         {visualizacao === 'kanban' ? (
           <KanbanChamados
-            chamados={chamados}
+            chamados={chamadosFiltrados}
             clientes={clientes}
             tecnicos={tecnicos}
             onEdit={(chamado) => {
@@ -557,7 +634,7 @@ ClimaPro - Sistema de Gestão`
           />
         ) : (
           <ChamadosList
-            chamados={chamados}
+            chamados={chamadosFiltrados}
             isLoading={isLoading}
             tecnicos={tecnicos}
             onEdit={(chamado) => {
