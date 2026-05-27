@@ -346,10 +346,15 @@ ${mensagemParaEnviar}`);
     }
   };
 
-  const filteredClientes = clientes.filter(cliente =>
-    cliente.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.telefone?.includes(searchTerm)
-  );
+  const filteredClientes = clientes.filter(cliente => {
+    // Filtra por empresa_id se não for admin global
+    if (user.email !== "christianmoura2014@gmail.com" && cliente.empresa_id !== empresaId) {
+      return false;
+    }
+    // Filtra por nome ou telefone
+    return cliente.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cliente.telefone?.includes(searchTerm);
+  });
 
   if (!user) {
     return (
