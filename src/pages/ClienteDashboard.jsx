@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,8 +50,17 @@ export default function ClienteDashboard() {
         setUser(currentUser);
 
         // Buscar dados do cliente
-        const clientes = await base44.entities.Cliente.list();
-        const meuCliente = clientes.find(c => c.email === currentUser.email);
+        // Tenta pelo cliente_id salvo no perfil do usuário, ou pelo email
+        const clienteId = currentUser.data?.cliente_id || currentUser.cliente_id;
+        let meuCliente = null;
+        if (clienteId) {
+          const clientes = await base44.entities.Cliente.list();
+          meuCliente = clientes.find(c => c.id === clienteId);
+        }
+        if (!meuCliente) {
+          const clientes = await base44.entities.Cliente.list();
+          meuCliente = clientes.find(c => c.email === currentUser.email);
+        }
         setCliente(meuCliente);
 
         // Registrar último acesso
@@ -67,85 +75,78 @@ export default function ClienteDashboard() {
     loadUser();
   }, [navigate]);
 
+  const empresaId = user?.data?.empresa_id || user?.empresa_id;
+
   // Buscar meus chamados
   const { data: meusChamados = [] } = useQuery({
     queryKey: ['meus-chamados-cliente', cliente?.id],
     queryFn: () => base44.entities.Chamado.filter({
-      empresa_id: user.empresa_id,
       cliente_id: cliente.id
     }, '-created_date'),
-    enabled: !!cliente && !!user?.empresa_id
+    enabled: !!cliente
   });
 
   // Buscar meus PMOCs
   const { data: meusPMOCs = [] } = useQuery({
     queryKey: ['meus-pmocs-cliente', cliente?.id],
-    queryFn: () => base44.entities.PMOC.filter({
-      empresa_id: user.empresa_id,
-      cliente_id: cliente.id
-    }),
-    enabled: !!cliente && !!user?.empresa_id
+    queryFn: () => base44.entities.PMOC.filter({ cliente_id: cliente.id }),
+    enabled: !!cliente
   });
 
   // Buscar manutenções concluídas do cliente
   const { data: manutencoesConcluidas = [] } = useQuery({
     queryKey: ['manutencoes-concluidas-cliente', cliente?.id],
     queryFn: async () => {
-      if (!cliente || !user?.empresa_id) return [];
+      if (!cliente) return [];
       return base44.entities.ManutencaoPMOC.filter({
-        empresa_id: user.empresa_id,
         cliente_id: cliente.id,
         status: 'concluida'
       }, '-data_execucao');
     },
-    enabled: !!cliente && !!user?.empresa_id
+    enabled: !!cliente
   });
 
   // Buscar tecnicos
   const { data: tecnicos = [] } = useQuery({
-    queryKey: ['tecnicos', user?.empresa_id],
+    queryKey: ['tecnicos', empresaId],
     queryFn: async () => {
-      if (!user?.empresa_id) return [];
-      return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
+      if (!empresaId) return [];
+      return base44.entities.Tecnico.filter({ empresa_id: empresaId });
     },
-    enabled: !!user?.empresa_id
+    enabled: !!empresaId
   });
 
   // Buscar equipamentos
   const { data: equipamentos = [] } = useQuery({
     queryKey: ['equipamentos-cliente', cliente?.id],
     queryFn: async () => {
-      if (!cliente || !user?.empresa_id) return [];
-      return base44.entities.Equipamento.filter({
-        empresa_id: user.empresa_id,
-        cliente_id: cliente.id
-      });
+      if (!cliente) return [];
+      return base44.entities.Equipamento.filter({ cliente_id: cliente.id });
     },
-    enabled: !!cliente && !!user?.empresa_id
+    enabled: !!cliente
   });
 
   // Buscar chamados do equipamento selecionado
   const { data: chamadosEquipamento = [] } = useQuery({
     queryKey: ['chamados-equipamento', visualizandoEquipamento?.id],
     queryFn: async () => {
-      if (!visualizandoEquipamento || !user?.empresa_id) return [];
+      if (!visualizandoEquipamento) return [];
       return base44.entities.Chamado.filter({
-        empresa_id: user.empresa_id,
         equipamento_id: visualizandoEquipamento.id
       }, '-data_finalizacao');
     },
-    enabled: !!visualizandoEquipamento && !!user?.empresa_id
+    enabled: !!visualizandoEquipamento
   });
 
   // Buscar empresa
   const { data: empresa } = useQuery({
-    queryKey: ['empresa', user?.empresa_id],
+    queryKey: ['empresa', empresaId],
     queryFn: async () => {
-      if (!user?.empresa_id) return null;
+      if (!empresaId) return null;
       const empresas = await base44.entities.Empresa.list();
-      return empresas.find(e => e.id === user.empresa_id);
+      return empresas.find(e => e.id === empresaId);
     },
-    enabled: !!user?.empresa_id
+    enabled: !!empresaId
   });
 
   const criarChamadoMutation = useMutation({
@@ -153,7 +154,7 @@ export default function ClienteDashboard() {
       // 1. Criar chamado
       const chamado = await base44.entities.Chamado.create({
         ...data,
-        empresa_id: user.empresa_id,
+        empresa_id: empresaId,
         cliente_id: cliente.id,
         numero_chamado: `CH${Date.now()}`,
         data_abertura: new Date().toISOString(),
