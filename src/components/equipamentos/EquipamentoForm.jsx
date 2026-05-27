@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +25,33 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [estabelecimentosDoCliente, setEstabelecimentosDoCliente] = useState([]);
+  const [buscaCliente, setBuscaCliente] = useState(() => {
+    if (equipamento?.cliente_id) {
+      // será preenchido no useEffect abaixo
+      return "";
+    }
+    return "";
+  });
+  const [showSugestoes, setShowSugestoes] = useState(false);
+  const buscaRef = useRef(null);
+
+  // Preencher nome do cliente quando editando
+  useEffect(() => {
+    if (formData.cliente_id && clientes.length > 0) {
+      const c = clientes.find(cl => cl.id === formData.cliente_id);
+      if (c) setBuscaCliente(c.nome);
+    }
+  }, [clientes]);
+
+  const clientesFiltrados = buscaCliente.trim().length === 0
+    ? clientes
+    : clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()));
+
+  const handleSelecionarCliente = (cliente) => {
+    handleClienteChange(cliente.id);
+    setBuscaCliente(cliente.nome);
+    setShowSugestoes(false);
+  };
 
   // Busca os estabelecimentos do cliente selecionado — tenta via lista local, senão busca via SDK
   useEffect(() => {
@@ -86,21 +113,42 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2" ref={buscaRef}>
               <Label>Cliente *</Label>
-              <select
-                value={formData.cliente_id}
-                onChange={(e) => handleClienteChange(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                required
-              >
-                <option value="">Selecione o cliente</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <Input
+                  value={buscaCliente}
+                  onChange={(e) => {
+                    setBuscaCliente(e.target.value);
+                    setShowSugestoes(true);
+                    if (!e.target.value) handleClienteChange("");
+                  }}
+                  onFocus={() => setShowSugestoes(true)}
+                  onBlur={() => setTimeout(() => setShowSugestoes(false), 150)}
+                  placeholder="Digite para buscar cliente..."
+                  required={!formData.cliente_id}
+                />
+                {showSugestoes && clientesFiltrados.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {clientesFiltrados.map((cliente) => (
+                      <div
+                        key={cliente.id}
+                        className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${formData.cliente_id === cliente.id ? 'bg-blue-100 font-semibold' : ''}`}
+                        onMouseDown={() => handleSelecionarCliente(cliente)}
+                      >
+                        {cliente.nome}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showSugestoes && buscaCliente.trim().length > 0 && clientesFiltrados.length === 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg px-3 py-2 text-sm text-gray-500">
+                    Nenhum cliente encontrado
+                  </div>
+                )}
+              </div>
+              {/* campo hidden para garantir validação */}
+              <input type="hidden" value={formData.cliente_id} required />
             </div>
 
             <div className="space-y-2">
