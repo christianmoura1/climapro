@@ -199,7 +199,10 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(createPageUrl("Chamados") + `?edit_chamado_id=${chamado.id}`)}
+                          onClick={() => {
+                            sessionStorage.setItem('edit_chamado_id', chamado.id);
+                            navigate(createPageUrl("Chamados"));
+                          }}
                           className="text-blue-600 hover:text-blue-800"
                         >
                           <Eye className="w-4 h-4 mr-1" />

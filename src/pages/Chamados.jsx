@@ -374,15 +374,15 @@ ClimaPro - Sistema de Gestão`
     }
   };
 
-  // Abrir edição automática via query param ?edit_chamado_id=
+  // Abrir edição automática via sessionStorage (vindo do histórico de clientes)
   useEffect(() => {
     if (!chamados.length || editOpenedRef.current) return;
-    const params = new URLSearchParams(window.location.search);
-    const editId = params.get('edit_chamado_id');
+    const editId = sessionStorage.getItem('edit_chamado_id');
     if (editId) {
       const chamado = chamados.find(c => c.id === editId);
       if (chamado) {
         editOpenedRef.current = true;
+        sessionStorage.removeItem('edit_chamado_id');
         setEditingChamado(chamado);
         setShowForm(true);
       }
