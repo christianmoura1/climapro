@@ -91,17 +91,33 @@ export default function ChamadosPage() {
     enabled: !!user
   });
 
-  // FILTRAR CLIENTES POR EMPRESA
+  // FILTRAR CLIENTES POR EMPRESA (sem duplicatas)
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes', user?.empresa_id, user?.role],
     queryFn: async () => {
       if (!user) return [];
       try {
         const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
-        if (adminUser) {
-          return await base44.entities.Cliente.list('-created_date', 500);
+        let lista = adminUser
+          ? await base44.entities.Cliente.list('-created_date', 500)
+          : await base44.entities.Cliente.filter({ empresa_id: user.empresa_id }, '-created_date', 500);
+
+        // Remover importados problemáticos
+        lista = lista.filter(c => !c.id?.startsWith('6a11c234'));
+
+        // Remover duplicatas por empresa_id + nome (mantém o mais antigo)
+        const vistos = new Set();
+        const deduplicados = [];
+        // Ordenar do mais antigo para o mais novo para manter o original
+        const ordenados = [...lista].sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+        for (const c of ordenados) {
+          const chave = `${c.empresa_id}|${c.nome?.toLowerCase().trim()}`;
+          if (!vistos.has(chave)) {
+            vistos.add(chave);
+            deduplicados.push(c);
+          }
         }
-        return await base44.entities.Cliente.filter({ empresa_id: user.empresa_id }, '-created_date', 500);
+        return deduplicados;
       } catch (err) {
         console.error("[DEBUG] Erro ao listar clientes:", err);
         return [];
