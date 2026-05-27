@@ -233,7 +233,6 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
   // Inicializar estabelecimentos a partir dos dados existentes
   const initEstabelecimentos = () => {
     if (cliente?.estabelecimentos?.length > 0) return cliente.estabelecimentos;
-    // Se tem endereço principal, migrar para o primeiro estabelecimento
     if (cliente?.endereco) {
       return [{
         nome: "Principal",
@@ -262,11 +261,13 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
   });
 
   const [estabelecimentos, setEstabelecimentos] = useState(initEstabelecimentos);
-  const [abaAtiva, setAbaAtiva] = useState(0); // índice do estabelecimento ativo
+  const [abaAtiva, setAbaAtiva] = useState(0);
+
+  // Modal para nomear novo estabelecimento
+  const [modalNome, setModalNome] = useState(null); // { opcao, nomeInput }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Sincronizar o primeiro estabelecimento nos campos legados (compatibilidade)
     const dadosFinal = { ...formData, estabelecimentos };
     if (estabelecimentos.length > 0) {
       dadosFinal.endereco = estabelecimentos[0].endereco || formData.endereco;
@@ -276,17 +277,31 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
     onSubmit(dadosFinal);
   };
 
-  const adicionarEstabelecimento = (opcao) => {
-    const jaExiste = estabelecimentos.find(e => e.nome.toLowerCase() === opcao.label.replace(/[^\w\s]/gi, '').trim().toLowerCase());
+  const abrirModalNome = (opcao) => {
+    setModalNome({ opcao, nomeInput: opcao.label.replace(/[^\w\sÀ-ú]/gi, '').trim() });
+  };
+
+  const confirmarNomeEstabelecimento = () => {
+    if (!modalNome) return;
+    const nomeCustom = modalNome.nomeInput.trim();
+    if (!nomeCustom) return;
+    // Verificar duplicata
+    const jaExiste = estabelecimentos.find(e => e.nome.toLowerCase() === nomeCustom.toLowerCase());
     if (jaExiste) {
-      const idx = estabelecimentos.indexOf(jaExiste);
-      setAbaAtiva(idx);
+      setAbaAtiva(estabelecimentos.indexOf(jaExiste));
+      setModalNome(null);
       return;
     }
-    const novo = { nome: opcao.label.replace(/[^\w\sÀ-ú]/gi, '').trim(), endereco: "", latitude: null, longitude: null, tipo: opcao.tipo, observacoes: "" };
+    const novo = { nome: nomeCustom, endereco: "", latitude: null, longitude: null, tipo: modalNome.opcao.tipo, observacoes: "" };
     const novos = [...estabelecimentos, novo];
     setEstabelecimentos(novos);
     setAbaAtiva(novos.length - 1);
+    setModalNome(null);
+  };
+
+  // Manter compatibilidade com código antigo
+  const adicionarEstabelecimento = (opcao) => {
+    abrirModalNome(opcao);
   };
 
   const removerEstabelecimento = (idx) => {
@@ -302,6 +317,34 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
   };
 
   return (
+    <>
+    {/* Modal para nomear estabelecimento */}
+    {modalNome && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
+          <h3 className="text-lg font-bold mb-1">Nome do Estabelecimento</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Tipo: <strong>{modalNome.opcao.label}</strong> — dê um nome personalizado (ex: Loja 01, Loja Colchões, Casa Matriz...)
+          </p>
+          <input
+            autoFocus
+            type="text"
+            value={modalNome.nomeInput}
+            onChange={(e) => setModalNome({ ...modalNome, nomeInput: e.target.value })}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); confirmarNomeEstabelecimento(); } if (e.key === 'Escape') setModalNome(null); }}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            placeholder="Ex: Loja 01, Casa Principal, Escritório Centro..."
+          />
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setModalNome(null)}>Cancelar</Button>
+            <Button type="button" className="bg-blue-600 hover:bg-blue-700" onClick={confirmarNomeEstabelecimento} disabled={!modalNome.nomeInput.trim()}>
+              Adicionar
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
+
     <Card className="mb-8 shadow-lg border-none">
       <CardHeader>
         <CardTitle>{cliente ? 'Editar Cliente' : 'Novo Cliente'}</CardTitle>
@@ -389,6 +432,15 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                       key={idx}
                       type="button"
                       onClick={() => setAbaAtiva(idx)}
+                      onDoubleClick={() => {
+                        const novoNome = prompt("Renomear estabelecimento:", est.nome);
+                        if (novoNome && novoNome.trim()) {
+                          const novos = [...estabelecimentos];
+                          novos[idx] = { ...novos[idx], nome: novoNome.trim() };
+                          setEstabelecimentos(novos);
+                        }
+                      }}
+                      title="Clique para selecionar. Duplo clique para renomear."
                       className={`px-3 py-1.5 rounded-t text-sm font-medium transition-colors flex items-center gap-1 ${
                         abaAtiva === idx
                           ? 'bg-white border border-b-white text-blue-700 border-gray-200'
@@ -477,5 +529,6 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
         </CardFooter>
       </form>
     </Card>
+    </>
   );
 }
