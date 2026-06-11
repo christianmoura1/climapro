@@ -574,8 +574,13 @@ ${mensagem}
                                       finalizado: "bg-green-100 text-green-800",
                                       cancelado: "bg-gray-100 text-gray-800"
                                     };
+                                    const isFinalizado = c.status === 'finalizado';
                                     return (
-                                      <div key={c.id} className="bg-white rounded border p-3 flex items-start justify-between gap-2 text-sm">
+                                      <div
+                                        key={c.id}
+                                        className={`bg-white rounded border p-3 flex items-start justify-between gap-2 text-sm ${isFinalizado ? 'cursor-pointer hover:bg-blue-50 transition-colors' : ''}`}
+                                        onClick={() => isFinalizado && handleVisualizarChamado(c)}
+                                      >
                                         <div>
                                           <p className="font-medium text-gray-800">{c.numero_chamado} — {c.titulo}</p>
                                           <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">

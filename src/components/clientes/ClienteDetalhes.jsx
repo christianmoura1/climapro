@@ -26,7 +26,8 @@ export default function ClienteDetalhes({
   onVoltar,
   onEditarCliente,
   onDeletarCliente,
-  onVisualizarEquipamento
+  onVisualizarEquipamento,
+  onVisualizarChamado
 }) {
   const [user, setUser] = useState(null);
   const [estAtivaIdx, setEstAtivaIdx] = useState(null); // null = visão geral
@@ -151,7 +152,7 @@ export default function ClienteDetalhes({
                     onClick={() => setEstAtivaIdx(null)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === null ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
                   >
-                    🏢 Todos ({equipamentos.length} equip.)
+                    🏢 Todos ({estabelecimentos.length} estabelecimentos)
                   </button>
                   {estabelecimentos.map((est, idx) => (
                     <button
@@ -234,8 +235,13 @@ export default function ClienteDetalhes({
                     <div className="divide-y border rounded-lg overflow-hidden">
                       {chamadosVisiveis.map((chamado) => {
                         const cfg = STATUS_CONFIG[chamado.status] || STATUS_CONFIG.pendente;
+                        const isFinalizado = chamado.status === 'finalizado';
                         return (
-                          <div key={chamado.id} className="py-3 px-4 flex items-start justify-between gap-2">
+                          <div
+                            key={chamado.id}
+                            className={`py-3 px-4 flex items-start justify-between gap-2 ${isFinalizado ? 'cursor-pointer hover:bg-blue-50 transition-colors' : ''}`}
+                            onClick={() => isFinalizado && onVisualizarChamado && onVisualizarChamado(chamado)}
+                          >
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">{chamado.numero_chamado} — {chamado.titulo}</p>
                               <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">

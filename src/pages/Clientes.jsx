@@ -13,6 +13,7 @@ import ClienteForm from "../components/clientes/ClienteForm";
 import ClienteDetalhes from "../components/clientes/ClienteDetalhes";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import ChamadoForm from "../components/chamados/ChamadoForm";
+import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -20,6 +21,7 @@ export default function ClientesPage() {
   const [viewingCliente, setViewingCliente] = useState(null); // Changed from selectedCliente
   const [editingCliente, setEditingCliente] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null); // New state for viewing equipment history
+  const [visualizandoChamado, setVisualizandoChamado] = useState(null); // State for viewing finalized chamado
   const [editingChamado, setEditingChamado] = useState(null); // New state for editing a Chamado
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
@@ -333,6 +335,11 @@ ${mensagemParaEnviar}`);
     setVisualizandoEquipamento(equipamento);
   };
 
+  const handleVisualizarChamado = (chamado) => {
+    const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
+    setVisualizandoChamado({ chamado, tecnico });
+  };
+
   const handleEditarChamado = (chamado) => {
     setEditingChamado(chamado);
   };
@@ -413,6 +420,18 @@ ${mensagemParaEnviar}`);
     );
   }
 
+  // Se está visualizando um chamado finalizado
+  if (visualizandoChamado) {
+    return (
+      <VisualizarChamadoCliente
+        chamado={visualizandoChamado.chamado}
+        tecnico={visualizandoChamado.tecnico}
+        empresa={empresa}
+        onClose={() => setVisualizandoChamado(null)}
+      />
+    );
+  }
+
   // Se está visualizando detalhes do cliente
   if (viewingCliente) {
     const equipamentosCliente = equipamentos.filter(e => e.cliente_id === viewingCliente.id);
@@ -432,6 +451,7 @@ ${mensagemParaEnviar}`);
           handleDelete(cliente.id || cliente);
         }}
         onVisualizarEquipamento={handleVisualizarEquipamento}
+        onVisualizarChamado={handleVisualizarChamado}
       />
     );
   }
