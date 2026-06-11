@@ -144,53 +144,9 @@
     "cnpj"
   ],
   "rls": {
-    "read": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "id": "{{user.data.empresa_id}}"
-        }
-      ]
-    },
-    "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "id": "{{user.data.empresa_id}}"
-        }
-      ]
-    },
-    "delete": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "id": "{{user.data.empresa_id}}"
-        }
-      ]
-    },
-    "write": {
-      "$or": [
-        {
-          "user_condition": {
-            "tipo_usuario": "admin_global"
-          }
-        },
-        {
-          "id": "{{user.data.empresa_id}}"
-        }
-      ]
-    }
+    "read": null,
+    "update": null,
+    "delete": null,
+    "write": null
   }
 }
