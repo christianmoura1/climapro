@@ -23,6 +23,7 @@ export default function ClientesPage() {
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null); // New state for viewing equipment history
   const [visualizandoChamado, setVisualizandoChamado] = useState(null); // State for viewing finalized chamado
   const [editingChamado, setEditingChamado] = useState(null); // New state for editing a Chamado
+  const [refreshKey, setRefreshKey] = useState(0); // Key to force ClienteDetalhes refresh
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -301,6 +302,7 @@ ${mensagemParaEnviar}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados-equipamento']);
+      setRefreshKey(k => k + 1);
       alert("✅ Chamado excluído com sucesso!");
     },
     onError: (error) => {
@@ -438,6 +440,7 @@ ${mensagemParaEnviar}`);
     
     return (
       <ClienteDetalhes
+        key={refreshKey}
         cliente={viewingCliente}
         equipamentos={equipamentosCliente}
         onVoltar={() => setViewingCliente(null)}
@@ -452,6 +455,7 @@ ${mensagemParaEnviar}`);
         }}
         onVisualizarEquipamento={handleVisualizarEquipamento}
         onVisualizarChamado={handleVisualizarChamado}
+        onDeletarChamado={handleDeletarChamado}
       />
     );
   }

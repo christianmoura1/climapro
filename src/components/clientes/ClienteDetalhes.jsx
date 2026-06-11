@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy, ClipboardList, Clock } from "lucide-react";
+import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy, ClipboardList, Clock, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,7 +27,8 @@ export default function ClienteDetalhes({
   onEditarCliente,
   onDeletarCliente,
   onVisualizarEquipamento,
-  onVisualizarChamado
+  onVisualizarChamado,
+  onDeletarChamado
 }) {
   const [user, setUser] = useState(null);
   const [estAtivaIdx, setEstAtivaIdx] = useState(null); // null = visão geral
@@ -252,7 +253,19 @@ export default function ClienteDetalhes({
                                 {chamado.local && <span className="truncate">· {chamado.local}</span>}
                               </div>
                             </div>
-                            <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Badge className={cfg.color + " text-xs"}>{cfg.label}</Badge>
+                              {onDeletarChamado && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); onDeletarChamado(chamado); }}
+                                  className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                                  title="Excluir chamado"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
