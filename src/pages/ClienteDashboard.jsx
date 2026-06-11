@@ -503,9 +503,16 @@ ${mensagem}
                   <div className="divide-y">
                     {todoEstabelecimentos.map((est, idx) => {
                       const equipsEst = equipamentos.filter(e => e.estabelecimento_nome === est.nome);
-                      const chamadosEst = meusChamados.filter(c =>
-                        equipsEst.some(e => e.id === c.equipamento_id) || c.local === est.endereco
-                      );
+                      const chamadosEst = meusChamados.filter(c => {
+                        // Se o estabelecimento tem endereço, filtrar chamados pelo mesmo endereço
+                        if (est.endereco && est.endereco.trim() && c.local && c.local.trim()) {
+                          const enderecoBase = est.endereco.toLowerCase().split(',')[0].trim();
+                          const localBase = c.local.toLowerCase().split(',')[0].trim();
+                          return localBase.includes(enderecoBase) || enderecoBase.includes(localBase);
+                        }
+                        // Sem endereço no estabelecimento: filtrar por equipamento
+                        return equipsEst.some(e => e.id === c.equipamento_id || c.equipamentos_ids?.includes(e.id));
+                      });
                       const isOpen = estabelecimentoAberto === est.nome;
 
                       return (

@@ -68,9 +68,11 @@ export default function ClienteDetalhes({
     ? chamadosCliente.filter(c => {
         const local = (c.local || "").toLowerCase();
         const end = (estAtiva.endereco || "").toLowerCase();
-        const nome = estAtiva.nome.toLowerCase();
-        const palavras = end.split(/[\s,]+/).filter(p => p.length > 3);
-        return local.includes(nome) || palavras.some(p => local.includes(p));
+        if (!end || !local) return false;
+        // Comparar pelo começo do endereço (rua + número), ignorando bairro/cidade
+        const enderecoBase = end.split(',')[0].trim();
+        const localBase = local.split(',')[0].trim();
+        return localBase.includes(enderecoBase) || enderecoBase.includes(localBase);
       })
     : chamadosCliente;
 
