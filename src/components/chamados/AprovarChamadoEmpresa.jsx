@@ -25,6 +25,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
   const [modoEdicao, setModoEdicao] = useState(false);
   const [nomeCliente, setNomeCliente] = useState(cliente?.nome || "");
   const [editandoCliente, setEditandoCliente] = useState(false);
+  const [dataLembrete, setDataLembrete] = useState(chamado.data_lembrete_proxima_manutencao || "");
   const queryClient = useQueryClient();
 
   const aprovarMutation = useMutation({
@@ -32,11 +33,16 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
       const user = await base44.auth.me();
       
       // 1. Atualizar chamado para finalizado com as observações editadas
-      await base44.entities.Chamado.update(chamado.id, {
+      const updateData = {
         status: 'finalizado',
         observacoes_empresa: observacoesEmpresa,
-        observacoes_tecnico: observacoesTecnico // Salvar as observações editadas pela empresa
-      });
+        observacoes_tecnico: observacoesTecnico
+      };
+      if (dataLembrete) {
+        updateData.data_lembrete_proxima_manutencao = dataLembrete;
+        updateData.lembrete_manutencao_enviado = false;
+      }
+      await base44.entities.Chamado.update(chamado.id, updateData);
 
       // 2. Atualizar evento vinculado para concluído
       const eventos = await base44.entities.AgendaEvento.filter({
@@ -309,6 +315,31 @@ ClimaPro`
               </CardContent>
             </Card>
           )}
+
+          {/* Lembrete de Próxima Manutenção */}
+          <Card className="border-2 border-teal-200 bg-teal-50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                Lembrete de Próxima Manutenção
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Label htmlFor="data-lembrete">
+                Defina uma data para o ClimaPro te lembrar (e lembrar o cliente) da próxima manutenção:
+              </Label>
+              <Input
+                id="data-lembrete"
+                type="date"
+                value={dataLembrete}
+                onChange={(e) => setDataLembrete(e.target.value)}
+                className="mt-2 max-w-xs"
+              />
+              <p className="text-xs text-teal-700 mt-2">
+                💡 Na data escolhida, você verá um alerta no painel e o cliente receberá um email de lembrete.
+              </p>
+            </CardContent>
+          </Card>
 
           {/* Observações da Empresa */}
           <Card className="border-2 border-orange-200 bg-orange-50">
