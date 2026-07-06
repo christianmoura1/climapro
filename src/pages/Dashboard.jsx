@@ -13,7 +13,8 @@ import {
   UserCog,
   Cpu,
   Bell,
-  Clock
+  Clock,
+  X
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -28,6 +29,26 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showVencidasModal, setShowVencidasModal] = useState(false);
+  const [dismissedAlertIds, setDismissedAlertIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('dismissed_alert_ids') || '[]');
+    } catch { return []; }
+  });
+
+  const handleDismissAlerts = () => {
+    const ids = lembretesVisiveis.map(c => c.id);
+    const updated = [...new Set([...dismissedAlertIds, ...ids])];
+    setDismissedAlertIds(updated);
+    localStorage.setItem('dismissed_alert_ids', JSON.stringify(updated));
+  };
+
+  const handleCriarChamadoFromAlert = async (chamadoId) => {
+    try {
+      await base44.entities.Chamado.update(chamadoId, { lembrete_manutencao_enviado: true });
+    } catch (e) { /* ignore */ }
+    setShowVencidasModal(false);
+    navigate(createPageUrl("Chamados"));
+  };
 
   useEffect(() => {
     console.log('[CLIMAPRO-BOOT] Dashboard - carregando usuário');
@@ -121,6 +142,9 @@ export default function Dashboard() {
     },
     enabled: !!user && (!!user.empresa_id || isAdmin)
   });
+
+  // Filtrar alertas dispensados
+  const lembretesVisiveis = lembretesVencidos.filter(c => !dismissedAlertIds.includes(c.id));
 
   // FILTRAR FINANCEIRO POR EMPRESA
   const { data: financeiro = [] } = useQuery({
@@ -222,36 +246,46 @@ export default function Dashboard() {
         </div>
 
         {/* Card de Manutenções Vencidas */}
-        {lembretesVencidos.length > 0 && (
+        {lembretesVisiveis.length > 0 && (
           <div className="mb-8">
-            <button
-              onClick={() => setShowVencidasModal(true)}
-              className="w-full bg-red-600 hover:bg-red-700 rounded-xl p-5 shadow-lg transition-colors text-left"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shrink-0">
-                  <Bell className="w-6 h-6 text-white" />
+            <div className="relative bg-red-600 rounded-xl p-5 shadow-lg">
+              <button
+                onClick={() => setShowVencidasModal(true)}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-4 pr-10">
+                  <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shrink-0">
+                    <Bell className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white">
+                      Manutenções Vencidas
+                    </h3>
+                    <p className="text-sm text-red-100">
+                      {lembretesVisiveis.length} cliente{lembretesVisiveis.length > 1 ? 's' : ''} precisa{lembretesVisiveis.length === 1 ? '' : 'm'} de atenção — clique para ver detalhes
+                    </p>
+                  </div>
+                  <div className="bg-white/20 rounded-full px-3 py-1 shrink-0">
+                    <span className="text-white font-bold text-xl">{lembretesVisiveis.length}</span>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white">
-                    Manutenções Vencidas
-                  </h3>
-                  <p className="text-sm text-red-100">
-                    {lembretesVencidos.length} cliente{lembretesVencidos.length > 1 ? 's' : ''} precisa{lembretesVencidos.length === 1 ? '' : 'm'} de atenção — clique para ver detalhes
-                  </p>
-                </div>
-                <div className="bg-white/20 rounded-full px-3 py-1 shrink-0">
-                  <span className="text-white font-bold text-xl">{lembretesVencidos.length}</span>
-                </div>
-              </div>
-            </button>
+              </button>
+              <button
+                onClick={handleDismissAlerts}
+                title="Dispensar alerta"
+                className="absolute top-1/2 right-3 -translate-y-1/2 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
           </div>
         )}
 
-        {showVencidasModal && lembretesVencidos.length > 0 && (
+        {showVencidasModal && lembretesVisiveis.length > 0 && (
           <ManutencoesVencidasModal
-            chamados={lembretesVencidos}
+            chamados={lembretesVisiveis}
             onClose={() => setShowVencidasModal(false)}
+            onCriarChamado={handleCriarChamadoFromAlert}
           />
         )}
 

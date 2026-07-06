@@ -7,7 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-export default function ManutencoesVencidasModal({ chamados, onClose }) {
+export default function ManutencoesVencidasModal({ chamados, onClose, onCriarChamado }) {
   const [expandedId, setExpandedId] = useState(null);
   const [clientesMap, setClientesMap] = useState({});
   const [tecnicosMap, setTecnicosMap] = useState({});
@@ -53,8 +53,12 @@ export default function ManutencoesVencidasModal({ chamados, onClose }) {
       prioridade: "media"
     };
     sessionStorage.setItem('prefill_chamado', JSON.stringify(prefill));
-    onClose();
-    navigate(createPageUrl("Chamados"));
+    if (onCriarChamado) {
+      onCriarChamado(chamado.id);
+    } else {
+      onClose();
+      navigate(createPageUrl("Chamados"));
+    }
   };
 
   const toggleExpand = (id) => {
