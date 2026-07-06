@@ -14,7 +14,9 @@ import {
   Calendar,
   User,
   FileText,
-  Edit
+  Edit,
+  Mail,
+  Clock
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,6 +28,8 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
   const [nomeCliente, setNomeCliente] = useState(cliente?.nome || "");
   const [editandoCliente, setEditandoCliente] = useState(false);
   const [dataLembrete, setDataLembrete] = useState(chamado.data_lembrete_proxima_manutencao || "");
+  const [horaLembrete, setHoraLembrete] = useState(chamado.hora_lembrete_proxima_manutencao || "");
+  const [emailCliente, setEmailCliente] = useState(cliente?.email || "");
   const queryClient = useQueryClient();
 
   const aprovarMutation = useMutation({
@@ -40,9 +44,15 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
       };
       if (dataLembrete) {
         updateData.data_lembrete_proxima_manutencao = dataLembrete;
+        updateData.hora_lembrete_proxima_manutencao = horaLembrete || "";
         updateData.lembrete_manutencao_enviado = false;
       }
       await base44.entities.Chamado.update(chamado.id, updateData);
+
+      // 1b. Atualizar email do cliente se foi alterado
+      if (cliente?.id && emailCliente && emailCliente !== cliente.email) {
+        await base44.entities.Cliente.update(cliente.id, { email: emailCliente });
+      }
 
       // 2. Atualizar evento vinculado para concluído
       const eventos = await base44.entities.AgendaEvento.filter({
@@ -56,9 +66,10 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
       }
 
       // 3. Enviar relatório completo ao cliente
-      if (cliente?.email) {
+      const emailDestino = emailCliente || cliente?.email;
+      if (emailDestino) {
         await base44.integrations.Core.SendEmail({
-          to: cliente.email,
+          to: emailDestino,
           subject: `✅ Chamado Concluído - ${chamado.titulo} - ClimaPro`,
           body: `Prezado(a) ${nomeCliente},
 
@@ -316,6 +327,32 @@ ClimaPro`
             </Card>
           )}
 
+          {/* Email do Cliente */}
+          <Card className="border-2 border-cyan-200 bg-cyan-50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                Email do Cliente
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Label htmlFor="email-cliente">
+                Email para envio do relatório e lembretes de manutenção:
+              </Label>
+              <Input
+                id="email-cliente"
+                type="email"
+                value={emailCliente}
+                onChange={(e) => setEmailCliente(e.target.value)}
+                placeholder="cliente@email.com"
+                className="mt-2 max-w-md"
+              />
+              <p className="text-xs text-cyan-700 mt-2">
+                💡 O relatório de conclusão e os lembretes de manutenção serão enviados para este email.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Lembrete de Próxima Manutenção */}
           <Card className="border-2 border-teal-200 bg-teal-50">
             <CardHeader>
@@ -325,16 +362,32 @@ ClimaPro`
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Label htmlFor="data-lembrete">
-                Defina uma data para o ClimaPro te lembrar (e lembrar o cliente) da próxima manutenção:
+              <Label>
+                Defina data e hora para o ClimaPro te lembrar (e lembrar o cliente) da próxima manutenção:
               </Label>
-              <Input
-                id="data-lembrete"
-                type="date"
-                value={dataLembrete}
-                onChange={(e) => setDataLembrete(e.target.value)}
-                className="mt-2 max-w-xs"
-              />
+              <div className="flex gap-3 mt-2 flex-wrap">
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-600">Data</Label>
+                  <Input
+                    type="date"
+                    value={dataLembrete}
+                    onChange={(e) => setDataLembrete(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="max-w-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-600 flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> Hora
+                  </Label>
+                  <Input
+                    type="time"
+                    value={horaLembrete}
+                    onChange={(e) => setHoraLembrete(e.target.value)}
+                    className="max-w-xs"
+                  />
+                </div>
+              </div>
               <p className="text-xs text-teal-700 mt-2">
                 💡 Na data escolhida, você verá um alerta no painel e o cliente receberá um email de lembrete.
               </p>

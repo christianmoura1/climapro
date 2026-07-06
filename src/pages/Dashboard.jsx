@@ -92,23 +92,29 @@ export default function Dashboard() {
     enabled: !!user && (!!user.empresa_id || isAdmin)
   });
 
-  // LEMBRETES DE MANUTENÇÃO PARA HOJE
+  // LEMBRETES DE MANUTENÇÃO VENCIDOS (data <= hoje e ainda não enviados)
   const hoje = new Date().toISOString().split('T')[0];
-  const { data: lembretesHoje = [] } = useQuery({
-    queryKey: ['lembretes-manutencao', hoje, user?.empresa_id],
+  const { data: lembretesVencidos = [] } = useQuery({
+    queryKey: ['lembretes-manutencao-vencidos', user?.empresa_id],
     queryFn: async () => {
+      let chamados;
       if (isAdmin) {
-        return base44.entities.Chamado.filter(
-          { data_lembrete_proxima_manutencao: hoje, status: 'finalizado' },
-          '-created_date',
-          50
+        chamados = await base44.entities.Chamado.filter(
+          { lembrete_manutencao_enviado: false },
+          '-data_lembrete_proxima_manutencao',
+          200
+        );
+      } else {
+        if (!user?.empresa_id) return [];
+        chamados = await base44.entities.Chamado.filter(
+          { empresa_id: user.empresa_id, lembrete_manutencao_enviado: false },
+          '-data_lembrete_proxima_manutencao',
+          200
         );
       }
-      if (!user?.empresa_id) return [];
-      return base44.entities.Chamado.filter(
-        { empresa_id: user.empresa_id, data_lembrete_proxima_manutencao: hoje, status: 'finalizado' },
-        '-created_date',
-        50
+      return chamados.filter(c =>
+        c.data_lembrete_proxima_manutencao &&
+        c.data_lembrete_proxima_manutencao <= hoje
       );
     },
     enabled: !!user && (!!user.empresa_id || isAdmin)
@@ -213,31 +219,31 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Lembretes de Manutenção para Hoje */}
-        {lembretesHoje.length > 0 && (
+        {/* Lembretes de Manutenção Vencidos */}
+        {lembretesVencidos.length > 0 && (
           <div className="mb-8">
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-5">
+            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-5">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-amber-800">
-                    🔔 Lembretes de Manutenção para Hoje
+                  <h3 className="text-lg font-bold text-red-800">
+                    🔔 Manutenções Vencidas — Ação Necessária
                   </h3>
-                  <p className="text-sm text-amber-600">
-                    {lembretesHoje.length} cliente{lembretesHoje.length > 1 ? 's' : ''} para contatar sobre a próxima manutenção
+                  <p className="text-sm text-red-600">
+                    {lembretesVencidos.length} cliente{lembretesVencidos.length > 1 ? 's' : ''} com manutenção preventiva vencida
                   </p>
                 </div>
               </div>
               <div className="space-y-2">
-                {lembretesHoje.map((chamado) => (
+                {lembretesVencidos.map((chamado) => (
                   <Link
                     key={chamado.id}
                     to={createPageUrl("Chamados")}
-                    className="flex items-center gap-3 bg-white rounded-lg p-3 hover:shadow-md transition-shadow border border-amber-100"
+                    className="flex items-center gap-3 bg-white rounded-lg p-3 hover:shadow-md transition-shadow border border-red-100"
                   >
-                    <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Clock className="w-4 h-4 text-red-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {chamado.titulo}
@@ -246,15 +252,14 @@ export default function Dashboard() {
                         {chamado.local || 'Local não especificado'}
                       </p>
                     </div>
-                    {chamado.lembrete_manutencao_enviado ? (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full shrink-0">
-                        ✅ Enviado
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full shrink-0">
-                        ⏳ Pendente
-                      </span>
-                    )}
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-semibold text-red-700">
+                        Vencida: {new Date(chamado.data_lembrete_proxima_manutencao + 'T00:00:00').toLocaleDateString('pt-BR')}
+                      </p>
+                      {chamado.hora_lembrete_proxima_manutencao && (
+                        <p className="text-xs text-gray-500">às {chamado.hora_lembrete_proxima_manutencao}</p>
+                      )}
+                    </div>
                   </Link>
                 ))}
               </div>
