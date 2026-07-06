@@ -21,11 +21,13 @@ import { createPageUrl } from "@/utils";
 import StatsCard from "../components/dashboard/StatsCard";
 import RecentChamados from "../components/dashboard/RecentChamados";
 import ProximosPMOCs from "../components/dashboard/ProximosPMOCs";
+import ManutencoesVencidasModal from "../components/dashboard/ManutencoesVencidasModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showVencidasModal, setShowVencidasModal] = useState(false);
 
   useEffect(() => {
     console.log('[CLIMAPRO-BOOT] Dashboard - carregando usuário');
@@ -219,52 +221,38 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Lembretes de Manutenção Vencidos */}
+        {/* Card de Manutenções Vencidas */}
         {lembretesVencidos.length > 0 && (
           <div className="mb-8">
-            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-red-600" />
+            <button
+              onClick={() => setShowVencidasModal(true)}
+              className="w-full bg-red-600 hover:bg-red-700 rounded-xl p-5 shadow-lg transition-colors text-left"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shrink-0">
+                  <Bell className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-red-800">
-                    🔔 Manutenções Vencidas — Ação Necessária
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-white">
+                    Manutenções Vencidas
                   </h3>
-                  <p className="text-sm text-red-600">
-                    {lembretesVencidos.length} cliente{lembretesVencidos.length > 1 ? 's' : ''} com manutenção preventiva vencida
+                  <p className="text-sm text-red-100">
+                    {lembretesVencidos.length} cliente{lembretesVencidos.length > 1 ? 's' : ''} precisa{lembretesVencidos.length === 1 ? '' : 'm'} de atenção — clique para ver detalhes
                   </p>
                 </div>
+                <div className="bg-white/20 rounded-full px-3 py-1 shrink-0">
+                  <span className="text-white font-bold text-xl">{lembretesVencidos.length}</span>
+                </div>
               </div>
-              <div className="space-y-2">
-                {lembretesVencidos.map((chamado) => (
-                  <Link
-                    key={chamado.id}
-                    to={createPageUrl("Chamados")}
-                    className="flex items-center gap-3 bg-white rounded-lg p-3 hover:shadow-md transition-shadow border border-red-100"
-                  >
-                    <Clock className="w-4 h-4 text-red-500 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {chamado.titulo}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {chamado.local || 'Local não especificado'}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs font-semibold text-red-700">
-                        Vencida: {new Date(chamado.data_lembrete_proxima_manutencao + 'T00:00:00').toLocaleDateString('pt-BR')}
-                      </p>
-                      {chamado.hora_lembrete_proxima_manutencao && (
-                        <p className="text-xs text-gray-500">às {chamado.hora_lembrete_proxima_manutencao}</p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            </button>
           </div>
+        )}
+
+        {showVencidasModal && lembretesVencidos.length > 0 && (
+          <ManutencoesVencidasModal
+            chamados={lembretesVencidos}
+            onClose={() => setShowVencidasModal(false)}
+          />
         )}
 
         {/* Quick Actions */}

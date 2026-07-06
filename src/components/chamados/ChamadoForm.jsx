@@ -53,6 +53,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   const [loadingHistorico, setLoadingHistorico] = useState(false);
 
   const ehChamadoFinalizado = chamado && chamado.status === 'finalizado';
+  const ehNovoChamado = !chamado?.id;
 
   // Filtrar clientes pela busca
   const clientesFiltrados = clientes.filter(cliente => 
@@ -273,7 +274,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     >
       <div className="mb-4">
         <h2 className="text-2xl font-semibold text-gray-900">
-          {chamado ? (ehChamadoFinalizado ? 'Editar Chamado Finalizado' : 'Editar Chamado') : 'Novo Chamado'}
+          {ehNovoChamado ? 'Novo Chamado' : (ehChamadoFinalizado ? 'Editar Chamado Finalizado' : 'Editar Chamado')}
         </h2>
         {ehChamadoFinalizado && (
           <p className="text-sm text-orange-600 mt-1">
@@ -780,7 +781,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         </div>
 
         {/* Opção de criar evento na agenda */}
-        {!chamado && currentChamado.data_agendamento && (
+        {ehNovoChamado && currentChamado.data_agendamento && (
           <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <input
               type="checkbox"
@@ -802,7 +803,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
           </Button>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
             <Save className="w-4 h-4 mr-2" />
-            {chamado ? '✏️ Salvar Alterações' : '➕ Criar Chamado'}
+            {ehNovoChamado ? '➕ Criar Chamado' : '✏️ Salvar Alterações'}
           </Button>
         </div>
       </form>

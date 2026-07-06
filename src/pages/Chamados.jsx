@@ -22,6 +22,7 @@ import AprovarChamadoEmpresa from "../components/chamados/AprovarChamadoEmpresa"
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingChamado, setEditingChamado] = useState(null);
+  const [prefillChamado, setPrefillChamado] = useState(null);
   const [aprovandoChamado, setAprovandoChamado] = useState(null); // New state for approval flow
   const [user, setUser] = useState(null);
   const [forceRender, setForceRender] = useState(0);
@@ -405,6 +406,23 @@ ClimaPro - Sistema de Gestão`
     }
   }, [chamados]);
 
+  // Abrir formulário com dados pré-preenchidos (vindo de manutenções vencidas)
+  useEffect(() => {
+    if (!user || editOpenedRef.current) return;
+    const prefillData = sessionStorage.getItem('prefill_chamado');
+    if (prefillData) {
+      editOpenedRef.current = true;
+      sessionStorage.removeItem('prefill_chamado');
+      try {
+        const parsed = JSON.parse(prefillData);
+        setPrefillChamado(parsed);
+        setShowForm(true);
+      } catch (e) {
+        setShowForm(true);
+      }
+    }
+  }, [user]);
+
   // Filtrar chamados por pesquisa e status
   const chamadosFiltrados = chamados.filter(chamado => {
     const cliente = clientes.find(c => c.id === chamado.cliente_id);
@@ -637,13 +655,14 @@ ClimaPro - Sistema de Gestão`
 
         {showForm && (
           <ChamadoForm
-            chamado={editingChamado}
+            chamado={editingChamado || prefillChamado}
             clientes={clientes}
             tecnicos={tecnicos}
             onSubmit={handleSubmit}
             onCancel={() => {
               setShowForm(false);
               setEditingChamado(null);
+              setPrefillChamado(null);
             }}
           />
         )}
