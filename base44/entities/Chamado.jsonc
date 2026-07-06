@@ -85,6 +85,10 @@
       "format": "date",
       "description": "Data definida pela empresa para lembrar sobre a pr\u00f3xima manuten\u00e7\u00e3o"
     },
+    "hora_lembrete_proxima_manutencao": {
+      "type": "string",
+      "description": "Hora definida pela empresa para o lembrete da pr\u00f3xima manuten\u00e7\u00e3o (HH:mm)"
+    },
     "lembrete_manutencao_enviado": {
       "type": "boolean",
       "default": false,
@@ -189,16 +193,28 @@
             {
               "$or": [
                 {
-                  "user_condition": {
-                    "data.tipo_usuario": "tecnico"
-                  },
-                  "data.tecnico_id": "{{user.data.tecnico_id}}"
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "data.tipo_usuario": "tecnico"
+                      }
+                    },
+                    {
+                      "data.tecnico_id": "{{user.data.tecnico_id}}"
+                    }
+                  ]
                 },
                 {
-                  "user_condition": {
-                    "data.tipo_usuario": "cliente"
-                  },
-                  "data.cliente_id": "{{user.data.cliente_id}}"
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "data.tipo_usuario": "cliente"
+                      }
+                    },
+                    {
+                      "data.cliente_id": "{{user.data.cliente_id}}"
+                    }
+                  ]
                 }
               ]
             }
@@ -219,10 +235,20 @@
               "data.empresa_id": "{{user.data.empresa_id}}"
             },
             {
-              "user_condition": {
-                "data.tipo_usuario": "tecnico"
-              },
-              "data.tecnico_id": "{{user.data.tecnico_id}}"
+              "$or": [
+                {
+                  "$and": [
+                    {
+                      "user_condition": {
+                        "data.tipo_usuario": "tecnico"
+                      }
+                    },
+                    {
+                      "data.tecnico_id": "{{user.data.tecnico_id}}"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
