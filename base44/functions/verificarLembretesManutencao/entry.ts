@@ -47,6 +47,8 @@ Deno.serve(async (req) => {
 
                 const dataLembrete = chamado.data_lembrete_proxima_manutencao;
                 const dataFormatada = new Date(dataLembrete + 'T00:00:00').toLocaleDateString('pt-BR');
+                const horaLembrete = chamado.hora_lembrete_proxima_manutencao || null;
+                const dataHoraTexto = horaLembrete ? `${dataFormatada} às ${horaLembrete}` : dataFormatada;
                 const numeroChamado = chamado.numero_chamado || chamado.id.slice(-6).toUpperCase();
 
                 const assunto = `🔔 Lembrete de Manutenção Preventiva - Chamado #${numeroChamado} - ClimaPro`;
@@ -58,7 +60,7 @@ A manutenção preventiva do serviço abaixo está vencendo:
 
 📋 Chamado: ${chamado.titulo}
 🔢 Número: #${numeroChamado}
-📅 Data programada para a manutenção: ${dataFormatada}
+📅 Data programada para a manutenção: ${dataHoraTexto}
 📍 Local: ${chamado.local || 'Não especificado'}
 
 Entre em contato para agendar a manutenção e garantir o bom funcionamento dos seus equipamentos!
@@ -89,7 +91,7 @@ A manutenção preventiva do serviço abaixo está vencendo e o cliente já foi 
 📋 Chamado: ${chamado.titulo}
 🔢 Número: #${numeroChamado}
 👤 Cliente: ${clienteNome}
-📅 Data programada: ${dataFormatada}
+📅 Data programada: ${dataHoraTexto}
 📍 Local: ${chamado.local || 'Não especificado'}
 
 Entre em contato com o cliente para agendar a manutenção!
