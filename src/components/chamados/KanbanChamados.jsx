@@ -1,4 +1,3 @@
-
 import React from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +15,8 @@ import {
   Calendar,
   Wrench,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  Bell
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -392,6 +392,15 @@ export default function KanbanChamados({
                                         <Calendar className="w-3 h-3" />
                                         <span>
                                           {format(new Date(chamado.data_agendamento), "dd/MM HH:mm")}
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {chamado.data_lembrete_proxima_manutencao && (
+                                      <div className="flex items-center gap-1 text-xs text-amber-700 mb-2 bg-amber-50 rounded px-1.5 py-0.5">
+                                        <Bell className="w-3 h-3" />
+                                        <span>
+                                          Manutenção: {format(new Date(chamado.data_lembrete_proxima_manutencao + 'T00:00:00'), "dd/MM/yyyy")}
                                         </span>
                                       </div>
                                     )}

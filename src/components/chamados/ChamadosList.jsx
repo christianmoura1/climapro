@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Clock, MapPin, User, Calendar, Edit, CheckCircle } from "lucide-react";
+import { Clock, MapPin, User, Calendar, Edit, CheckCircle, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -135,6 +135,12 @@ ClimaPro`
                     {chamado.prioridade === 'urgente' && (
                       <Badge className="bg-red-600 text-white">
                         🚨 Urgente
+                      </Badge>
+                    )}
+                    {chamado.data_lembrete_proxima_manutencao && (
+                      <Badge className="bg-amber-100 text-amber-800 flex items-center gap-1">
+                        <Bell className="w-3 h-3" />
+                        {format(new Date(chamado.data_lembrete_proxima_manutencao + 'T00:00:00'), "dd/MM/yyyy", { locale: ptBR })}
                       </Badge>
                     )}
                   </div>

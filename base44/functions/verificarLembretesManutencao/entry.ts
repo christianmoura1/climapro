@@ -5,16 +5,29 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        // Buscar chamados finalizados com lembrete para hoje e ainda não enviados
+        // Buscar todos os chamados finalizados com lembrete pendente
+        // O filtro do SDK faz match exato, então buscamos por lembrete_manutencao_enviado=false
+        // e filtramos por data <= hoje no código
         const chamados = await base44.asServiceRole.entities.Chamado.filter({
-            status: 'finalizado',
-            data_lembrete_proxima_manutencao: today,
             lembrete_manutencao_enviado: false
         });
 
+        // Filtrar em código: data_lembrete_proxima_manutencao <= hoje e deve ter data definida
+        const chamadosPendentes = chamados.filter(c =>
+            c.data_lembrete_proxima_manutencao &&
+            c.data_lembrete_proxima_manutencao <= today
+        );
+
+        // Buscar todas as empresas de uma vez (para pegar usuario_principal_email)
+        const empresas = await base44.asServiceRole.entities.Empresa.list();
+        const empresasMap = new Map();
+        for (const emp of empresas) {
+            empresasMap.set(emp.id, emp);
+        }
+
         const resultados = [];
 
-        for (const chamado of chamados) {
+        for (const chamado of chamadosPendentes) {
             try {
                 // Buscar dados do cliente
                 let clienteNome = 'Cliente';
@@ -27,27 +40,62 @@ Deno.serve(async (req) => {
                     }
                 }
 
-                // Enviar email para o cliente
+                // Buscar email da empresa (usuario_principal_email)
+                const empresa = empresasMap.get(chamado.empresa_id);
+                const empresaEmail = empresa?.usuario_principal_email || null;
+                const empresaNome = empresa?.nome || 'ClimaPro';
+
+                const dataLembrete = chamado.data_lembrete_proxima_manutencao;
+                const dataFormatada = new Date(dataLembrete + 'T00:00:00').toLocaleDateString('pt-BR');
+                const numeroChamado = chamado.numero_chamado || chamado.id.slice(-6).toUpperCase();
+
+                const assunto = `🔔 Lembrete de Manutenção Preventiva - Chamado #${numeroChamado} - ClimaPro`;
+                const corpoEmail = `Olá${clienteNome !== 'Cliente' ? ' ' + clienteNome : ''},
+
+Este é um lembrete automático do ${empresaNome} via ClimaPro! 🗓️
+
+A manutenção preventiva do serviço abaixo está vencendo:
+
+📋 Chamado: ${chamado.titulo}
+🔢 Número: #${numeroChamado}
+📅 Data programada para a manutenção: ${dataFormatada}
+📍 Local: ${chamado.local || 'Não especificado'}
+
+Entre em contato para agendar a manutenção e garantir o bom funcionamento dos seus equipamentos!
+
+Atenciosamente,
+${empresaNome} ❄️`;
+
+                // 1. Enviar email para o cliente
                 if (clienteEmail) {
                     await base44.asServiceRole.integrations.Core.SendEmail({
                         to: clienteEmail,
-                        subject: `🔧 Lembrete de Manutenção - ${chamado.titulo} - ClimaPro`,
-                        body: `Olá ${clienteNome},
+                        subject: assunto,
+                        body: corpoEmail
+                    });
+                }
 
-Este é um lembrete automático do ClimaPro! 🗓️
+                // 2. Enviar email para a empresa (usuario_principal_email)
+                if (empresaEmail) {
+                    await base44.asServiceRole.integrations.Core.SendEmail({
+                        to: empresaEmail,
+                        subject: `🔔 [INTERNO] Lembrete de Manutenção - Cliente: ${clienteNome} - Chamado #${numeroChamado}`,
+                        body: `Olá,
 
-Seu último serviço de refrigeração foi concluído e está na hora de agendar a próxima manutenção preventiva.
+Este é um lembrete interno do ClimaPro! 🗓️
 
-📋 Último chamado: ${chamado.titulo}
-📅 Data do último serviço: ${chamado.data_finalizacao ? new Date(chamado.data_finalizacao).toLocaleDateString('pt-BR') : 'N/A'}
+A manutenção preventiva do serviço abaixo está vencendo e o cliente já foi notificado${clienteEmail ? '' : ' (cliente não possui email cadastrado)'}:
+
+📋 Chamado: ${chamado.titulo}
+🔢 Número: #${numeroChamado}
+👤 Cliente: ${clienteNome}
+📅 Data programada: ${dataFormatada}
 📍 Local: ${chamado.local || 'Não especificado'}
 
-Entre em contato conosco para agendar sua próxima manutenção e garantir o bom funcionamento dos seus equipamentos!
-
-📞 Telefone/WhatsApp: (solicite ao seu técnico)
+Entre em contato com o cliente para agendar a manutenção!
 
 Atenciosamente,
-Equipe ClimaPro ❄️`
+ClimaPro ❄️`
                     });
                 }
 
@@ -58,8 +106,10 @@ Equipe ClimaPro ❄️`
 
                 resultados.push({
                     chamado_id: chamado.id,
+                    numero_chamado: numeroChamado,
                     cliente: clienteNome,
-                    email_enviado: !!clienteEmail,
+                    email_cliente: clienteEmail || null,
+                    email_empresa: empresaEmail || null,
                     status: 'sucesso'
                 });
             } catch (err) {
@@ -73,7 +123,7 @@ Equipe ClimaPro ❄️`
 
         return Response.json({
             data_referencia: today,
-            total_lembretes: chamados.length,
+            total_chamados_pendentes: chamadosPendentes.length,
             resultados
         });
     } catch (error) {

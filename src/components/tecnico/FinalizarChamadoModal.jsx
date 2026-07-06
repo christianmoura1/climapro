@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Upload, Image, Video, Trash2, CheckCircle } from "lucide-react"; // Added CheckCircle
+import { X, Upload, Image, Video, Trash2, CheckCircle, Bell } from "lucide-react"; // Added CheckCircle
 import { base44 } from "@/api/base44Client";
 
 export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isLoading }) {
@@ -12,7 +12,8 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     nome_cliente_confirmacao: "",
     observacoes_finalizacao: "",
     fotos_finalizacao: [],
-    videos_finalizacao: []
+    videos_finalizacao: [],
+    data_lembrete_proxima_manutencao: ""
   });
   const [uploadingFile, setUploadingFile] = useState(false);
   const canvasRef = useRef(null);
@@ -211,7 +212,8 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
       onConfirm({
         ...formData,
         assinatura_cliente: result.file_url,
-        status: 'aguardando_aprovacao_empresa'
+        status: 'aguardando_aprovacao_empresa',
+        lembrete_manutencao_enviado: false
       });
     } catch (error) {
       console.error('Erro ao salvar assinatura:', error);
@@ -281,6 +283,23 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 placeholder="Descreva o serviço realizado, peças trocadas, recomendações, etc..."
                 rows={4}
               />
+            </div>
+
+            {/* Próxima Manutenção Programada */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Bell className="w-4 h-4" />
+                Próxima Manutenção Programada
+              </Label>
+              <Input
+                type="date"
+                value={formData.data_lembrete_proxima_manutencao}
+                onChange={(e) => setFormData({...formData, data_lembrete_proxima_manutencao: e.target.value})}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              <p className="text-xs text-gray-500">
+                💡 Defina uma data para o sistema enviar automaticamente um lembrete de manutenção preventiva para a empresa e o cliente.
+              </p>
             </div>
 
             {/* Upload de Fotos */}

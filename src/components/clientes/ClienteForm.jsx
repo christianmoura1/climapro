@@ -385,6 +385,9 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="contato@cliente.com"
               />
+              <p className="text-xs text-gray-500">
+                💡 Opcional. Necessário caso o cliente deva receber lembretes automáticos de manutenção ou acesso ao portal.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="whatsapp">WhatsApp</Label>
