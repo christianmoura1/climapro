@@ -45,6 +45,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   const [mostrarMapa, setMostrarMapa] = useState(false);
   const [criarEvento, setCriarEvento] = useState(true);
   const [buscaCliente, setBuscaCliente] = useState("");
+  const [emailCliente, setEmailCliente] = useState("");
 
   // Estabelecimentos e equipamentos
   const [estabelecimentoAtivo, setEstabelecimentoAtivo] = useState(null);
@@ -66,6 +67,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
       const cliente = clientes.find(c => c.id === currentChamado.cliente_id);
       if (cliente) {
         setClienteSelecionado(cliente);
+        setEmailCliente(cliente.email || "");
         setEstabelecimentoAtivo(null);
         setHistoricoEquipamento(null);
 
@@ -254,6 +256,10 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
       return;
     }
     
+    // Se editando finalizado e email do cliente mudou, atualizar cliente
+    if (ehChamadoFinalizado && clienteSelecionado && emailCliente && emailCliente !== clienteSelecionado.email) {
+      base44.entities.Cliente.update(clienteSelecionado.id, { email: emailCliente }).catch(() => {});
+    }
     onSubmit(currentChamado, criarEvento);
   };
 
@@ -775,6 +781,41 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Próxima Manutenção */}
+              <div className="border-t border-gray-200 pt-4 mt-4 space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">🔧 Próxima Manutenção</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Data do Lembrete</Label>
+                    <Input
+                      type="date"
+                      value={currentChamado.data_lembrete_proxima_manutencao || ""}
+                      onChange={(e) => setCurrentChamado(prev => ({ ...prev, data_lembrete_proxima_manutencao: e.target.value, lembrete_manutencao_enviado: false }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hora do Lembrete</Label>
+                    <Input
+                      type="time"
+                      value={currentChamado.hora_lembrete_proxima_manutencao || ""}
+                      onChange={(e) => setCurrentChamado(prev => ({ ...prev, hora_lembrete_proxima_manutencao: e.target.value, lembrete_manutencao_enviado: false }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Email do Cliente</Label>
+                    <Input
+                      type="email"
+                      value={emailCliente}
+                      onChange={(e) => setEmailCliente(e.target.value)}
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  💡 O sistema enviará um lembrete automático ao cliente no dia e horário definidos.
+                </p>
               </div>
             </div>
           )}
