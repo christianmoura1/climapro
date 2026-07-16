@@ -76,15 +76,25 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
           .then(setEquipamentosCliente)
           .catch(() => setEquipamentosCliente([]));
 
-        // Selecionar primeiro estabelecimento ou endereço legado
+        // Selecionar estabelecimento correspondente ao local já salvo, ou o primeiro
         const ests = cliente.estabelecimentos || [];
+        const localSalvo = chamado?.local;
         if (ests.length > 0) {
-          const primeiroEst = ests[0];
-          setEstabelecimentoAtivo(primeiroEst);
-          setCurrentChamado(prev => ({ ...prev, local: primeiroEst.endereco || "" }));
-          setMostrarMapa(!!(primeiroEst.latitude && primeiroEst.longitude));
+          // Tenta encontrar o estabelecimento que corresponde ao endereço já salvo no chamado
+          const estMatch = localSalvo
+            ? ests.find(est => est.endereco && est.endereco.trim() === localSalvo.trim())
+            : null;
+          const estAtivo = estMatch || ests[0];
+          setEstabelecimentoAtivo(estAtivo);
+          // Só sobrescreve o local se for um chamado novo (sem local salvo)
+          if (!localSalvo) {
+            setCurrentChamado(prev => ({ ...prev, local: estAtivo.endereco || "" }));
+          }
+          setMostrarMapa(!!(estAtivo.latitude && estAtivo.longitude));
         } else if (cliente.endereco) {
-          setCurrentChamado(prev => ({ ...prev, local: cliente.endereco }));
+          if (!localSalvo) {
+            setCurrentChamado(prev => ({ ...prev, local: cliente.endereco }));
+          }
           setMostrarMapa(!!(cliente.latitude && cliente.longitude));
         }
       }
