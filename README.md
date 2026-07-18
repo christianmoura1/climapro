@@ -1,39 +1,47 @@
-**Welcome to your Base44 project** 
+# ClimaPro
 
-**About**
+Sistema de gestão de manutenção/climatização (HVAC) multi-tenant, construído em React + Vite,
+com banco de dados e autenticação no [Supabase](https://supabase.com).
 
-View and Edit  your app on [Base44.com](http://Base44.com) 
+## Rodando localmente
 
-This project contains everything you need to run your app locally.
+1. Clone o repositório e instale as dependências:
+   ```
+   npm install
+   ```
+2. Crie um projeto gratuito em [supabase.com](https://supabase.com) e aplique o schema:
+   ```
+   supabase link --project-ref SEU_PROJECT_REF
+   supabase db push
+   ```
+   (o schema completo está em `supabase/migrations/0001_init.sql`)
+3. Copie `.env.local.example` para `.env.local` e preencha com a URL e a `anon key` do seu
+   projeto (Project Settings > API no painel do Supabase):
+   ```
+   VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+   VITE_SUPABASE_ANON_KEY=sua-anon-public-key
+   ```
+4. Rode o app: `npm run dev`
 
-**Edit the code in your local development environment**
+## Edge Functions
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
-
-**Prerequisites:** 
-
-1. Clone the repository using the project's Git URL 
-2. Navigate to the project directory
-3. Install dependencies: `npm install`
-4. Create an `.env.local` file and set the right environment variables
-
+A lógica de servidor (envio de e-mail, lembretes de manutenção, importação/deduplicação de
+dados) vive em `supabase/functions/`. Deploy com:
 ```
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=your_backend_url
-
-e.g.
-VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
-VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+supabase functions deploy send-email
+supabase functions deploy verificar-lembretes-manutencao
+# ...demais functions em supabase/functions/
 ```
 
-Run the app: `npm run dev`
+Segredos necessários (`supabase secrets set NOME=valor`):
+- `RESEND_API_KEY` — envio de e-mail transacional (resend.com, free tier)
+- `ANTHROPIC_API_KEY` — geração de documento de PMOC via IA (opcional)
 
-**Publish your changes**
+`verificar-lembretes-manutencao` deve ser agendada (Supabase Cron / `pg_cron`) para rodar
+diariamente.
 
-Open [Base44.com](http://Base44.com) and click on Publish.
+## Deploy do front-end
 
-**Docs & Support**
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Build estático (`npm run build`, saída em `dist/`), hospedado gratuitamente na
+[Vercel](https://vercel.com) ou Netlify, conectado a este repositório com deploy automático a
+cada push.

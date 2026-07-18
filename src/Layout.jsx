@@ -131,7 +131,7 @@ export default function Layout({ children, currentPageName }) {
   const [modulosAtivos, setModulosAtivos] = React.useState({});
 
   // Páginas que não precisam de autenticação
-  const noAuthPages = ["LandingPage", "Welcome", "SetupInicial", "TecnicoDashboard", "ClienteDashboard", "InitialChoice", "AlterarSenha"];
+  const noAuthPages = ["LandingPage", "Welcome", "SetupInicial", "TecnicoDashboard", "ClienteDashboard", "InitialChoice", "AlterarSenha", "Login"];
   const shouldLoadAuth = !noAuthPages.includes(currentPageName);
 
   React.useEffect(function() {
@@ -261,7 +261,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Páginas que não devem mostrar sidebar nem CompatibilityCheck
-  const noSidebarPages = ["LandingPage", "Welcome", "SetupInicial", "TecnicoDashboard", "ClienteDashboard", "InitialChoice", "AlterarSenha"];
+  const noSidebarPages = ["LandingPage", "Welcome", "SetupInicial", "TecnicoDashboard", "ClienteDashboard", "InitialChoice", "AlterarSenha", "Login"];
   if (noSidebarPages.includes(currentPageName)) {
     return (
       <BootDiagnostics>
