@@ -10,11 +10,10 @@ import { AC_MODEL_URLS } from "./acModelConfig";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Vista explodida estilo Apple: as peças ficam sempre visíveis, alinhadas em
-// profundidade numa diagonal. O scroll aumenta a separação entre elas (cada
-// uma com sua janela/velocidade), destaca a peça ativa e, no final, o
-// conjunto volta à pilha compacta. As posições são derivadas do índice —
-// pilha compacta (COMPACT_GAP) vs. explodida (EXPLODED_GAP).
+// Desfile horizontal com foco: as peças ficam lado a lado e o scroll desliza
+// a fila, passando cada uma pelo centro da tela — a peça em foco cresce e
+// avança, as vizinhas recuam e diminuem. Nenhuma peça esconde a outra e cada
+// uma tem seu momento em destaque, sincronizado com o texto à esquerda.
 const PARTS = [
   {
     key: "tampa",
@@ -63,23 +62,8 @@ const PARTS = [
   }
 ];
 
-const MID = (PARTS.length - 1) / 2;
-const COMPACT_GAP = 0.72;
-const EXPLODED_GAP = 1.6;
-
-const PART_WINDOW = 0.28;
-const PART_STAGGER = 0.09;
-
-function smoothstep(edge0, edge1, x) {
-  const t = THREE.MathUtils.clamp((x - edge0) / (edge1 - edge0), 0, 1);
-  return t * t * (3 - 2 * t);
-}
-
-function explodeGlobal(progress) {
-  if (progress < 0.45) return progress / 0.45;
-  if (progress < 0.55) return 1;
-  return Math.max(0, 1 - (progress - 0.55) / 0.45);
-}
+// Distância horizontal entre peças vizinhas (unidades da cena).
+const PART_SPACING = 3.6;
 
 function TampaFrontal() {
   return (
@@ -274,10 +258,10 @@ const PART_TARGET_SIZE = {
   tampa: 4.2,
   filtros: 3.6,
   serpentina: 3.4,
-  turbina: 1.9,
-  motor: 1.0,
-  placa: 1.4,
-  sensores: 0.5,
+  turbina: 2.4,
+  motor: 1.6,
+  placa: 2.0,
+  sensores: 0.8,
   bandeja: 3.8,
   estrutura: 4.0
 };
@@ -381,42 +365,39 @@ function AcUnitScene({ progressRef }) {
 
   useFrame(() => {
     const raw = progressRef.current.raw;
-    const explodedT = explodeGlobal(raw);
-    const activeIndex = Math.min(PARTS.length - 1, Math.floor(explodedT * PARTS.length));
+    // "focus" percorre 0..N-1 conforme o scroll; a peça mais próxima dele
+    // é a que está no centro da tela.
+    const focus = raw * (PARTS.length - 1);
 
     PARTS.forEach((part, i) => {
-      const start = i * PART_STAGGER;
-      const end = Math.min(1, start + PART_WINDOW);
-      const factor = smoothstep(start, end, explodedT);
       const group = partRefs.current[part.key];
       if (!group) return;
 
-      // Alinhadas no eixo Z: pilha compacta -> explosão em profundidade.
-      const offset = MID - i;
-      const gap = THREE.MathUtils.lerp(COMPACT_GAP, EXPLODED_GAP, factor);
-      group.position.set(0, Math.sin(i * 2.1) * 0.12 * factor, offset * gap);
-      group.rotation.y = factor * 0.1 * (i % 2 === 0 ? 1 : -1);
-
-      // Peça ativa levemente maior, demais recuam — foco sincronizado com o texto.
-      const emphasis = explodedT > 0.05 && i === activeIndex ? 1.08 : 0.96;
-      const current = group.scale.x || 1;
-      group.scale.setScalar(THREE.MathUtils.lerp(current, emphasis, 0.12));
+      const d = i - focus;
+      const ad = Math.abs(d);
+      group.position.set(
+        d * PART_SPACING,
+        Math.max(0, 1 - ad) * 0.3,
+        2.0 - Math.min(ad, 3) * 1.1
+      );
+      // Peças "viram" suavemente enquanto atravessam o centro.
+      group.rotation.y = -0.35 + d * 0.12;
+      group.scale.setScalar(THREE.MathUtils.clamp(1.2 - ad * 0.4, 0.6, 1.2));
     });
 
     if (assemblyRef.current) {
-      // Diagonal estilo "exploded view" da Apple, girando sutilmente com o scroll.
-      assemblyRef.current.rotation.y = -0.62 + raw * 0.3;
-      assemblyRef.current.rotation.x = 0.1;
+      assemblyRef.current.rotation.x = 0.06;
+      assemblyRef.current.rotation.y = -0.05;
     }
   });
 
   return (
-    <group ref={assemblyRef} scale={0.72} position={[0, 0.25, 0]}>
+    <group ref={assemblyRef} scale={0.72} position={[0, 0.1, 0]}>
       {PARTS.map((part, i) => (
         <group
           key={part.key}
           ref={(el) => { partRefs.current[part.key] = el; }}
-          position={[0, 0, (MID - i) * COMPACT_GAP]}
+          position={[i * PART_SPACING, 0, 2.0 - Math.min(i, 3) * 1.1]}
         >
           <PartModel partKey={part.key} />
         </group>
@@ -445,8 +426,11 @@ export default function ExplodedViewSection() {
         onUpdate: (self) => {
           progressRef.current.raw = self.progress;
           invalidateRef.current?.();
-          const explodedT = explodeGlobal(self.progress);
-          const newIndex = Math.min(PARTS.length - 1, Math.floor(explodedT * PARTS.length));
+          const newIndex = THREE.MathUtils.clamp(
+            Math.round(self.progress * (PARTS.length - 1)),
+            0,
+            PARTS.length - 1
+          );
           if (newIndex !== activeIndexRef.current) {
             activeIndexRef.current = newIndex;
             setActiveIndex(newIndex);
