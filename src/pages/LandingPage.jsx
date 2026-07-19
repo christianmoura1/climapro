@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import Lenis from "lenis";
 import {
   Snowflake,
   ClipboardList,
@@ -29,6 +28,42 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 const ExplodedViewSection = React.lazy(() => import("@/components/landing/ExplodedViewSection"));
+
+// Só baixa o chunk do Three.js + modelos 3D quando o usuário se aproxima da
+// seção (1.5 telas antes) — mantém o carregamento inicial da página leve.
+function DeferredExplodedView() {
+  const holderRef = React.useRef(null);
+  const [ready, setReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = holderRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setReady(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setReady(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "150% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  if (!ready) {
+    return <div ref={holderRef} className="h-screen" aria-hidden="true" />;
+  }
+  return (
+    <React.Suspense fallback={<div className="h-screen" aria-hidden="true" />}>
+      <ExplodedViewSection />
+    </React.Suspense>
+  );
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -54,21 +89,6 @@ export default function LandingPage() {
 
   React.useEffect(() => {
     window.__climapro_initialized = true;
-  }, []);
-
-  // Smooth scroll (Lenis) apenas enquanto a landing page está montada
-  React.useEffect(() => {
-    const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
-    const onRaf = (time) => {
-      lenis.raf(time);
-      ScrollTrigger.update();
-    };
-    gsap.ticker.add(onRaf);
-    gsap.ticker.lagSmoothing(0);
-    return () => {
-      gsap.ticker.remove(onRaf);
-      lenis.destroy();
-    };
   }, []);
 
   useGSAP(() => {
@@ -228,9 +248,9 @@ export default function LandingPage() {
           </video>
         )}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div ref={blob1Ref} className="absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-blue-500/20 blur-3xl" />
-          <div ref={blob2Ref} className="absolute top-40 -right-32 w-[420px] h-[420px] rounded-full bg-purple-500/20 blur-3xl" />
-          <div ref={blob3Ref} className="absolute -bottom-20 -left-20 w-[380px] h-[380px] rounded-full bg-emerald-400/10 blur-3xl" />
+          <div ref={blob1Ref} className="absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-blue-500/20 blur-3xl will-change-transform" />
+          <div ref={blob2Ref} className="absolute top-40 -right-32 w-[420px] h-[420px] rounded-full bg-purple-500/20 blur-3xl will-change-transform" />
+          <div ref={blob3Ref} className="absolute -bottom-20 -left-20 w-[380px] h-[380px] rounded-full bg-emerald-400/10 blur-3xl will-change-transform" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -311,15 +331,7 @@ export default function LandingPage() {
       </section>
 
       {/* Exploded View — desmontagem 3D do equipamento sincronizada com o scroll */}
-      <React.Suspense
-        fallback={
-          <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-muted/40">
-            <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          </div>
-        }
-      >
-        <ExplodedViewSection />
-      </React.Suspense>
+      <DeferredExplodedView />
 
       {/* Features */}
       <section id="funcionalidades" className="py-24 bg-muted/30">
