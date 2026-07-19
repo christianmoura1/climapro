@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function NovoEventoModal({ eventoInicial, onClose, clientes, tecnicos, user }) {
   const [evento, setEvento] = useState(eventoInicial ? {
@@ -76,12 +77,12 @@ export default function NovoEventoModal({ eventoInicial, onClose, clientes, tecn
       } else {
         console.log("[NovoEventoModal] Evento não é manual, fechando modal");
         onClose();
-        alert("✅ Evento criado com sucesso!");
+        toast({ description: "✅ Evento criado com sucesso!", variant: "success" });
       }
     },
     onError: (error) => {
       console.error("[NovoEventoModal] Erro ao criar evento:", error);
-      alert(`❌ Erro ao criar evento: ${error.message}`);
+      toast({ description: `❌ Erro ao criar evento: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -148,10 +149,10 @@ ClimaPro`
       console.log("[NovoEventoModal] Queries invalidadas, fechando modal");
       
       onClose();
-      alert("✅ Evento e chamado criados com sucesso!");
+      toast({ description: "✅ Evento e chamado criados com sucesso!", variant: "success" });
     } catch (error) {
       console.error("[NovoEventoModal] Erro ao criar chamado vinculado:", error);
-      alert(`❌ Erro ao criar chamado: ${error.message}`);
+      toast({ description: `❌ Erro ao criar chamado: ${error.message}`, variant: "destructive" });
       onClose();
     }
   };

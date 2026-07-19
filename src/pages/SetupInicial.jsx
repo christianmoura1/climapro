@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CheckCircle, ArrowRight, ArrowLeft, Building2, User, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { toast } from "@/components/ui/use-toast";
 // Removed Select imports as they are replaced by native <select> elements
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -137,7 +138,7 @@ export default function SetupInicial() {
     },
     onError: (error) => {
       console.error("Erro no mutation:", error);
-      alert(`Erro ao configurar empresa: ${error.message || "Tente novamente"}`);
+      toast({ description: `Erro ao configurar empresa: ${error.message || "Tente novamente"}`, variant: "destructive" });
     }
   });
 
@@ -146,7 +147,7 @@ export default function SetupInicial() {
     console.log("handleEmpresaNext chamado com dados:", empresaData);
 
     if (!empresaData.nome || !empresaData.cnpj || !empresaData.telefone) {
-      alert("Por favor, preencha todos os campos obrigatórios da empresa.");
+      toast({ description: "Por favor, preencha todos os campos obrigatórios da empresa.", variant: "default" });
       return;
     }
 
@@ -159,7 +160,7 @@ export default function SetupInicial() {
     console.log("handleTecnicoNext chamado com dados:", tecnicoData);
 
     if (!tecnicoData.nome || !tecnicoData.email || !tecnicoData.telefone) {
-      alert("Por favor, preencha todos os campos obrigatórios do técnico.");
+      toast({ description: "Por favor, preencha todos os campos obrigatórios do técnico.", variant: "default" });
       return;
     }
 
@@ -172,7 +173,7 @@ export default function SetupInicial() {
     console.log("handleClienteSubmit chamado com dados:", clienteData);
 
     if (!clienteData.nome || !clienteData.telefone) {
-      alert("Por favor, preencha todos os campos obrigatórios do cliente.");
+      toast({ description: "Por favor, preencha todos os campos obrigatórios do cliente.", variant: "default" });
       return;
     }
 

@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AprovarMovimentacoes({ movimentacoes, tecnicos }) {
   const [movSelecionada, setMovSelecionada] = useState(null);
@@ -123,7 +124,7 @@ https://climapro.base44.app/TecnicoDashboard`;
     onError: (error) => {
       console.error("[AprovarMov] Erro ao aprovar movimentação:", error);
       setAtribuindoMovimentacao(null);
-      alert("❌ Erro ao aprovar movimentação: " + error.message);
+      toast({ description: "❌ Erro ao aprovar movimentação: " + error.message, variant: "destructive" });
     }
   });
 
@@ -175,17 +176,17 @@ ClimaPro`
       setShowRejectDialog(false);
       setMotivoRejeicao("");
       setMovSelecionada(null);
-      alert("❌ Movimentação rejeitada.");
+      toast({ description: "❌ Movimentação rejeitada.", variant: "destructive" });
     },
     onError: (error) => {
       console.error("Erro ao rejeitar movimentação:", error);
-      alert("❌ Erro ao rejeitar movimentação. Tente novamente.");
+      toast({ description: "❌ Erro ao rejeitar movimentação. Tente novamente.", variant: "destructive" });
     }
   });
 
   const handleRejeitar = () => {
     if (!motivoRejeicao.trim()) {
-      alert("⚠️ Por favor, informe o motivo da rejeição.");
+      toast({ description: "⚠️ Por favor, informe o motivo da rejeição.", variant: "warning" });
       return;
     }
     rejeitarMutation.mutate({ movimentacaoId: movSelecionada.id, motivo: motivoRejeicao });

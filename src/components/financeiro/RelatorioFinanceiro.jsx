@@ -7,6 +7,7 @@ import { ArrowLeft, Download, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function RelatorioFinanceiro({ lancamentos, empresa, onClose }) {
   const [dataInicio, setDataInicio] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
@@ -52,7 +53,7 @@ Relatório gerado automaticamente pelo ClimaPro.
         body: relatorioTexto
       });
 
-      alert("Relatório enviado por e-mail com sucesso!");
+      toast({ description: "Relatório enviado por e-mail com sucesso!", variant: "default" });
     }
   };
 

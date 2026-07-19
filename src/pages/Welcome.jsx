@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Snowflake } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export default function Welcome() {
             const tecnico = tecnicos.find(t => t.email === user.email && t.status === 'ativo');
             
             if (!tecnico) {
-              alert("❌ Técnico não encontrado ou inativo. Entre em contato com o administrador.");
+              toast({ description: "❌ Técnico não encontrado ou inativo. Entre em contato com o administrador.", variant: "destructive" });
               base44.auth.logout();
               navigate(createPageUrl("InitialChoice"));
               return;
@@ -70,7 +71,7 @@ export default function Welcome() {
             const cliente = clientes.find(c => c.email === user.email && c.tem_acesso_portal);
             
             if (!cliente) {
-              alert("❌ Cliente não encontrado ou sem acesso ao portal. Entre em contato com a empresa.");
+              toast({ description: "❌ Cliente não encontrado ou sem acesso ao portal. Entre em contato com a empresa.", variant: "destructive" });
               base44.auth.logout();
               navigate(createPageUrl("InitialChoice"));
               return;

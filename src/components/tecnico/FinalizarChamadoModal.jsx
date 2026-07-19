@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Upload, Image, Video, Trash2, CheckCircle } from "lucide-react"; // Added CheckCircle
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isLoading }) {
   const [formData, setFormData] = useState({
@@ -39,18 +40,18 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     const files = Array.from(e.target.files);
     
     if (formData.fotos_finalizacao.length + files.length > 10) {
-      alert('⚠️ Você pode adicionar no máximo 10 fotos');
+      toast({ description: '⚠️ Você pode adicionar no máximo 10 fotos', variant: "warning" });
       return;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        alert(`⚠️ ${file.name} não é uma imagem válida`);
+        toast({ description: `⚠️ ${file.name} não é uma imagem válida`, variant: "warning" });
         continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert(`⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`);
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`, variant: "warning" });
         continue;
       }
 
@@ -63,7 +64,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
         }));
       } catch (error) {
         console.error('Erro ao fazer upload da foto:', error);
-        alert(`❌ Erro ao fazer upload de ${file.name}`);
+        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingFile(false);
       }
@@ -77,18 +78,18 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     const files = Array.from(e.target.files);
     
     if (formData.videos_finalizacao.length + files.length > 2) {
-      alert('⚠️ Você pode adicionar no máximo 2 vídeos');
+      toast({ description: '⚠️ Você pode adicionar no máximo 2 vídeos', variant: "warning" });
       return;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('video/')) {
-        alert(`⚠️ ${file.name} não é um vídeo válido`);
+        toast({ description: `⚠️ ${file.name} não é um vídeo válido`, variant: "warning" });
         continue;
       }
 
       if (file.size > 50 * 1024 * 1024) {
-        alert(`⚠️ ${file.name} é muito grande. Tamanho máximo: 50MB`);
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 50MB`, variant: "warning" });
         continue;
       }
 
@@ -101,7 +102,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
         }));
       } catch (error) {
         console.error('Erro ao fazer upload do vídeo:', error);
-        alert(`❌ Erro ao fazer upload de ${file.name}`);
+        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingFile(false);
       }
@@ -187,17 +188,17 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     e.preventDefault();
 
     if (!formData.nome_cliente_confirmacao.trim()) {
-      alert("⚠️ Por favor, informe o nome da pessoa que acompanhou o atendimento.");
+      toast({ description: "⚠️ Por favor, informe o nome da pessoa que acompanhou o atendimento.", variant: "warning" });
       return;
     }
 
     if (formData.fotos_finalizacao.length === 0) {
-      alert("⚠️ É obrigatório anexar pelo menos 1 foto do serviço finalizado.");
+      toast({ description: "⚠️ É obrigatório anexar pelo menos 1 foto do serviço finalizado.", variant: "warning" });
       return;
     }
 
     if (!hasSignature) {
-      alert("⚠️ Por favor, colete a assinatura digital.");
+      toast({ description: "⚠️ Por favor, colete a assinatura digital.", variant: "warning" });
       return;
     }
 
@@ -215,7 +216,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
       });
     } catch (error) {
       console.error('Erro ao salvar assinatura:', error);
-      alert("❌ Erro ao salvar assinatura. Tente novamente.");
+      toast({ description: "❌ Erro ao salvar assinatura. Tente novamente.", variant: "destructive" });
     } finally {
       setUploadingSignature(false);
     }

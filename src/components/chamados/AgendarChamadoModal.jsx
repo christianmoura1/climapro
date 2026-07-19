@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AgendarChamadoModal({ chamado, tecnicos, cliente, onClose }) {
   const [dataAgendamento, setDataAgendamento] = useState("");
@@ -70,22 +71,22 @@ ClimaPro`
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados']);
       queryClient.invalidateQueries(['agenda-eventos']);
-      alert("✅ Chamado agendado com sucesso!");
+      toast({ description: "✅ Chamado agendado com sucesso!", variant: "success" });
       onClose();
     },
     onError: (error) => {
       console.error("Erro ao agendar:", error);
-      alert("❌ Erro ao agendar chamado. Tente novamente.");
+      toast({ description: "❌ Erro ao agendar chamado. Tente novamente.", variant: "destructive" });
     }
   });
 
   const handleAgendar = () => {
     if (!dataAgendamento) {
-      alert("⚠️ Por favor, selecione uma data e hora.");
+      toast({ description: "⚠️ Por favor, selecione uma data e hora.", variant: "warning" });
       return;
     }
     if (!tecnicoSelecionado) {
-      alert("⚠️ Por favor, selecione um técnico.");
+      toast({ description: "⚠️ Por favor, selecione um técnico.", variant: "warning" });
       return;
     }
     agendarMutation.mutate();

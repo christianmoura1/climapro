@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 
 export default function GerenciarTecnicosPage() {
@@ -197,19 +198,19 @@ Email: ${data.tecnico.email}
 
 Cole (Ctrl+V ou Cmd+V) a mensagem no WhatsApp ou Email do técnico.`);
         }).catch(() => {
-          alert(`✅ Técnico criado com sucesso!
+          toast({ description: `✅ Técnico criado com sucesso!
 
 ⚠️ COPIE E ENVIE ESTAS INSTRUÇÕES:
 
-${mensagemParaEnviar}`);
+${mensagemParaEnviar}`, variant: "success" });
         });
       } else {
-        alert("Técnico criado com sucesso!");
+        toast({ description: "Técnico criado com sucesso!", variant: "default" });
       }
     },
     onError: (error) => {
       console.error("Erro ao criar técnico:", error);
-      alert(`Erro ao criar técnico: ${error.message}`);
+      toast({ description: `Erro ao criar técnico: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -227,11 +228,11 @@ ${mensagemParaEnviar}`);
         especialidade: "ambos",
         tem_acesso_sistema: false
       });
-      alert("Técnico atualizado com sucesso!");
+      toast({ description: "Técnico atualizado com sucesso!", variant: "default" });
     },
     onError: (error) => {
       console.error("Erro ao atualizar técnico:", error);
-      alert(`Erro ao atualizar técnico: ${error.message}`);
+      toast({ description: `Erro ao atualizar técnico: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -239,11 +240,11 @@ ${mensagemParaEnviar}`);
     mutationFn: (id) => base44.entities.Tecnico.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['tecnicos']);
-      alert("Técnico excluído com sucesso!");
+      toast({ description: "Técnico excluído com sucesso!", variant: "default" });
     },
     onError: (error) => {
       console.error("Erro ao excluir técnico:", error);
-      alert(`Erro ao excluir técnico: ${error.message}`);
+      toast({ description: `Erro ao excluir técnico: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -345,7 +346,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
     },
     onError: (error) => {
       console.error("Erro ao adicionar saldo:", error);
-      alert(`❌ Erro ao enviar crédito: ${error.message}`);
+      toast({ description: `❌ Erro ao enviar crédito: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -400,12 +401,12 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
     e.preventDefault();
     
     if (!creditoForm.valor || parseFloat(creditoForm.valor) <= 0) {
-      alert("⚠️ Por favor, informe um valor válido.");
+      toast({ description: "⚠️ Por favor, informe um valor válido.", variant: "warning" });
       return;
     }
 
     if (!creditoForm.descricao) {
-      alert("⚠️ Por favor, informe uma descrição/motivo.");
+      toast({ description: "⚠️ Por favor, informe uma descrição/motivo.", variant: "warning" });
       return;
     }
 

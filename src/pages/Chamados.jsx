@@ -19,6 +19,7 @@ import ChamadoForm from "../components/chamados/ChamadoForm";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // New import
 import AprovarChamadoEmpresa from "../components/chamados/AprovarChamadoEmpresa"; // New import
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
@@ -220,11 +221,11 @@ ClimaPro`
       queryClient.invalidateQueries(['chamados', user?.empresa_id]);
       queryClient.invalidateQueries(['agenda-eventos', user?.empresa_id]); // Invalidate agenda events
       setShowForm(false);
-      alert("✅ Chamado criado com sucesso" + (variables.criarEvento && chamado.data_agendamento ? " e evento adicionado à agenda!" : "!"));
+      toast({ description: "✅ Chamado criado com sucesso" + (variables.criarEvento && chamado.data_agendamento ? " e evento adicionado à agenda!" : "!"), variant: "success" });
     },
     onError: (error) => {
       console.error("[Chamados] Erro ao criar chamado:", error);
-      alert("Erro ao criar chamado. Tente novamente.");
+      toast({ description: "Erro ao criar chamado. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -323,11 +324,11 @@ ClimaPro - Sistema de Gestão`
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao', user?.empresa_id]); // Invalidate this new query
       setShowForm(false);
       setEditingChamado(null);
-      alert("✅ Chamado atualizado com sucesso!");
+      toast({ description: "✅ Chamado atualizado com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("[Chamados] Erro ao atualizar chamado:", error);
-      alert("Erro ao atualizar chamado. Tente novamente.");
+      toast({ description: "Erro ao atualizar chamado. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -344,11 +345,11 @@ ClimaPro - Sistema de Gestão`
       queryClient.invalidateQueries(['chamados', user?.empresa_id]);
       queryClient.invalidateQueries(['agenda-eventos', user?.empresa_id]);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao', user?.empresa_id]); // Invalidate this new query
-      alert("✅ Chamado e eventos associados deletados com sucesso!");
+      toast({ description: "✅ Chamado e eventos associados deletados com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("[Chamados] Erro ao deletar chamado:", error);
-      alert("Erro ao deletar chamado. Tente novamente.");
+      toast({ description: "Erro ao deletar chamado. Tente novamente.", variant: "destructive" });
     }
   });
 

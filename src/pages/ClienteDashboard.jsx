@@ -27,6 +27,7 @@ import KanbanChamados from "../components/chamados/KanbanChamados"; // Added imp
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ClienteDashboard() {
   const navigate = useNavigate();
@@ -203,34 +204,34 @@ https://climapro.base44.app/Chamados`;
         const whatsappUrl = `https://wa.me/${telefoneEmpresa}?text=${encodeURIComponent(mensagem)}`;
         window.open(whatsappUrl, '_blank');
         
-        alert(`✅ Chamado criado com sucesso!
+        toast({ description: `✅ Chamado criado com sucesso!
 
 📱 O WhatsApp foi aberto automaticamente com a notificação.
 
-Clique em ENVIAR para notificar a empresa.`);
+Clique em ENVIAR para notificar a empresa.`, variant: "success" });
       } else {
         // Se não tiver WhatsApp, copiar para clipboard
         navigator.clipboard.writeText(mensagem).then(() => {
-          alert(`✅ Chamado criado com sucesso!
+          toast({ description: `✅ Chamado criado com sucesso!
 
 📋 Mensagem copiada para área de transferência.
 
 Por favor, envie para a empresa:
-📱 ${empresa?.telefone || 'Telefone não cadastrado'}`);
+📱 ${empresa?.telefone || 'Telefone não cadastrado'}`, variant: "success" });
         }).catch(() => {
-            alert(`✅ Chamado criado com sucesso!
+            toast({ description: `✅ Chamado criado com sucesso!
 
 ⚠️ Não foi possível copiar a mensagem automaticamente.
 
 Por favor, copie e envie manualmente para a empresa:
 ${mensagem}
-`);
+`, variant: "success" });
         });
       }
     },
     onError: (error) => {
       console.error("❌ ERRO ao criar chamado:", error);
-      alert("Erro ao criar chamado. Tente novamente.");
+      toast({ description: "Erro ao criar chamado. Tente novamente.", variant: "destructive" });
     }
   });
 

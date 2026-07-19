@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function PMOCDetail({ pmoc, cliente, tecnico, onClose, onUpdate }) {
   const handleGerarPDF = async () => {
@@ -45,10 +46,10 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
       });
 
       console.log("PDF gerado:", result);
-      alert("PDF gerado com sucesso! Verifique o console para mais detalhes.");
+      toast({ description: "PDF gerado com sucesso! Verifique o console para mais detalhes.", variant: "default" });
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("Erro ao gerar PDF. Tente novamente.");
+      toast({ description: "Erro ao gerar PDF. Tente novamente.", variant: "destructive" });
     }
   };
 
@@ -60,13 +61,13 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
           subject: `PMOC - ${cliente.nome}`,
           body: `Segue em anexo o relatório PMOC.\n\nPeriodicidade: ${pmoc.periodicidade}\nPróxima manutenção: ${pmoc.proxima_manutencao}\n\nAtenciosamente,\nEquipe ClimaPro`
         });
-        alert("E-mail enviado com sucesso!");
+        toast({ description: "E-mail enviado com sucesso!", variant: "default" });
       } catch (error) {
         console.error("Erro ao enviar e-mail:", error);
-        alert("Erro ao enviar e-mail. Tente novamente.");
+        toast({ description: "Erro ao enviar e-mail. Tente novamente.", variant: "destructive" });
       }
     } else {
-      alert("Cliente não possui e-mail cadastrado.");
+      toast({ description: "Cliente não possui e-mail cadastrado.", variant: "default" });
     }
   };
 

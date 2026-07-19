@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 const tiposConfig = {
   entrada: { label: "Entrada", icon: "🟢" },
@@ -27,11 +28,11 @@ export default function AprovarEdicoesPonto({ pontosPendentes, onFechar }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['pontos']);
       queryClient.invalidateQueries(['pontos-pendentes-aprovacao']);
-      alert("✅ Alteração aprovada com sucesso!");
+      toast({ description: "✅ Alteração aprovada com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao aprovar:", error);
-      alert("❌ Erro ao aprovar alteração");
+      toast({ description: "❌ Erro ao aprovar alteração", variant: "destructive" });
     }
   });
 
@@ -47,11 +48,11 @@ export default function AprovarEdicoesPonto({ pontosPendentes, onFechar }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['pontos']);
       queryClient.invalidateQueries(['pontos-pendentes-aprovacao']);
-      alert("✅ Alteração rejeitada. Horário original restaurado.");
+      toast({ description: "✅ Alteração rejeitada. Horário original restaurado.", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao rejeitar:", error);
-      alert("❌ Erro ao rejeitar alteração");
+      toast({ description: "❌ Erro ao rejeitar alteração", variant: "destructive" });
     }
   });
 

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equipamentos, onClose }) {
   const [gerandoPDF, setGerandoPDF] = useState(false);
@@ -348,7 +349,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
       alert("✅ Relatório gerado!\n\nUse Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("❌ Erro ao gerar PDF. Tente novamente.");
+      toast({ description: "❌ Erro ao gerar PDF. Tente novamente.", variant: "destructive" });
     } finally {
       setGerandoPDF(false);
     }

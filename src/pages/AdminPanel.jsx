@@ -23,6 +23,7 @@ import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line
 import NovaEmpresaForm from "../components/admin/NovaEmpresaForm";
 import ListaEmpresas from "../components/admin/ListaEmpresas";
 import EmpresasInadimplentes from "../components/admin/EmpresasInadimplentes";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -197,7 +198,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
     },
     onError: (error) => {
       console.error("[AdminPanel] Erro ao limpar dados:", error);
-      alert(`❌ Erro ao limpar dados: ${error.message}`);
+      toast({ description: `❌ Erro ao limpar dados: ${error.message}`, variant: "destructive" });
     }
   });
 
@@ -245,10 +246,10 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
         });
       }
 
-      alert(`Módulo ${moduloAlterado} ${novoStatus ? 'ativado' : 'desativado'} com sucesso!`);
+      toast({ description: `Módulo ${moduloAlterado} ${novoStatus ? 'ativado' : 'desativado'} com sucesso!`, variant: "default" });
     } catch (error) {
       console.error("Erro ao atualizar módulos:", error);
-      alert("Erro ao atualizar módulo. Tente novamente.");
+      toast({ description: "Erro ao atualizar módulo. Tente novamente.", variant: "destructive" });
     }
   };
 
@@ -462,7 +463,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
       }
     });
     
-    alert("Pagamento confirmado! Empresa reativada.");
+    toast({ description: "Pagamento confirmado! Empresa reativada.", variant: "default" });
   };
 
   const handleEnviarLembrete = async (empresa) => {
@@ -495,7 +496,7 @@ ClimaPro`;
       });
     }
     
-    alert("Lembrete enviado!");
+    toast({ description: "Lembrete enviado!", variant: "default" });
   };
 
   const handleExportarRelatorio = () => {

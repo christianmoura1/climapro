@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -89,7 +90,7 @@ ClimaPro`
       queryClient.invalidateQueries(['agenda-eventos']);
       setAgendandoChamado(null);
       setDataAgendamento("");
-      alert("✅ Chamado agendado e adicionado à agenda!");
+      toast({ description: "✅ Chamado agendado e adicionado à agenda!", variant: "success" });
     }
   });
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Download, XCircle, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 const statusConfig = {
   emitida: { color: "bg-green-100 text-green-800", label: "Emitida" },
@@ -92,7 +93,7 @@ export default function ListaNotasFiscais({ notas, clientes }) {
                             className="text-red-600 hover:text-red-700"
                             onClick={() => {
                               if (confirm("Tem certeza que deseja cancelar esta nota fiscal?")) {
-                                alert("Função de cancelamento será implementada");
+                                toast({ description: "Função de cancelamento será implementada", variant: "default" });
                               }
                             }}
                           >

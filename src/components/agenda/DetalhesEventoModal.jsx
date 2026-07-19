@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 // A utility function for generating page URLs. In a full application,
 // this would typically come from a routing library (e.g., Next.js useRouter, React Router).
@@ -51,7 +52,7 @@ export default function DetalhesEventoModal({ evento, onClose, onUpdate, cliente
     onSuccess: () => {
       queryClient.invalidateQueries(['agenda-eventos']);
       onClose();
-      alert("✅ Status atualizado com sucesso!");
+      toast({ description: "✅ Status atualizado com sucesso!", variant: "success" });
       if (onUpdate) onUpdate(); // Call onUpdate prop if provided
     }
   });
@@ -63,12 +64,12 @@ export default function DetalhesEventoModal({ evento, onClose, onUpdate, cliente
     onSuccess: () => {
       queryClient.invalidateQueries(['agenda-eventos']);
       onClose();
-      alert("✅ Evento excluído da agenda com sucesso!");
+      toast({ description: "✅ Evento excluído da agenda com sucesso!", variant: "success" });
       if (onUpdate) onUpdate();
     },
     onError: (error) => {
       console.error("Erro ao excluir evento:", error);
-      alert("❌ Erro ao excluir evento. Tente novamente.");
+      toast({ description: "❌ Erro ao excluir evento. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -131,11 +132,11 @@ ClimaPro`
       queryClient.invalidateQueries(['chamados']);
       queryClient.invalidateQueries(['agenda-eventos']);
       onClose(); // Close the modal
-      alert("✅ Chamado criado e vinculado com sucesso!");
+      toast({ description: "✅ Chamado criado e vinculado com sucesso!", variant: "success" });
       if (onUpdate) onUpdate(); // Call onUpdate prop if provided
     } catch (error) {
       console.error("Erro ao criar chamado:", error);
-      alert("❌ Erro ao criar chamado vinculado.");
+      toast({ description: "❌ Erro ao criar chamado vinculado.", variant: "destructive" });
     }
   };
 

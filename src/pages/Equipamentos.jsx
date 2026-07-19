@@ -11,6 +11,7 @@ import EquipamentoForm from "../components/equipamentos/EquipamentoForm";
 import EquipamentosList from "../components/equipamentos/EquipamentosList";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 export default function EquipamentosPage() {
   const [showForm, setShowForm] = useState(false);
@@ -151,11 +152,11 @@ export default function EquipamentosPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['equipamentos']);
-      alert("✅ Equipamento excluído com sucesso!");
+      toast({ description: "✅ Equipamento excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir equipamento:", error);
-      alert(`❌ ${error.message || 'Erro ao excluir equipamento.'}`);
+      toast({ description: `❌ ${error.message || 'Erro ao excluir equipamento.'}`, variant: "destructive" });
     }
   });
 
@@ -216,17 +217,17 @@ export default function EquipamentosPage() {
             onEditarChamado={(chamado) => {
               // Redirecionar para página de chamados com edição
               setVisualizandoEquipamento(null);
-              alert("Para editar o chamado, acesse a página de Chamados");
+              toast({ description: "Para editar o chamado, acesse a página de Chamados", variant: "default" });
             }}
             onDeletarChamado={async (chamado) => {
               if (window.confirm(`Confirma a exclusão do chamado #${chamado.numero_chamado}?`)) {
                 try {
                   await base44.entities.Chamado.delete(chamado.id);
                   queryClient.invalidateQueries(['chamados-equipamento', visualizandoEquipamento.id]); // Invalidate for this specific equipment
-                  alert("✅ Chamado excluído com sucesso!");
+                  toast({ description: "✅ Chamado excluído com sucesso!", variant: "success" });
                 } catch (error) {
                   console.error("Erro ao excluir chamado:", error);
-                  alert("❌ Erro ao excluir chamado");
+                  toast({ description: "❌ Erro ao excluir chamado", variant: "destructive" });
                 }
               }
             }}

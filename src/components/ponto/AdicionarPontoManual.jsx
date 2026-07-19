@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 const tiposConfig = {
   entrada: { label: "Entrada", icon: "🟢" },
@@ -52,13 +53,13 @@ export default function AdicionarPontoManual({ isOpen, onClose, tecnicos, empres
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['pontos']);
-      alert("✅ Ponto adicionado com sucesso!");
+      toast({ description: "✅ Ponto adicionado com sucesso!", variant: "success" });
       resetForm();
       onClose();
     },
     onError: (error) => {
       console.error("Erro ao adicionar ponto:", error);
-      alert(`❌ ${error.message || 'Erro ao adicionar ponto'}`);
+      toast({ description: `❌ ${error.message || 'Erro ao adicionar ponto'}`, variant: "destructive" });
     }
   });
 
