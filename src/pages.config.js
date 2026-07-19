@@ -29,6 +29,7 @@
  *   import Home from './pages/Home';
  *   import Settings from './pages/Settings';
  *   import __Layout from './Layout.jsx';
+import { lazyWithRetry } from './lib/lazyWithRetry';
  *
  *   export const PAGES = {
  *       "Home": Home,
@@ -47,9 +48,9 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import React from 'react';
 import LandingPage from './pages/LandingPage';
 import __Layout from './Layout.jsx';
+import { lazyWithRetry } from './lib/lazyWithRetry';
 
 // Code-splitting por página: cada rota vira um chunk próprio, então o
 // visitante só baixa o código da página que está abrindo. A LandingPage
@@ -57,29 +58,29 @@ import __Layout from './Layout.jsx';
 // O <React.Suspense> que cobre essas páginas está em App.jsx.
 export const PAGES = {
     "LandingPage": LandingPage,
-    "Dashboard": React.lazy(() => import('./pages/Dashboard')),
-    "Chamados": React.lazy(() => import('./pages/Chamados')),
-    "Clientes": React.lazy(() => import('./pages/Clientes')),
-    "PMOC": React.lazy(() => import('./pages/PMOC')),
-    "Financeiro": React.lazy(() => import('./pages/Financeiro')),
-    "Welcome": React.lazy(() => import('./pages/Welcome')),
-    "AdminPanel": React.lazy(() => import('./pages/AdminPanel')),
-    "SetupInicial": React.lazy(() => import('./pages/SetupInicial')),
-    "Planos": React.lazy(() => import('./pages/Planos')),
-    "Equipamentos": React.lazy(() => import('./pages/Equipamentos')),
-    "TecnicoDashboard": React.lazy(() => import('./pages/TecnicoDashboard')),
-    "GerenciarTecnicos": React.lazy(() => import('./pages/GerenciarTecnicos')),
-    "ClienteDashboard": React.lazy(() => import('./pages/ClienteDashboard')),
-    "CompanySettings": React.lazy(() => import('./pages/CompanySettings')),
-    "NotasFiscais": React.lazy(() => import('./pages/NotasFiscais')),
-    "LegacyFallback": React.lazy(() => import('./pages/LegacyFallback')),
-    "ValorTecnicos": React.lazy(() => import('./pages/ValorTecnicos')),
-    "Agenda": React.lazy(() => import('./pages/Agenda')),
-    "PontoEletronico": React.lazy(() => import('./pages/PontoEletronico')),
-    "EquipamentoDetalhes": React.lazy(() => import('./pages/EquipamentoDetalhes')),
-    "AlterarSenha": React.lazy(() => import('./pages/AlterarSenha')),
-    "InitialChoice": React.lazy(() => import('./pages/InitialChoice')),
-    "Login": React.lazy(() => import('./pages/Login')),
+    "Dashboard": lazyWithRetry(() => import('./pages/Dashboard')),
+    "Chamados": lazyWithRetry(() => import('./pages/Chamados')),
+    "Clientes": lazyWithRetry(() => import('./pages/Clientes')),
+    "PMOC": lazyWithRetry(() => import('./pages/PMOC')),
+    "Financeiro": lazyWithRetry(() => import('./pages/Financeiro')),
+    "Welcome": lazyWithRetry(() => import('./pages/Welcome')),
+    "AdminPanel": lazyWithRetry(() => import('./pages/AdminPanel')),
+    "SetupInicial": lazyWithRetry(() => import('./pages/SetupInicial')),
+    "Planos": lazyWithRetry(() => import('./pages/Planos')),
+    "Equipamentos": lazyWithRetry(() => import('./pages/Equipamentos')),
+    "TecnicoDashboard": lazyWithRetry(() => import('./pages/TecnicoDashboard')),
+    "GerenciarTecnicos": lazyWithRetry(() => import('./pages/GerenciarTecnicos')),
+    "ClienteDashboard": lazyWithRetry(() => import('./pages/ClienteDashboard')),
+    "CompanySettings": lazyWithRetry(() => import('./pages/CompanySettings')),
+    "NotasFiscais": lazyWithRetry(() => import('./pages/NotasFiscais')),
+    "LegacyFallback": lazyWithRetry(() => import('./pages/LegacyFallback')),
+    "ValorTecnicos": lazyWithRetry(() => import('./pages/ValorTecnicos')),
+    "Agenda": lazyWithRetry(() => import('./pages/Agenda')),
+    "PontoEletronico": lazyWithRetry(() => import('./pages/PontoEletronico')),
+    "EquipamentoDetalhes": lazyWithRetry(() => import('./pages/EquipamentoDetalhes')),
+    "AlterarSenha": lazyWithRetry(() => import('./pages/AlterarSenha')),
+    "InitialChoice": lazyWithRetry(() => import('./pages/InitialChoice')),
+    "Login": lazyWithRetry(() => import('./pages/Login')),
 }
 
 export const pagesConfig = {

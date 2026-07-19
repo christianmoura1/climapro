@@ -26,8 +26,9 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-const ExplodedViewSection = React.lazy(() => import("@/components/landing/ExplodedViewSection"));
+const ExplodedViewSection = lazyWithRetry(() => import("@/components/landing/ExplodedViewSection"));
 
 // Só baixa o chunk do Three.js + modelos 3D quando o usuário se aproxima da
 // seção (1.5 telas antes) — mantém o carregamento inicial da página leve.
