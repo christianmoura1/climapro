@@ -10,6 +10,7 @@ import { createPageUrl } from "@/utils";
 import ConfiguracaoFiscalForm from "../components/notasfiscais/ConfiguracaoFiscalForm";
 import EmitirNotaForm from "../components/notasfiscais/EmitirNotaForm";
 import ListaNotasFiscais from "../components/notasfiscais/ListaNotasFiscais";
+import { PageLoading } from "@/components/ui/page-loading";
 
 export default function NotasFiscaisPage() {
   const [user, setUser] = useState(null);
@@ -81,12 +82,7 @@ export default function NotasFiscaisPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 

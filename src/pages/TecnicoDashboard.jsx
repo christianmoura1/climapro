@@ -25,6 +25,7 @@ import OrcamentosPendentes from "../components/tecnico/OrcamentosPendentes";
 import CreditosPendentes from "../components/tecnico/CreditosPendentes";
 import RegistrarPonto from "../components/ponto/RegistrarPonto"; // New import for Ponto Eletrônico component
 import AprovarEdicoesPonto from "../components/ponto/AprovarEdicoesPonto";
+import { PageLoading } from "@/components/ui/page-loading";
 
 // Helper function for creating page URLs, as implied by the outline.
 // For "AlterarSenha", it's assumed there's a route configured at /alterar-senha.
@@ -214,12 +215,7 @@ export default function TecnicoDashboard() {
 
   if (!user || !tecnico) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 

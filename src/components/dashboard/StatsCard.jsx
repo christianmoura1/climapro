@@ -17,7 +17,7 @@ export default function StatsCard({ title, value, icon: Icon, bgColor, trend }) 
         </div>
         {trend && (
           <div className="flex items-center mt-3 text-sm">
-            <TrendingUp className="w-4 h-4 mr-1 text-emerald-500" />
+            <TrendingUp className="w-4 h-4 mr-1 text-success" />
             <span className="text-muted-foreground">{trend}</span>
           </div>
         )}

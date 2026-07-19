@@ -1,0 +1,12 @@
+{
+  "name": "ClimaPro - CRM Operacional",
+  "short_name": "ClimaPro",
+  "description": "Gestão de manutenção e climatização (HVAC) para equipes de campo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
