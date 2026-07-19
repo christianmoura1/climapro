@@ -28,6 +28,8 @@ import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
+const ExplodedViewSection = React.lazy(() => import("@/components/landing/ExplodedViewSection"));
+
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
@@ -43,6 +45,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [heroVideoFailed, setHeroVideoFailed] = React.useState(false);
   const heroSectionRef = React.useRef(null);
   const blob1Ref = React.useRef(null);
   const blob2Ref = React.useRef(null);
@@ -211,6 +214,19 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section ref={heroSectionRef} className="relative overflow-hidden pt-20 pb-24 lg:pt-28 lg:pb-32">
+        {!heroVideoFailed && (
+          <video
+            className="pointer-events-none absolute inset-0 -z-20 w-full h-full object-cover opacity-20"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="/hero-poster.jpg"
+            onError={() => setHeroVideoFailed(true)}
+          >
+            <source src="/videos/hero.mp4" type="video/mp4" />
+          </video>
+        )}
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div ref={blob1Ref} className="absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-blue-500/20 blur-3xl" />
           <div ref={blob2Ref} className="absolute top-40 -right-32 w-[420px] h-[420px] rounded-full bg-purple-500/20 blur-3xl" />
@@ -293,6 +309,17 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Exploded View — desmontagem 3D do equipamento sincronizada com o scroll */}
+      <React.Suspense
+        fallback={
+          <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-muted/40">
+            <div className="w-10 h-10 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        }
+      >
+        <ExplodedViewSection />
+      </React.Suspense>
 
       {/* Features */}
       <section id="funcionalidades" className="py-24 bg-muted/30">
