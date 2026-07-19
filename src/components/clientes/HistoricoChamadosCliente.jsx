@@ -106,7 +106,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
       <CardContent className="p-6">
         {chamados.length === 0 ? (
           <div className="text-center py-12">
-            <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <AlertCircle className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
             <p className="text-muted-foreground mb-2">Nenhum chamado registrado para este cliente</p>
             <p className="text-sm text-muted-foreground">Clique em "Novo Chamado" para criar o primeiro</p>
           </div>

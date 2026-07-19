@@ -92,7 +92,7 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
   if (empresas.length === 0) {
     return (
       <div className="p-12 text-center text-muted-foreground">
-        <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <Building2 className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
         <p className="text-lg font-medium mb-2">Nenhuma empresa cadastrada</p>
         <p className="text-sm">Clique em "Nova Empresa" para começar</p>
       </div>

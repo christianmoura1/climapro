@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Edit, Eye, Calendar, AlertTriangle, CheckCircle, Pause, Trash2, AlertCircle as AlertIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const statusConfig = {
-  ativo: { color: "bg-green-100 text-green-800", icon: CheckCircle, label: "Ativo" },
   aguardando_execucao: { color: "bg-blue-100 text-blue-800", icon: Calendar, label: "Aguardando Execução" },
+  em_execucao: { color: "bg-amber-100 text-amber-800", icon: Calendar, label: "Em Execução" },
   aguardando_aprovacao_empresa: { color: "bg-orange-100 text-orange-800", icon: AlertTriangle, label: "Aguardando Aprovação" },
   aguardando_validacao_cliente: { color: "bg-yellow-100 text-yellow-800", icon: AlertTriangle, label: "Aguardando Cliente" },
   reaberto: { color: "bg-red-100 text-red-800", icon: AlertIcon, label: "Reaberto" },
-  pausado: { color: "bg-yellow-100 text-yellow-800", icon: Pause, label: "Pausado" },
-  concluido: { color: "bg-muted text-foreground", icon: CheckCircle, label: "Concluído" }
+  pausado: { color: "bg-muted text-foreground", icon: Pause, label: "Pausado" },
+  concluido: { color: "bg-emerald-100 text-emerald-800", icon: CheckCircle, label: "Concluído" },
+  cancelado: { color: "bg-muted text-muted-foreground", icon: AlertIcon, label: "Cancelado" }
 };
+
+const statusPadrao = { color: "bg-muted text-foreground", icon: Calendar, label: "—" };
 
 const periodicidadeConfig = {
   mensal: "Mensal",
@@ -27,12 +32,14 @@ const periodicidadeConfig = {
 export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView, onEdit, onDelete }) {
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <Card key={i} className="shadow-sm border-none rounded-xl">
+            <CardContent className="p-6 space-y-3">
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-3 w-2/3" />
             </CardContent>
           </Card>
         ))}
@@ -42,12 +49,12 @@ export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView,
 
   if (pmocs.length === 0) {
     return (
-      <Card className="shadow-lg border-none">
-        <CardContent className="p-12 text-center">
-          <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhum PMOC cadastrado ainda</p>
-          <p className="text-muted-foreground text-sm">Clique em "Novo PMOC" para começar</p>
-        </CardContent>
+      <Card className="shadow-sm border-none rounded-xl">
+        <EmptyState
+          icon={Calendar}
+          title="Nenhum PMOC cadastrado"
+          description='Clique em "Novo PMOC" para criar o primeiro plano de manutenção preventiva.'
+        />
       </Card>
     );
   }
@@ -55,7 +62,7 @@ export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView,
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {pmocs.map((pmoc) => {
-        const status = statusConfig[pmoc.status] || statusConfig.ativo;
+        const status = statusConfig[pmoc.status] || statusPadrao;
         const StatusIcon = status.icon;
         const cliente = clientes.find(c => c.id === pmoc.cliente_id);
         const tecnico = tecnicos.find(t => t.id === pmoc.tecnico_responsavel_id);

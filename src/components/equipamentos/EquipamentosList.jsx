@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Edit, Cpu, MapPin, Calendar, Trash2, Eye } from "lucide-react"; // Import Eye icon
 import { format } from "date-fns";
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 // This is a placeholder for `createPageUrl`. In a real application,
 // this function would typically be imported from a routing utility
@@ -34,12 +36,14 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+          <Card key={i} className="shadow-sm border-none rounded-xl">
+            <CardContent className="p-6 space-y-3">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-3 w-2/3" />
             </CardContent>
           </Card>
         ))}
@@ -49,12 +53,12 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
 
   if (equipamentos.length === 0) {
     return (
-      <Card className="shadow-lg border-none">
-        <CardContent className="p-12 text-center">
-          <Cpu className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhum equipamento cadastrado ainda</p>
-          <p className="text-muted-foreground text-sm">Clique em "Novo Equipamento" para começar</p>
-        </CardContent>
+      <Card className="shadow-sm border-none rounded-xl">
+        <EmptyState
+          icon={Cpu}
+          title="Nenhum equipamento cadastrado"
+          description='Clique em "Novo Equipamento" para começar a controlar seu parque de máquinas.'
+        />
       </Card>
     );
   }

@@ -687,7 +687,7 @@ ClimaPro`
             {equipamentos.length === 0 ? (
               <Card className="border-2 border-dashed">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground/40" />
                   <p>Nenhum equipamento vinculado a este PMOC</p>
                 </CardContent>
               </Card>
@@ -730,7 +730,7 @@ ClimaPro`
                               <p>✅ {itensConcluidos}/{totalItens} itens</p>
                             </div>
                             {percentualConclusao > 0 && (
-                              <div className="mt-2 bg-gray-200 rounded-full h-2">
+                              <div className="mt-2 bg-muted rounded-full h-2">
                                 <div 
                                   className={`h-2 rounded-full ${
                                     percentualConclusao === 100 ? 'bg-green-600' : 'bg-yellow-600'

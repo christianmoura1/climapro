@@ -144,7 +144,7 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
                       {atividade.concluido ? (
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                       ) : (
-                        <Circle className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                        <Circle className="w-5 h-5 text-muted-foreground/40 flex-shrink-0" />
                       )}
                       <span className={`${atividade.concluido ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {atividade.descricao}
