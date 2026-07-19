@@ -2,6 +2,7 @@ import React from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, useGLTF } from "@react-three/drei";
+import { RoomEnvironment } from "three-stdlib";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -9,81 +10,62 @@ import { AC_MODEL_URLS } from "./acModelConfig";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Vista explodida estilo Apple: as peças ficam sempre visíveis, alinhadas em
+// profundidade numa diagonal. O scroll aumenta a separação entre elas (cada
+// uma com sua janela/velocidade), destaca a peça ativa e, no final, o
+// conjunto volta à pilha compacta. As posições são derivadas do índice —
+// pilha compacta (COMPACT_GAP) vs. explodida (EXPLODED_GAP).
 const PARTS = [
   {
     key: "tampa",
     label: "Tampa frontal",
-    desc: "A carcaça externa protege os componentes internos e direciona o fluxo de ar para o ambiente.",
-    z: 0.55,
-    dir: [0.05, 0.04, 1],
-    distance: 2.3
+    desc: "A carcaça externa protege os componentes internos e direciona o fluxo de ar para o ambiente."
   },
   {
     key: "filtros",
     label: "Filtros",
-    desc: "Filtros removíveis retêm poeira e partículas, mantendo o ar limpo e o desempenho do equipamento.",
-    z: 0.32,
-    dir: [-0.05, 0.05, 1],
-    distance: 1.7
+    desc: "Filtros removíveis retêm poeira e partículas, mantendo o ar limpo e o desempenho do equipamento."
   },
   {
     key: "serpentina",
     label: "Serpentina",
-    desc: "A serpentina troca calor com o ar ambiente — é o coração do processo de refrigeração.",
-    z: 0.12,
-    dir: [0.08, -0.05, 1],
-    distance: 1.15
+    desc: "A serpentina troca calor com o ar ambiente — é o coração do processo de refrigeração."
   },
   {
     key: "turbina",
     label: "Turbina",
-    desc: "A turbina força a circulação do ar através da serpentina para dentro do ambiente.",
-    z: -0.05,
-    dir: [-0.1, 0.08, 0.75],
-    distance: 0.75
+    desc: "A turbina força a circulação do ar através da serpentina para dentro do ambiente."
   },
   {
     key: "motor",
     label: "Motor",
-    desc: "O motor elétrico aciona a turbina com eficiência energética e baixo nível de ruído.",
-    z: -0.16,
-    dir: [0.1, -0.1, 0.35],
-    distance: 0.4
+    desc: "O motor elétrico aciona a turbina com eficiência energética e baixo nível de ruído."
   },
   {
     key: "placa",
     label: "Placa eletrônica",
-    desc: "A placa controla temperatura, velocidade e todos os modos de operação do aparelho.",
-    z: -0.26,
-    dir: [0.6, 0.25, -0.55],
-    distance: 1.05
+    desc: "A placa controla temperatura, velocidade e todos os modos de operação do aparelho."
   },
   {
     key: "sensores",
     label: "Sensores",
-    desc: "Sensores de temperatura monitoram o ambiente em tempo real para ajustes automáticos.",
-    z: -0.3,
-    dir: [-0.55, 0.35, -0.85],
-    distance: 1.35
+    desc: "Sensores de temperatura monitoram o ambiente em tempo real para ajustes automáticos."
   },
   {
     key: "bandeja",
     label: "Bandeja de drenagem",
-    desc: "A bandeja coleta a água condensada e a direciona para o dreno, evitando vazamentos.",
-    z: -0.38,
-    dir: [0.05, -0.42, -0.55],
-    distance: 1.2,
-    size: 3.8
+    desc: "A bandeja coleta a água condensada e a direciona para o dreno, evitando vazamentos."
   },
   {
     key: "estrutura",
     label: "Estrutura traseira",
-    desc: "A estrutura traseira sustenta o conjunto e direciona a instalação na parede.",
-    z: -0.48,
-    dir: [-0.05, -0.05, -1],
-    distance: 2.1
+    desc: "A estrutura traseira sustenta o conjunto e direciona a instalação na parede."
   }
 ];
+
+const MID = (PARTS.length - 1) / 2;
+const COMPACT_GAP = 0.72;
+const EXPLODED_GAP = 1.6;
 
 const PART_WINDOW = 0.28;
 const PART_STAGGER = 0.09;
@@ -304,6 +286,21 @@ function GLBPart({ url, targetSize }) {
   const { scene } = useGLTF(url);
   const normalized = React.useMemo(() => {
     const clone = scene.clone(true);
+    // Sem mapa de metalness, materiais PBR com metalness alto renderizam
+    // pretos; garante também colorspace correto das texturas.
+    clone.traverse((obj) => {
+      if (!obj.isMesh || !obj.material) return;
+      const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+      mats.forEach((mat) => {
+        if (mat.metalness !== undefined && !mat.metalnessMap) {
+          mat.metalness = Math.min(mat.metalness, 0.35);
+        }
+        if (mat.roughness !== undefined) {
+          mat.roughness = Math.max(mat.roughness, 0.35);
+        }
+        if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
+      });
+    });
     const box = new THREE.Box3().setFromObject(clone);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
@@ -316,6 +313,24 @@ function GLBPart({ url, targetSize }) {
       <primitive object={normalized.clone} />
     </group>
   );
+}
+
+// Iluminação de ambiente gerada localmente (sem baixar HDR): sem ela, os
+// materiais PBR dos GLBs aparecem escuros/pretos.
+function SceneEnvironment() {
+  const gl = useThree((state) => state.gl);
+  const scene = useThree((state) => state.scene);
+  React.useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const envTexture = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = envTexture;
+    return () => {
+      scene.environment = null;
+      envTexture.dispose();
+      pmrem.dispose();
+    };
+  }, [gl, scene]);
+  return null;
 }
 
 // Se o download de um GLB falhar (CDN indisponível, CORS), a peça cai para a
@@ -367,6 +382,7 @@ function AcUnitScene({ progressRef }) {
   useFrame(() => {
     const raw = progressRef.current.raw;
     const explodedT = explodeGlobal(raw);
+    const activeIndex = Math.min(PARTS.length - 1, Math.floor(explodedT * PARTS.length));
 
     PARTS.forEach((part, i) => {
       const start = i * PART_STAGGER;
@@ -374,25 +390,34 @@ function AcUnitScene({ progressRef }) {
       const factor = smoothstep(start, end, explodedT);
       const group = partRefs.current[part.key];
       if (!group) return;
-      group.position.set(
-        part.dir[0] * part.distance * factor,
-        part.dir[1] * part.distance * factor,
-        part.z + part.dir[2] * part.distance * factor
-      );
-      group.rotation.y = factor * 0.18 * (i % 2 === 0 ? 1 : -1);
+
+      // Alinhadas no eixo Z: pilha compacta -> explosão em profundidade.
+      const offset = MID - i;
+      const gap = THREE.MathUtils.lerp(COMPACT_GAP, EXPLODED_GAP, factor);
+      group.position.set(0, Math.sin(i * 2.1) * 0.12 * factor, offset * gap);
+      group.rotation.y = factor * 0.1 * (i % 2 === 0 ? 1 : -1);
+
+      // Peça ativa levemente maior, demais recuam — foco sincronizado com o texto.
+      const emphasis = explodedT > 0.05 && i === activeIndex ? 1.08 : 0.96;
+      const current = group.scale.x || 1;
+      group.scale.setScalar(THREE.MathUtils.lerp(current, emphasis, 0.12));
     });
 
     if (assemblyRef.current) {
-      assemblyRef.current.rotation.y = THREE.MathUtils.lerp(-0.3, 0.3, raw);
-      const scale = THREE.MathUtils.lerp(1, 0.8, explodedT);
-      assemblyRef.current.scale.setScalar(scale);
+      // Diagonal estilo "exploded view" da Apple, girando sutilmente com o scroll.
+      assemblyRef.current.rotation.y = -0.62 + raw * 0.3;
+      assemblyRef.current.rotation.x = 0.1;
     }
   });
 
   return (
-    <group ref={assemblyRef}>
-      {PARTS.map((part) => (
-        <group key={part.key} ref={(el) => { partRefs.current[part.key] = el; }} position={[0, 0, part.z]}>
+    <group ref={assemblyRef} scale={0.72} position={[0, 0.25, 0]}>
+      {PARTS.map((part, i) => (
+        <group
+          key={part.key}
+          ref={(el) => { partRefs.current[part.key] = el; }}
+          position={[0, 0, (MID - i) * COMPACT_GAP]}
+        >
           <PartModel partKey={part.key} />
         </group>
       ))}
@@ -466,16 +491,16 @@ export default function ExplodedViewSection() {
 
         <div className="relative h-full w-full">
           <Canvas
-            camera={{ position: [0, 0.3, 7.5], fov: 32 }}
+            camera={{ position: [0, 0.7, 11], fov: 36 }}
             dpr={[1, 1.5]}
             frameloop="demand"
             gl={{ antialias: false, powerPreference: "high-performance" }}
           >
             <InvalidateBridge apiRef={invalidateRef} />
-            <ambientLight intensity={0.6} />
-            <directionalLight position={[4, 5, 6]} intensity={1.1} />
-            <directionalLight position={[-4, -2, -4]} intensity={0.35} color="#818cf8" />
-            <pointLight position={[0, 3, 3]} intensity={0.4} color="#3b82f6" />
+            <SceneEnvironment />
+            <ambientLight intensity={0.35} />
+            <directionalLight position={[4, 5, 6]} intensity={0.9} />
+            <directionalLight position={[-4, -2, -4]} intensity={0.3} color="#818cf8" />
             <AcUnitScene progressRef={progressRef} />
           </Canvas>
         </div>
