@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import VisualizarChamadoCliente from "../cliente/VisualizarChamadoCliente";
+import { toast } from "@/components/ui/use-toast";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -127,7 +128,7 @@ export default function HistoricoChamadosEquipamento({
       alert("✅ Relatório gerado!\n\nUse Ctrl+P para salvar como PDF.");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("❌ Erro ao gerar PDF");
+      toast({ description: "❌ Erro ao gerar PDF", variant: "destructive" });
     } finally {
       setBaixandoPDF(null);
     }

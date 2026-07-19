@@ -23,6 +23,7 @@ import { ptBR } from "date-fns/locale";
 import { base44 } from "@/api/base44Client";
 
 import AgendarChamadoModal from "./AgendarChamadoModal";
+import { toast } from "@/components/ui/use-toast";
 
 const colunas = [
   {
@@ -298,7 +299,7 @@ export default function KanbanChamados({
       alert("✅ Relatório gerado!\n\nUse Ctrl+P (ou Cmd+P no Mac) para salvar como PDF.");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("❌ Erro ao gerar PDF. Tente novamente.");
+      toast({ description: "❌ Erro ao gerar PDF. Tente novamente.", variant: "destructive" });
     } finally {
       setBaixandoPDF(null);
     }

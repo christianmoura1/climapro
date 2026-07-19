@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import FinalizarChamadoModal from "./FinalizarChamadoModal";
 import DetalhesChamadoTecnico from "./DetalhesChamadoTecnico";
 import KanbanChamados from "../chamados/KanbanChamados"; // New import
+import { toast } from "@/components/ui/use-toast";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -117,7 +118,7 @@ ClimaPro - Sistema de Gestão`
     },
     onError: (error) => {
       console.error("Erro ao finalizar chamado:", error);
-      alert("❌ Erro ao finalizar chamado: " + (error?.message || JSON.stringify(error)));
+      toast({ description: "❌ Erro ao finalizar chamado: " + (error?.message || JSON.stringify(error)), variant: "destructive" });
     }
   });
 
@@ -142,7 +143,7 @@ ClimaPro - Sistema de Gestão`
     },
     onError: (error) => {
       console.error("Erro ao atualizar status do chamado:", error);
-      alert("❌ Erro ao atualizar status do chamado. Tente novamente.");
+      toast({ description: "❌ Erro ao atualizar status do chamado. Tente novamente.", variant: "destructive" });
     },
   });
 

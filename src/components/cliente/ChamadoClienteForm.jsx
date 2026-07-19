@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Save, X, Upload, Cpu } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState({
@@ -52,12 +53,12 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Por favor, selecione apenas arquivos de imagem');
+      toast({ description: 'Por favor, selecione apenas arquivos de imagem', variant: "default" });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('A imagem deve ter no máximo 5MB');
+      toast({ description: 'A imagem deve ter no máximo 5MB', variant: "default" });
       return;
     }
 
@@ -68,7 +69,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
       setFormData({ ...formData, fotos_anexos: newPhotos });
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      alert('Erro ao fazer upload. Tente novamente.');
+      toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingPhoto(false);
     }

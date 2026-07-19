@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save, X, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState(equipamento || {
@@ -94,7 +95,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
       setFormData({ ...formData, foto_url: result.file_url });
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      alert('Erro ao fazer upload. Tente novamente.');
+      toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingPhoto(false);
     }

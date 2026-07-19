@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function OrcamentosPendentes({ orcamentos, user, tecnico }) {
   const queryClient = useQueryClient();
@@ -61,11 +62,11 @@ ClimaPro - Sistema de Gestão`
       queryClient.invalidateQueries(['orcamentos-pendentes']);
       queryClient.invalidateQueries(['orcamentos-aprovados']);
       queryClient.invalidateQueries(['lancamentos-tecnico']);
-      alert("✅ Resposta enviada com sucesso!");
+      toast({ description: "✅ Resposta enviada com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao responder orçamento:", error);
-      alert("❌ Erro ao processar resposta. Tente novamente.");
+      toast({ description: "❌ Erro ao processar resposta. Tente novamente.", variant: "destructive" });
     }
   });
 

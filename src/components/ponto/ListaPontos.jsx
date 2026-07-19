@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 const tiposConfig = {
   entrada: { label: "Entrada", icon: "🟢", cor: "bg-green-100 text-green-800" },
@@ -86,11 +87,11 @@ Sistema ClimaPro`
     onSuccess: () => {
       queryClient.invalidateQueries(['pontos']);
       setEditandoPonto(null);
-      alert("✅ Ponto editado! Aguardando aprovação do técnico.");
+      toast({ description: "✅ Ponto editado! Aguardando aprovação do técnico.", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao editar ponto:", error);
-      alert("❌ Erro ao editar ponto");
+      toast({ description: "❌ Erro ao editar ponto", variant: "destructive" });
     }
   });
 
@@ -100,11 +101,11 @@ Sistema ClimaPro`
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['pontos']);
-      alert("✅ Ponto excluído com sucesso!");
+      toast({ description: "✅ Ponto excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir ponto:", error);
-      alert("❌ Erro ao excluir ponto");
+      toast({ description: "❌ Erro ao excluir ponto", variant: "destructive" });
     }
   });
 
@@ -132,11 +133,11 @@ Sistema ClimaPro`
       queryClient.invalidateQueries(['pontos']);
       setAdicionandoPonto(null);
       setNovoPonto({ tipo_registro: 'entrada', data_hora: '', observacoes: '' });
-      alert("✅ Ponto adicionado com sucesso!");
+      toast({ description: "✅ Ponto adicionado com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao adicionar ponto:", error);
-      alert("❌ Erro ao adicionar ponto");
+      toast({ description: "❌ Erro ao adicionar ponto", variant: "destructive" });
     }
   });
 
@@ -153,7 +154,7 @@ Sistema ClimaPro`
 
   const handleConfirmarEdicao = () => {
     if (!novaDataHora) {
-      alert("⚠️ Selecione uma data e hora válida");
+      toast({ description: "⚠️ Selecione uma data e hora válida", variant: "warning" });
       return;
     }
 
@@ -176,7 +177,7 @@ Sistema ClimaPro`
 
   const handleConfirmarAdicao = () => {
     if (!novoPonto.data_hora) {
-      alert("⚠️ Selecione o horário");
+      toast({ description: "⚠️ Selecione o horário", variant: "warning" });
       return;
     }
 

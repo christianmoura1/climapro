@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 // Componente de Canvas de Assinatura Nativo
 function SignatureCanvas({ canvasRef, width = 600, height = 200 }) {
@@ -195,13 +196,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-      alert('⚠️ Por favor, selecione apenas arquivos de imagem');
+      toast({ description: '⚠️ Por favor, selecione apenas arquivos de imagem', variant: "warning" });
       return;
     }
 
     const fotosAtuais = fotos[equipamentoId] || [];
     if (fotosAtuais.length >= 5) {
-      alert('⚠️ Máximo de 5 fotos por equipamento');
+      toast({ description: '⚠️ Máximo de 5 fotos por equipamento', variant: "warning" });
       return;
     }
 
@@ -214,7 +215,7 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       }));
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      alert('❌ Erro ao fazer upload da foto');
+      toast({ description: '❌ Erro ao fazer upload da foto', variant: "destructive" });
     } finally {
       setUploadingFoto(null);
     }
@@ -282,7 +283,7 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${enderecoEncoded}`;
       window.open(url, '_blank');
     } else {
-      alert("❌ Endereço do cliente não disponível");
+      toast({ description: "❌ Endereço do cliente não disponível", variant: "destructive" });
     }
   };
 
@@ -337,14 +338,14 @@ ClimaPro`
     },
     onError: (error) => {
       console.error("Erro ao finalizar manutenção:", error);
-      alert("❌ Erro ao enviar PMOC. Tente novamente.");
+      toast({ description: "❌ Erro ao enviar PMOC. Tente novamente.", variant: "destructive" });
     }
   });
 
   const handleFinalizar = async () => {
     const erro = validarFormulario();
     if (erro) {
-      alert(erro);
+      toast({ description: erro, variant: "default" });
       return;
     }
 
@@ -370,7 +371,7 @@ ClimaPro`
     } catch (error) {
       console.warn("Localização não disponível ou acesso negado:", error);
       // Optional: Inform user that location could not be captured
-      // alert("Não foi possível capturar a localização atual. A manutenção será registrada sem dados de GPS.");
+      // toast({ description: "Não foi possível capturar a localização atual. A manutenção será registrada sem dados de GPS.", variant: "default" });
     }
 
     // Capturar assinatura
@@ -579,7 +580,7 @@ ClimaPro`
       alert("✅ Relatório gerado com sucesso!\n\nVocê pode abrir o arquivo HTML no navegador e usar 'Imprimir' ou 'Salvar como PDF'.");
     } catch (error) {
       console.error("Erro ao gerar relatório:", error);
-      alert("❌ Erro ao gerar relatório. Tente novamente.");
+      toast({ description: "❌ Erro ao gerar relatório. Tente novamente.", variant: "destructive" });
     } finally {
       setGerandoRelatorio(false);
     }

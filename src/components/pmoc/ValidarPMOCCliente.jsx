@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ValidarPMOCCliente({ manutencao, pmoc, tecnico, equipamentos, onClose }) {
   const [observacoesCliente, setObservacoesCliente] = useState('');
@@ -90,7 +91,7 @@ ClimaPro`
       queryClient.invalidateQueries(['manutencoes-pmoc']);
       queryClient.invalidateQueries(['pmocs']);
       queryClient.invalidateQueries(['pmocs-cliente']);
-      alert("✅ PMOC validado com sucesso! Obrigado pela confirmação.");
+      toast({ description: "✅ PMOC validado com sucesso! Obrigado pela confirmação.", variant: "success" });
       onClose();
     }
   });

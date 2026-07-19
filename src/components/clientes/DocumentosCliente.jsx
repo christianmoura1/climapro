@@ -6,6 +6,7 @@ import { Upload, FileText, Download, Trash2, Eye } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { toast } from "@/components/ui/use-toast";
 
 export default function DocumentosCliente({ cliente }) {
   const [uploading, setUploading] = useState(false);
@@ -25,7 +26,7 @@ export default function DocumentosCliente({ cliente }) {
 
     // Validar tamanho (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      alert("Arquivo muito grande. Máximo 10MB.");
+      toast({ description: "Arquivo muito grande. Máximo 10MB.", variant: "default" });
       return;
     }
 
@@ -48,10 +49,10 @@ export default function DocumentosCliente({ cliente }) {
         data: { documentos: documentosAtualizados }
       });
 
-      alert("Documento enviado com sucesso!");
+      toast({ description: "Documento enviado com sucesso!", variant: "default" });
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      alert("Erro ao enviar documento. Tente novamente.");
+      toast({ description: "Erro ao enviar documento. Tente novamente.", variant: "destructive" });
     } finally {
       setUploading(false);
     }

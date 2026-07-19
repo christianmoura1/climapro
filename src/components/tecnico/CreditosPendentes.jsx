@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
 
 export default function CreditosPendentes({ creditos, user, tecnico }) {
   const [creditoSelecionado, setCreditoSelecionado] = React.useState(null);
@@ -100,13 +101,13 @@ ClimaPro` // Updated body
         console.error("Erro ao enviar notificação:", error);
       }
 
-      alert(`✅ Crédito aprovado com sucesso!
+      toast({ description: `✅ Crédito aprovado com sucesso!
 
-💰 R$ ${parseFloat(credito.valor).toFixed(2)} foi adicionado ao seu saldo.`); // Updated alert message
+💰 R$ ${parseFloat(credito.valor).toFixed(2)} foi adicionado ao seu saldo.`, variant: "success" }); // Updated alert message
     },
     onError: (error) => {
       console.error("Erro ao aprovar crédito:", error);
-      alert("❌ Erro ao aprovar crédito. Tente novamente."); // Updated alert message
+      toast({ description: "❌ Erro ao aprovar crédito. Tente novamente.", variant: "destructive" }); // Updated alert message
     }
   });
 
@@ -148,11 +149,11 @@ ClimaPro` // Updated body
         console.error("Erro ao enviar notificação:", error);
       }
 
-      alert("Crédito rejeitado."); // Updated alert message
+      toast({ description: "Crédito rejeitado.", variant: "default" }); // Updated alert message
     },
     onError: (error) => {
       console.error("Erro ao rejeitar crédito:", error);
-      alert(`❌ Erro ao rejeitar crédito: ${error.message}`);
+      toast({ description: `❌ Erro ao rejeitar crédito: ${error.message}`, variant: "destructive" });
     }
   });
 

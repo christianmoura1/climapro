@@ -17,6 +17,7 @@ import PMOCList from "../components/pmoc/PMOCList";
 import PMOCDetail from "../components/pmoc/PMOCDetail";
 import AprovarPMOCEmpresa from "../components/pmoc/AprovarPMOCEmpresa";
 import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
+import { toast } from "@/components/ui/use-toast";
 
 export default function PMOCPage() {
   const [showForm, setShowForm] = useState(false);
@@ -182,11 +183,11 @@ export default function PMOCPage() {
     mutationFn: (id) => base44.entities.PMOC.delete(id), 
     onSuccess: () => {
       queryClient.invalidateQueries(['pmocs']);
-      alert("✅ PMOC excluído com sucesso!");
+      toast({ description: "✅ PMOC excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir PMOC:", error);
-      alert("❌ Erro ao excluir PMOC. Tente novamente.");
+      toast({ description: "❌ Erro ao excluir PMOC. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -195,11 +196,11 @@ export default function PMOCPage() {
     onSuccess: () => {
       queryClient.invalidateQueries(['manutencoes-concluidas']);
       queryClient.invalidateQueries(['pmocs']);
-      alert("✅ Histórico de manutenção excluído com sucesso!");
+      toast({ description: "✅ Histórico de manutenção excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir manutenção:", error);
-      alert("❌ Erro ao excluir histórico. Tente novamente.");
+      toast({ description: "❌ Erro ao excluir histórico. Tente novamente.", variant: "destructive" });
     }
   });
 

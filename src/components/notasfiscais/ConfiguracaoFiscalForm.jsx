@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Building2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ConfiguracaoFiscalForm({ configuracao, empresa, user, onClose }) {
   const queryClient = useQueryClient();
@@ -39,7 +40,7 @@ export default function ConfiguracaoFiscalForm({ configuracao, empresa, user, on
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['configuracao-fiscal']);
-      alert("Configuração fiscal salva com sucesso!");
+      toast({ description: "Configuração fiscal salva com sucesso!", variant: "default" });
       onClose();
     }
   });

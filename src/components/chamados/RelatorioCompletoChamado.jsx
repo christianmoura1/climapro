@@ -24,6 +24,7 @@ import {
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 // Função CORRIGIDA para converter UTC para horário de Brasília
 const formatarDataBrasil = (dataISO) => {
@@ -70,18 +71,18 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados']);
       setMostrarOrcamento(false);
-      alert("✅ Orçamento salvo com sucesso!");
+      toast({ description: "✅ Orçamento salvo com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao salvar orçamento:", error);
-      alert("❌ Erro ao salvar orçamento. Tente novamente.");
+      toast({ description: "❌ Erro ao salvar orçamento. Tente novamente.", variant: "destructive" });
     }
   });
 
   const handleSalvarOrcamento = (e) => {
     e.preventDefault();
     if (!orcamento.valor || parseFloat(orcamento.valor) <= 0) {
-      alert("⚠️ Por favor, informe um valor válido.");
+      toast({ description: "⚠️ Por favor, informe um valor válido.", variant: "warning" });
       return;
     }
     salvarOrcamentoMutation.mutate(orcamento);
@@ -307,7 +308,7 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
 </html>
       `;
 
-      alert("📄 Gerando PDF... Aguarde um momento.");
+      toast({ description: "📄 Gerando PDF... Aguarde um momento.", variant: "default" });
 
       // Criar blob e fazer download do HTML
       const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -321,7 +322,7 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
       alert("✅ Relatório gerado com sucesso!\n\nVocê pode abrir o arquivo HTML no navegador e usar 'Imprimir' ou 'Salvar como PDF' para gerar o PDF final.");
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("❌ Erro ao gerar relatório. Tente novamente.");
+      toast({ description: "❌ Erro ao gerar relatório. Tente novamente.", variant: "destructive" });
     } finally {
       setGerandoPDF(false);
     }
@@ -329,7 +330,7 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
 
   const enviarPorEmail = async () => {
     if (!cliente?.email) {
-      alert("⚠️ Cliente não possui email cadastrado.");
+      toast({ description: "⚠️ Cliente não possui email cadastrado.", variant: "warning" });
       return;
     }
 
@@ -354,10 +355,10 @@ ${empresa?.telefone || ''}
 ${empresa?.email_contato || ''}`
       });
 
-      alert("✅ Email enviado com sucesso!");
+      toast({ description: "✅ Email enviado com sucesso!", variant: "success" });
     } catch (error) {
       console.error("Erro ao enviar email:", error);
-      alert("❌ Erro ao enviar email. Tente novamente.");
+      toast({ description: "❌ Erro ao enviar email. Tente novamente.", variant: "destructive" });
     }
   };
 

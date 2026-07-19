@@ -9,6 +9,7 @@ import { ArrowLeft, Save, Building2, Upload, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 export default function CompanySettings() {
   const navigate = useNavigate();
@@ -61,12 +62,12 @@ export default function CompanySettings() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('⚠️ Por favor, selecione apenas arquivos de imagem (PNG, JPG, etc)');
+      toast({ description: '⚠️ Por favor, selecione apenas arquivos de imagem (PNG, JPG, etc)', variant: "warning" });
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      alert('⚠️ A imagem deve ter no máximo 2MB');
+      toast({ description: '⚠️ A imagem deve ter no máximo 2MB', variant: "warning" });
       return;
     }
 
@@ -74,10 +75,10 @@ export default function CompanySettings() {
     try {
       const result = await base44.integrations.Core.UploadFile({ file });
       setFormData(prev => ({ ...prev, logo_url: result.file_url }));
-      alert('✅ Logo carregada com sucesso! Lembre-se de clicar em "Salvar Alterações" para confirmar.');
+      toast({ description: '✅ Logo carregada com sucesso! Lembre-se de clicar em "Salvar Alterações" para confirmar.', variant: "success" });
     } catch (error) {
       console.error('Erro ao fazer upload da logo:', error);
-      alert('❌ Erro ao fazer upload da logo. Tente novamente.');
+      toast({ description: '❌ Erro ao fazer upload da logo. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingLogo(false);
     }
@@ -89,11 +90,11 @@ export default function CompanySettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['minha-empresa']);
-      alert("✅ Dados da empresa atualizados com sucesso!");
+      toast({ description: "✅ Dados da empresa atualizados com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao atualizar:", error);
-      alert("❌ Erro ao atualizar dados. Tente novamente.");
+      toast({ description: "❌ Erro ao atualizar dados. Tente novamente.", variant: "destructive" });
     }
   });
 

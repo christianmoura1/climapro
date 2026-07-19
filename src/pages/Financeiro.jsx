@@ -24,6 +24,7 @@ import AprovarMovimentacoes from "../components/financeiro/AprovarMovimentacoes"
 import GastosTecnicosLista from "../components/financeiro/GastosTecnicosLista";
 import DetalheGastosTecnico from "../components/financeiro/DetalheGastosTecnico";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 export default function FinanceiroPage() {
   const navigate = useNavigate();
@@ -171,11 +172,11 @@ export default function FinanceiroPage() {
       await queryClient.invalidateQueries(['financeiro']);
       setForceRender(prev => prev + 1);
       setShowForm(false);
-      alert("✅ Lançamento criado com sucesso!");
+      toast({ description: "✅ Lançamento criado com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao criar lançamento:", error);
-      alert("❌ Erro ao criar lançamento. Tente novamente.");
+      toast({ description: "❌ Erro ao criar lançamento. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -186,7 +187,7 @@ export default function FinanceiroPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries(['financeiro']);
       setForceRender(prev => prev + 1);
-      alert("✅ Lançamento excluído com sucesso!");
+      toast({ description: "✅ Lançamento excluído com sucesso!", variant: "success" });
     }
   });
 
@@ -227,7 +228,7 @@ export default function FinanceiroPage() {
       await queryClient.invalidateQueries(['creditos-tecnicos']);
       await queryClient.invalidateQueries(['financeiro']);
       setForceRender(prev => prev + 1);
-      alert("✅ Crédito excluído com sucesso!");
+      toast({ description: "✅ Crédito excluído com sucesso!", variant: "success" });
     }
   });
 
@@ -239,11 +240,11 @@ export default function FinanceiroPage() {
       await queryClient.invalidateQueries(['movimentacoes-tecnicos']);
       await queryClient.invalidateQueries(['financeiro']);
       setForceRender(prev => prev + 1);
-      alert("✅ Gasto do técnico excluído com sucesso!");
+      toast({ description: "✅ Gasto do técnico excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir gasto:", error);
-      alert("❌ Erro ao excluir gasto. Tente novamente.");
+      toast({ description: "❌ Erro ao excluir gasto. Tente novamente.", variant: "destructive" });
     }
   });
 

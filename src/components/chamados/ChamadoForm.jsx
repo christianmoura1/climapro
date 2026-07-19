@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 const STATUS_CHAMADO = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -138,12 +139,12 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        alert(`⚠️ ${file.name} não é uma imagem válida`);
+        toast({ description: `⚠️ ${file.name} não é uma imagem válida`, variant: "warning" });
         continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert(`⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`);
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`, variant: "warning" });
         continue;
       }
 
@@ -155,7 +156,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setPhotoPreview(newPhotos);
       } catch (error) {
         console.error('Erro ao fazer upload da foto:', error);
-        alert(`❌ Erro ao fazer upload de ${file.name}`);
+        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingPhoto(false);
       }
@@ -170,18 +171,18 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     if (files.length === 0) return;
 
     if (photosFinalizacao.length + files.length > 10) {
-      alert('⚠️ Você pode adicionar no máximo 10 fotos de finalização');
+      toast({ description: '⚠️ Você pode adicionar no máximo 10 fotos de finalização', variant: "warning" });
       return;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        alert(`⚠️ ${file.name} não é uma imagem válida`);
+        toast({ description: `⚠️ ${file.name} não é uma imagem válida`, variant: "warning" });
         continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert(`⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`);
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`, variant: "warning" });
         continue;
       }
 
@@ -193,7 +194,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setCurrentChamado(prev => ({ ...prev, fotos_finalizacao: newPhotos }));
       } catch (error) {
         console.error('Erro ao fazer upload:', error);
-        alert(`❌ Erro ao fazer upload de ${file.name}`);
+        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingPhoto(false);
       }
@@ -208,18 +209,18 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     if (files.length === 0) return;
 
     if (videosFinalizacao.length + files.length > 2) {
-      alert('⚠️ Você pode adicionar no máximo 2 vídeos');
+      toast({ description: '⚠️ Você pode adicionar no máximo 2 vídeos', variant: "warning" });
       return;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('video/')) {
-        alert(`⚠️ ${file.name} não é um vídeo válido`);
+        toast({ description: `⚠️ ${file.name} não é um vídeo válido`, variant: "warning" });
         continue;
       }
 
       if (file.size > 50 * 1024 * 1024) { // 50MB limit
-        alert(`⚠️ ${file.name} é muito grande. Tamanho máximo: 50MB`);
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 50MB`, variant: "warning" });
         continue;
       }
 
@@ -231,7 +232,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setCurrentChamado(prev => ({ ...prev, videos_finalizacao: newVideos }));
       } catch (error) {
         console.error('Erro ao fazer upload:', error);
-        alert(`❌ Erro ao fazer upload de ${file.name}`);
+        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingVideo(false);
       }
@@ -262,7 +263,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     e.preventDefault();
     
     if (!currentChamado.local && clienteSelecionado && !clienteSelecionado.endereco) {
-      alert('Este cliente não possui endereço cadastrado. Por favor, cadastre a localização do cliente antes de criar o chamado.');
+      toast({ description: 'Este cliente não possui endereço cadastrado. Por favor, cadastre a localização do cliente antes de criar o chamado.', variant: "default" });
       return;
     }
     

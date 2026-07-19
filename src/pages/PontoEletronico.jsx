@@ -22,6 +22,7 @@ import ListaPontos from "../components/ponto/ListaPontos";
 import FiltrosPonto from "../components/ponto/FiltrosPonto";
 import AdicionarPontoManual from "../components/ponto/AdicionarPontoManual";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 // Funções auxiliares para trabalhar com datas em Brasília
 const obterDataLocal = (dataString) => {
@@ -260,7 +261,7 @@ export default function PontoEletronicoPage() {
   };
 
   const handleExportarPDF = async () => {
-    alert("Funcionalidade de exportação será implementada em breve!");
+    toast({ description: "Funcionalidade de exportação será implementada em breve!", variant: "default" });
   };
 
   if (!user) {

@@ -16,6 +16,7 @@ import ChamadoForm from "../components/chamados/ChamadoForm";
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import { PageLoading } from "@/components/ui/page-loading";
 import { EmptyState } from "@/components/ui/empty-state";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -210,19 +211,19 @@ Email: ${data.cliente.email}
 
 Cole (Ctrl+V ou Cmd+V) a mensagem no WhatsApp ou Email do cliente.`);
         }).catch(() => {
-          alert(`✅ Cliente cadastrado com sucesso!
+          toast({ description: `✅ Cliente cadastrado com sucesso!
 
 ⚠️ COPIE E ENVIE ESTAS INSTRUÇÕES:
 
-${mensagemParaEnviar}`);
+${mensagemParaEnviar}`, variant: "success" });
         });
       } else {
-        alert("Cliente cadastrado com sucesso!");
+        toast({ description: "Cliente cadastrado com sucesso!", variant: "default" });
       }
     },
     onError: (error) => {
       console.error("Erro ao criar cliente:", error);
-      alert(error.message || "Erro ao criar cliente. Verifique os dados e tente novamente.");
+      toast({ description: error.message || "Erro ao criar cliente. Verifique os dados e tente novamente.", variant: "default" });
     }
   });
 
@@ -246,11 +247,11 @@ ${mensagemParaEnviar}`);
       queryClient.invalidateQueries(['clientes']);
       setShowForm(false);
       setEditingCliente(null);
-      alert("Cliente atualizado com sucesso!");
+      toast({ description: "Cliente atualizado com sucesso!", variant: "default" });
     },
     onError: (error) => {
       console.error("Erro ao atualizar cliente:", error);
-      alert("Erro ao atualizar cliente. Tente novamente.");
+      toast({ description: "Erro ao atualizar cliente. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -275,11 +276,11 @@ ${mensagemParaEnviar}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['clientes']);
-      alert("Cliente excluído com sucesso!");
+      toast({ description: "Cliente excluído com sucesso!", variant: "default" });
     },
     onError: (error) => {
       console.error("Erro ao excluir cliente:", error);
-      alert(error.message || "Erro ao excluir cliente.");
+      toast({ description: error.message || "Erro ao excluir cliente.", variant: "default" });
     }
   });
 
@@ -290,11 +291,11 @@ ${mensagemParaEnviar}`);
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados-equipamento']);
       setEditingChamado(null);
-      alert("✅ Chamado atualizado com sucesso!");
+      toast({ description: "✅ Chamado atualizado com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao atualizar chamado:", error);
-      alert("❌ Erro ao atualizar chamado");
+      toast({ description: "❌ Erro ao atualizar chamado", variant: "destructive" });
     }
   });
 
@@ -305,17 +306,17 @@ ${mensagemParaEnviar}`);
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados-equipamento']);
       setRefreshKey(k => k + 1);
-      alert("✅ Chamado excluído com sucesso!");
+      toast({ description: "✅ Chamado excluído com sucesso!", variant: "success" });
     },
     onError: (error) => {
       console.error("Erro ao excluir chamado:", error);
-      alert("❌ Erro ao excluir chamado");
+      toast({ description: "❌ Erro ao excluir chamado", variant: "destructive" });
     }
   });
 
   const handleSubmit = (clienteData) => {
     if (!empresaId) {
-      alert("Erro: Usuário não está vinculado a nenhuma empresa.");
+      toast({ description: "Erro: Usuário não está vinculado a nenhuma empresa.", variant: "destructive" });
       return;
     }
 
@@ -331,7 +332,7 @@ ${mensagemParaEnviar}`);
     if (clientToDelete && confirm(`Tem certeza que deseja excluir o cliente "${clientToDelete.nome}"?\n\nEsta ação não pode ser desfeita.`)) {
       deleteMutation.mutate(clienteId);
     } else if (!clientToDelete) {
-      alert("Cliente não encontrado para exclusão.");
+      toast({ description: "Cliente não encontrado para exclusão.", variant: "default" });
     }
   };
 

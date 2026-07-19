@@ -10,6 +10,7 @@ import { Save, X, MapPin, Navigation, Plus, Building2, ClipboardList, Clock } fr
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 const ESTABELECIMENTOS_PADRAO = [
   { id: "casa", label: "🏠 Casa", tipo: "residencial" },
@@ -25,7 +26,7 @@ function EnderecoForm({ dados, onChange, label }) {
 
   const handleGeocodeEndereco = async () => {
     if (!dados.endereco || dados.endereco.trim().length < 10) {
-      alert("⚠️ Preencha o endereço completo antes de buscar as coordenadas.");
+      toast({ description: "⚠️ Preencha o endereço completo antes de buscar as coordenadas.", variant: "warning" });
       return;
     }
     setGeocoding(true);
@@ -40,10 +41,10 @@ function EnderecoForm({ dados, onChange, label }) {
         onChange({ ...dados, latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) });
         alert(`✅ Coordenadas encontradas!\n\nLatitude: ${parseFloat(data[0].lat).toFixed(6)}\nLongitude: ${parseFloat(data[0].lon).toFixed(6)}`);
       } else {
-        alert("❌ Não foi possível encontrar as coordenadas para este endereço.");
+        toast({ description: "❌ Não foi possível encontrar as coordenadas para este endereço.", variant: "destructive" });
       }
     } catch (error) {
-      alert("❌ Erro ao conectar com o serviço de mapas.");
+      toast({ description: "❌ Erro ao conectar com o serviço de mapas.", variant: "destructive" });
     } finally {
       setGeocoding(false);
     }
@@ -51,7 +52,7 @@ function EnderecoForm({ dados, onChange, label }) {
 
   const handleCapturarLocalizacao = () => {
     if (!navigator.geolocation) {
-      alert("❌ Geolocalização não suportada pelo navegador.");
+      toast({ description: "❌ Geolocalização não suportada pelo navegador.", variant: "destructive" });
       return;
     }
     setCapturando(true);
@@ -62,7 +63,7 @@ function EnderecoForm({ dados, onChange, label }) {
         alert(`✅ Localização capturada!\n\nLatitude: ${position.coords.latitude.toFixed(6)}\nLongitude: ${position.coords.longitude.toFixed(6)}`);
       },
       (error) => {
-        alert("❌ Erro ao capturar localização. Verifique as permissões do navegador.");
+        toast({ description: "❌ Erro ao capturar localização. Verifique as permissões do navegador.", variant: "destructive" });
         setCapturando(false);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
@@ -101,7 +102,7 @@ ClimaPro`
       queryClient.invalidateQueries(['agenda-eventos']);
       queryClient.invalidateQueries(['meus-chamados-cliente']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
-      alert("✅ Chamado aprovado! Cliente foi notificado por email.");
+      toast({ description: "✅ Chamado aprovado! Cliente foi notificado por email.", variant: "success" });
       onClose();
     }
   });
@@ -134,7 +135,7 @@ ClimaPro`
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
-      alert("⚠️ Chamado reaberto! O técnico foi notificado.");
+      toast({ description: "⚠️ Chamado reaberto! O técnico foi notificado.", variant: "warning" });
       onClose();
     }
   });

@@ -26,6 +26,7 @@ import CreditosPendentes from "../components/tecnico/CreditosPendentes";
 import RegistrarPonto from "../components/ponto/RegistrarPonto"; // New import for Ponto Eletrônico component
 import AprovarEdicoesPonto from "../components/ponto/AprovarEdicoesPonto";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
 
 // Helper function for creating page URLs, as implied by the outline.
 // For "AlterarSenha", it's assumed there's a route configured at /alterar-senha.
@@ -66,7 +67,7 @@ export default function TecnicoDashboard() {
           setTecnico(meuTecnico);
 
           if (meuTecnico?.status !== 'ativo') {
-            alert("Sua conta está inativa. Entre em contato com o administrador.");
+            toast({ description: "Sua conta está inativa. Entre em contato com o administrador.", variant: "default" });
             base44.auth.logout();
             navigate("/"); // Redirect to home/login after logout
             return;

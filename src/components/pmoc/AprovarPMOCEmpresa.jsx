@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico, equipamentos, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState(manutencao.observacoes_empresa || '');
@@ -168,7 +169,7 @@ Equipe ClimaPro`
     onSuccess: () => {
       queryClient.invalidateQueries(['manutencoes-pmoc']);
       queryClient.invalidateQueries(['pmocs']);
-      alert("⚠️ PMOC reaberto! O técnico foi notificado.");
+      toast({ description: "⚠️ PMOC reaberto! O técnico foi notificado.", variant: "warning" });
       onClose();
     }
   });

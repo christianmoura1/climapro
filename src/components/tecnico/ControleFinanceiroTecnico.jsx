@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import { toast } from "@/components/ui/use-toast";
 
 export default function ControleFinanceiroTecnico({ user, tecnico, saldoInfo, lancamentos }) {
   const [showForm, setShowForm] = useState(false);
@@ -83,7 +84,7 @@ ClimaPro`
     },
     onError: (error) => {
       console.error("Erro ao criar movimentação:", error);
-      alert("❌ Erro ao enviar movimentação. Tente novamente.");
+      toast({ description: "❌ Erro ao enviar movimentação. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -97,7 +98,7 @@ ClimaPro`
       setFormData({ ...formData, comprovante_url: result.file_url });
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      alert('Erro ao fazer upload. Tente novamente.');
+      toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingFile(false);
     }
@@ -107,7 +108,7 @@ ClimaPro`
     e.preventDefault();
     
     if (!formData.valor || parseFloat(formData.valor) <= 0) {
-      alert("⚠️ Por favor, informe um valor válido.");
+      toast({ description: "⚠️ Por favor, informe um valor válido.", variant: "warning" });
       return;
     }
     

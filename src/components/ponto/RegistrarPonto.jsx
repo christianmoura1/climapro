@@ -6,6 +6,7 @@ import { MapPin, Clock, CheckCircle } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
 
 const criarDataBrasilia = (data) => {
   const ano = data.getFullYear();
@@ -87,7 +88,7 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
         },
         (error) => {
           console.error("Erro ao obter localização:", error);
-          alert("❌ Não foi possível obter sua localização. Ative o GPS e tente novamente.");
+          toast({ description: "❌ Não foi possível obter sua localização. Ative o GPS e tente novamente.", variant: "destructive" });
           onClose();
         }
       );
@@ -151,19 +152,19 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
     onSuccess: () => {
       queryClient.invalidateQueries(['ultimo-ponto']);
       queryClient.invalidateQueries(['pontos']);
-      alert("✅ Ponto registrado com sucesso!");
+      toast({ description: "✅ Ponto registrado com sucesso!", variant: "success" });
       onSuccess();
     },
     onError: (error) => {
       console.error("Erro ao registrar ponto:", error);
-      alert("❌ Erro ao registrar ponto. Tente novamente.");
+      toast({ description: "❌ Erro ao registrar ponto. Tente novamente.", variant: "destructive" });
       setRegistrando(false);
     }
   });
 
   const handleRegistrar = async () => {
     if (!proximoTipo) {
-      alert("⚠️ Você já completou sua jornada de hoje!");
+      toast({ description: "⚠️ Você já completou sua jornada de hoje!", variant: "warning" });
       return;
     }
 

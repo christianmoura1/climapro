@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Save, X, FileText } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function EmitirNotaForm({ configuracaoFiscal, clientes, empresa, user, onClose }) {
   const queryClient = useQueryClient();
@@ -81,12 +82,12 @@ export default function EmitirNotaForm({ configuracaoFiscal, clientes, empresa, 
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['notas-fiscais']);
-      alert("Nota fiscal emitida com sucesso!");
+      toast({ description: "Nota fiscal emitida com sucesso!", variant: "default" });
       onClose();
     },
     onError: (error) => {
       console.error("Erro ao emitir nota:", error);
-      alert("Erro ao emitir nota fiscal. Verifique os dados e tente novamente.");
+      toast({ description: "Erro ao emitir nota fiscal. Verifique os dados e tente novamente.", variant: "destructive" });
     }
   });
 
