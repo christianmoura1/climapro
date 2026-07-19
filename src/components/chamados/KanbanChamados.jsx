@@ -29,31 +29,42 @@ const colunas = [
     id: 'pendente',
     titulo: 'Pendente',
     corBorda: 'border-orange-500',
-    corBadge: 'bg-white text-foreground',
+    corIconeChip: 'bg-orange-100 text-orange-600',
+    corBadge: 'bg-orange-100 text-orange-700 hover:bg-orange-100',
     icon: AlertCircle
   },
   {
     id: 'em_andamento',
     titulo: 'Em Andamento',
     corBorda: 'border-blue-500',
-    corBadge: 'bg-white text-foreground',
+    corIconeChip: 'bg-blue-100 text-blue-600',
+    corBadge: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
     icon: Clock
   },
   {
     id: 'aguardando_aprovacao_empresa',
     titulo: 'Aguardando Aprovação',
     corBorda: 'border-yellow-500',
-    corBadge: 'bg-white text-foreground',
+    corIconeChip: 'bg-yellow-100 text-yellow-700',
+    corBadge: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
     icon: AlertTriangle
   },
   {
     id: 'finalizado',
     titulo: 'Concluído',
-    corBorda: 'border-green-500',
-    corBadge: 'bg-white text-foreground',
+    corBorda: 'border-emerald-500',
+    corIconeChip: 'bg-emerald-100 text-emerald-600',
+    corBadge: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100',
     icon: CheckCircle
   }
 ];
+
+const corPrioridade = {
+  urgente: 'border-l-red-500',
+  alta: 'border-l-orange-500',
+  media: 'border-l-blue-400',
+  baixa: 'border-l-slate-300'
+};
 
 export default function KanbanChamados({
   chamados,
@@ -303,29 +314,32 @@ export default function KanbanChamados({
             return (
               <Droppable key={coluna.id} droppableId={coluna.id}>
                 {(provided, snapshot) => (
-                  <Card 
-                    className={`shadow-lg border-t-4 ${coluna.corBorda} ${
-                      snapshot.isDraggingOver ? 'bg-muted' : ''
+                  <Card
+                    className={`rounded-xl shadow-sm border-t-4 bg-muted/40 transition-colors ${coluna.corBorda} ${
+                      snapshot.isDraggingOver ? 'bg-primary/5' : ''
                     }`}
                   >
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <coluna.icon className="w-5 h-5" />
-                          <span className="text-sm">{coluna.titulo}</span>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${coluna.corIconeChip}`}>
+                            <coluna.icon className="w-4 h-4" />
+                          </div>
+                          <span className="text-sm font-semibold">{coluna.titulo}</span>
                         </div>
                         <Badge className={coluna.corBadge}>
                           {chamadosColuna.length}
                         </Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent 
+                    <CardContent
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className="space-y-3 min-h-[200px]"
                     >
                       {chamadosColuna.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8 text-sm">
+                        <div className="flex flex-col items-center gap-2 text-center text-muted-foreground py-10 text-sm border-2 border-dashed border-border rounded-lg">
+                          <coluna.icon className="w-6 h-6 opacity-30" />
                           Nenhum chamado
                         </div>
                       ) : (
@@ -346,7 +360,7 @@ export default function KanbanChamados({
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
-                                  className={`hover:shadow-md transition-shadow bg-white ${
+                                  className={`rounded-lg border-l-4 ${corPrioridade[chamado.prioridade] || corPrioridade.media} hover:shadow-md transition-shadow bg-card ${
                                     snapshot.isDragging ? 'shadow-2xl rotate-2' : ''
                                   }`}
                                 >
