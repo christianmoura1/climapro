@@ -264,17 +264,17 @@ export default function PontoEletronicoPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-muted p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -284,8 +284,8 @@ export default function PontoEletronicoPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Ponto Eletrônico</h1>
-              <p className="text-gray-600 mt-1">Controle de jornada e localização dos técnicos</p>
+              <h1 className="text-3xl font-bold text-foreground">Ponto Eletrônico</h1>
+              <p className="text-muted-foreground mt-1">Controle de jornada e localização dos técnicos</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -303,55 +303,55 @@ export default function PontoEletronicoPage() {
         <div className="grid md:grid-cols-5 gap-6 mb-8">
           <Card className="shadow-sm border bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total de Registros</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Registros</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{estatisticas.totalRegistros}</p>
-                <Clock className="w-8 h-8 text-gray-400" />
+                <p className="text-3xl font-bold text-foreground">{estatisticas.totalRegistros}</p>
+                <Clock className="w-8 h-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Técnicos Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Técnicos Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{estatisticas.tecnicosAtivos}</p>
-                <User className="w-8 h-8 text-gray-400" />
+                <p className="text-3xl font-bold text-foreground">{estatisticas.tecnicosAtivos}</p>
+                <User className="w-8 h-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Registros Completos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Registros Completos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{estatisticas.registrosCompletos}</p>
-                <CheckCircle className="w-8 h-8 text-gray-400" />
+                <p className="text-3xl font-bold text-foreground">{estatisticas.registrosCompletos}</p>
+                <CheckCircle className="w-8 h-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total de Horas</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Horas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">{estatisticas.totalHoras}</p>
-                <Calendar className="w-8 h-8 text-gray-400" />
+                <p className="text-2xl font-bold text-foreground">{estatisticas.totalHoras}</p>
+                <Calendar className="w-8 h-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border bg-white">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Alertas</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Alertas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -394,7 +394,7 @@ export default function PontoEletronicoPage() {
                   </div>
                 ))}
                 {alertas.length > 5 && (
-                  <p className="text-sm text-gray-500 text-center mt-2">
+                  <p className="text-sm text-muted-foreground text-center mt-2">
                     +{alertas.length - 5} alertas adicionais
                   </p>
                 )}
@@ -460,10 +460,10 @@ export default function PontoEletronicoPage() {
                 <CardContent>
                   <div className="grid md:grid-cols-4 gap-4">
                     {resultado.semanas.map((semana) => (
-                      <Card key={semana.semana} className="bg-gray-50">
+                      <Card key={semana.semana} className="bg-muted">
                         <CardContent className="p-4">
-                          <p className="text-sm text-gray-600 mb-1">{semana.semana}</p>
-                          <p className="text-2xl font-bold text-gray-900">{semana.horas}</p>
+                          <p className="text-sm text-muted-foreground mb-1">{semana.semana}</p>
+                          <p className="text-2xl font-bold text-foreground">{semana.horas}</p>
                         </CardContent>
                       </Card>
                     ))}
@@ -481,13 +481,13 @@ export default function PontoEletronicoPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{resultado.nome}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="text-xl font-bold text-foreground">{resultado.nome}</h3>
+                      <p className="text-sm text-muted-foreground">
                         {format(mesReferencia, "MMMM 'de' yyyy", { locale: ptBR })}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-600 mb-1">Total de Horas</p>
+                      <p className="text-sm text-muted-foreground mb-1">Total de Horas</p>
                       <p className="text-4xl font-bold text-blue-600">{resultado.totalMensal}</p>
                     </div>
                   </div>

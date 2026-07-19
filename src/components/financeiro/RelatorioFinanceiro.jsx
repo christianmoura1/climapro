@@ -65,8 +65,8 @@ Relatório gerado automaticamente pelo ClimaPro.
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Relatório Financeiro</h1>
-              <p className="text-gray-600 mt-1">{empresa?.nome}</p>
+              <h1 className="text-3xl font-bold text-foreground">Relatório Financeiro</h1>
+              <p className="text-muted-foreground mt-1">{empresa?.nome}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -114,15 +114,15 @@ Relatório gerado automaticamente pelo ClimaPro.
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Receitas</p>
+                <p className="text-sm text-muted-foreground mb-1">Receitas</p>
                 <p className="text-3xl font-bold text-green-600">R$ {receitas.toFixed(2)}</p>
               </div>
               <div className="text-center p-4 bg-red-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Despesas</p>
+                <p className="text-sm text-muted-foreground mb-1">Despesas</p>
                 <p className="text-3xl font-bold text-red-600">R$ {despesas.toFixed(2)}</p>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Saldo</p>
+                <p className="text-sm text-muted-foreground mb-1">Saldo</p>
                 <p className={`text-3xl font-bold ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                   R$ {saldo.toFixed(2)}
                 </p>
@@ -138,18 +138,18 @@ Relatório gerado automaticamente pelo ClimaPro.
           <CardContent>
             <div className="space-y-2">
               {lancamentosFiltrados.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
+                <p className="text-center text-muted-foreground py-8">
                   Nenhum lançamento encontrado no período selecionado
                 </p>
               ) : (
                 lancamentosFiltrados.map(lancamento => (
-                  <div key={lancamento.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div key={lancamento.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-muted-foreground">
                         {format(new Date(lancamento.data_lancamento), "dd/MM/yyyy")}
                       </span>
                       <p className="font-medium">{lancamento.descricao}</p>
-                      <span className="text-xs text-gray-500">{lancamento.categoria}</span>
+                      <span className="text-xs text-muted-foreground">{lancamento.categoria}</span>
                     </div>
                     <span className={`font-bold text-lg ${lancamento.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'}`}>
                       {lancamento.tipo === 'entrada' ? '+' : '-'} R$ {lancamento.valor.toFixed(2)}

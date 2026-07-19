@@ -15,7 +15,7 @@ const STATUS_CHAMADO = {
   em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
   aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+  cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
 
 export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onCancel }) {
@@ -289,7 +289,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
       className="bg-white rounded-xl shadow-lg p-6 mb-8"
     >
       <div className="mb-4">
-        <h2 className="text-2xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-semibold text-foreground">
           {ehNovoChamado ? 'Novo Chamado' : (ehChamadoFinalizado ? 'Editar Chamado Finalizado' : 'Editar Chamado')}
         </h2>
         {ehChamadoFinalizado && (
@@ -338,7 +338,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                 ))}
               </select>
               {buscaCliente && clientesFiltrados.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">Nenhum cliente encontrado</p>
+                <p className="text-sm text-muted-foreground mt-1">Nenhum cliente encontrado</p>
               )}
             </div>
           </div>
@@ -499,9 +499,9 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                       </div>
                       <div className="p-2 max-h-48 overflow-y-auto">
                         {loadingHistorico ? (
-                          <p className="text-xs text-gray-500 text-center py-3">Carregando...</p>
+                          <p className="text-xs text-muted-foreground text-center py-3">Carregando...</p>
                         ) : historicoEquipamento.chamados.length === 0 ? (
-                          <p className="text-xs text-gray-500 text-center py-3">Nenhum chamado registrado para este equipamento.</p>
+                          <p className="text-xs text-muted-foreground text-center py-3">Nenhum chamado registrado para este equipamento.</p>
                         ) : (
                           <div className="divide-y">
                             {historicoEquipamento.chamados.map((c) => {
@@ -509,8 +509,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                               return (
                                 <div key={c.id} className="py-2 flex items-center justify-between gap-2">
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-gray-800 truncate">{c.numero_chamado} — {c.titulo}</p>
-                                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                                    <p className="text-xs font-medium text-foreground truncate">{c.numero_chamado} — {c.titulo}</p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                       <Clock className="w-3 h-3" />
                                       {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
                                     </p>
@@ -625,7 +625,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
           {/* Upload de Fotos Iniciais */}
           <div className="space-y-2">
             <Label>Fotos do Local/Problema</Label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+            <div className="border-2 border-dashed border-border rounded-lg p-4">
               <input
                 type="file"
                 accept="image/*"
@@ -639,11 +639,11 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                 htmlFor="photo-upload"
                 className="flex flex-col items-center justify-center cursor-pointer"
               >
-                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-600">
+                <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">
                   {uploadingPhoto ? 'Fazendo upload...' : 'Clique para adicionar fotos'}
                 </span>
-                <span className="text-xs text-gray-400 mt-1">PNG, JPG até 10MB</span>
+                <span className="text-xs text-muted-foreground mt-1">PNG, JPG até 10MB</span>
               </label>
             </div>
 
@@ -654,7 +654,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                     <img
                       src={url}
                       alt={`Foto ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                      className="w-full h-24 object-cover rounded-lg border-2 border-border"
                     />
                     <button
                       type="button"
@@ -671,8 +671,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
 
           {/* Seção de Finalização - Só para chamados finalizados */}
           {ehChamadoFinalizado && (
-            <div className="border-t-2 border-gray-200 pt-6 mt-6 space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">📋 Dados de Finalização</h3>
+            <div className="border-t-2 border-border pt-6 mt-6 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground mb-4">📋 Dados de Finalização</h3>
               
               {/* Nome do Cliente que Confirmou */}
               <div className="space-y-2">
@@ -794,8 +794,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               </div>
 
               {/* Próxima Manutenção */}
-              <div className="border-t border-gray-200 pt-4 mt-4 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">🔧 Próxima Manutenção</h3>
+              <div className="border-t border-border pt-4 mt-4 space-y-4">
+                <h3 className="text-lg font-semibold text-foreground">🔧 Próxima Manutenção</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Data do Lembrete</Label>
@@ -823,7 +823,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                     />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   💡 O sistema enviará um lembrete automático ao cliente no dia e horário definidos.
                 </p>
               </div>

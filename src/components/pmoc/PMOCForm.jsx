@@ -201,7 +201,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                 ))}
               </select>
               {clienteSelecionado && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {clienteSelecionado.endereco}
                 </p>
               )}
@@ -242,7 +242,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                 </Button>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg max-h-64 overflow-y-auto">
+              <div className="grid md:grid-cols-2 gap-3 bg-muted p-4 rounded-lg max-h-64 overflow-y-auto">
                 {equipamentosCliente.map((equipamento) => {
                   const equipamentosAtuais = Array.isArray(formData.equipamentos_ids) ? formData.equipamentos_ids : [];
                   const isSelected = equipamentosAtuais.includes(equipamento.id);
@@ -253,7 +253,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                       className={`flex items-start gap-3 p-3 rounded-lg transition-all ${
                         isSelected
                           ? 'bg-blue-100 border-2 border-blue-500'
-                          : 'bg-white border-2 border-gray-200 hover:border-blue-300'
+                          : 'bg-white border-2 border-border hover:border-blue-300'
                       }`}
                     >
                       <Checkbox
@@ -265,10 +265,10 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                         className="flex-1 min-w-0 cursor-pointer"
                         onClick={() => handleEquipamentoToggle(equipamento.id)}
                       >
-                        <p className="font-semibold text-sm text-gray-900 truncate">
+                        <p className="font-semibold text-sm text-foreground truncate">
                           {equipamento.numero_equipamento}
                         </p>
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-muted-foreground">
                           {equipamento.marca} {equipamento.modelo}
                         </p>
                         <Badge variant="outline" className="mt-1 text-xs">
@@ -279,7 +279,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                   );
                 })}
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {(Array.isArray(formData.equipamentos_ids) ? formData.equipamentos_ids : []).length} equipamento(s) selecionado(s)
               </p>
             </div>
@@ -368,7 +368,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
               </div>
             </div>
             
-            <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+            <div className="space-y-2 bg-muted p-4 rounded-lg">
               {formData.atividades.map((atividade, index) => (
                 <div key={index} className="flex items-center gap-3 bg-white p-3 rounded-lg">
                   <Checkbox
@@ -392,7 +392,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                 </div>
               ))}
               {formData.atividades.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
                   <p>Nenhuma atividade no checklist</p>
                   <p className="text-sm mt-1">Clique em "Adicionar Atividade" para começar</p>

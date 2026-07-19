@@ -64,11 +64,11 @@ export default function Login() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Confirme seu e-mail</h2>
-            <p className="text-gray-600 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-3">Confirme seu e-mail</h2>
+            <p className="text-muted-foreground mb-2">
               Enviamos um link de confirmação para <strong>{email}</strong>.
             </p>
-            <p className="text-gray-500 text-sm">Clique no link para ativar sua conta e continuar o cadastro.</p>
+            <p className="text-muted-foreground text-sm">Clique no link para ativar sua conta e continuar o cadastro.</p>
           </CardContent>
         </Card>
       </div>
@@ -95,7 +95,7 @@ export default function Login() {
             <div className="space-y-1">
               <Label htmlFor="email">E-mail</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -125,7 +125,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-gray-600 mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-6">
             {mode === "login" ? (
               <>
                 Ainda não tem conta?{" "}

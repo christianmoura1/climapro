@@ -79,8 +79,8 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Detalhes do PMOC</h1>
-              <p className="text-gray-600 mt-1">{cliente?.nome}</p>
+              <h1 className="text-3xl font-bold text-foreground">Detalhes do PMOC</h1>
+              <p className="text-muted-foreground mt-1">{cliente?.nome}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -104,31 +104,31 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-gray-500">Cliente</Label>
-                  <p className="font-semibold text-gray-900">{cliente?.nome}</p>
+                  <Label className="text-muted-foreground">Cliente</Label>
+                  <p className="font-semibold text-foreground">{cliente?.nome}</p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Endereço</Label>
-                  <p className="text-gray-900">{cliente?.endereco}</p>
+                  <Label className="text-muted-foreground">Endereço</Label>
+                  <p className="text-foreground">{cliente?.endereco}</p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Técnico Responsável</Label>
-                  <p className="text-gray-900">{tecnico?.nome || 'Não atribuído'}</p>
+                  <Label className="text-muted-foreground">Técnico Responsável</Label>
+                  <p className="text-foreground">{tecnico?.nome || 'Não atribuído'}</p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Periodicidade</Label>
+                  <Label className="text-muted-foreground">Periodicidade</Label>
                   <Badge className="bg-purple-100 text-purple-800">
                     {pmoc.periodicidade}
                   </Badge>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Data de Início</Label>
-                  <p className="text-gray-900">
+                  <Label className="text-muted-foreground">Data de Início</Label>
+                  <p className="text-foreground">
                     {pmoc.data_inicio ? format(new Date(pmoc.data_inicio), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-gray-500">Próxima Manutenção</Label>
+                  <Label className="text-muted-foreground">Próxima Manutenção</Label>
                   <p className="font-semibold text-orange-600">
                     {pmoc.proxima_manutencao ? format(new Date(pmoc.proxima_manutencao), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
                   </p>
@@ -140,13 +140,13 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
                 <Label className="text-lg font-semibold mb-3 block">Checklist de Manutenção</Label>
                 <div className="space-y-2">
                   {pmoc.atividades?.map((atividade, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                       {atividade.concluido ? (
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                       ) : (
                         <Circle className="w-5 h-5 text-gray-300 flex-shrink-0" />
                       )}
-                      <span className={`${atividade.concluido ? 'text-gray-900' : 'text-gray-600'}`}>
+                      <span className={`${atividade.concluido ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {atividade.descricao}
                       </span>
                     </div>
@@ -157,8 +157,8 @@ Formate como um documento oficial PMOC conforme norma brasileira.`;
               {/* Observações */}
               {pmoc.observacoes && (
                 <div>
-                  <Label className="text-gray-500">Observações</Label>
-                  <p className="text-gray-900 mt-1 bg-gray-50 p-3 rounded-lg">
+                  <Label className="text-muted-foreground">Observações</Label>
+                  <p className="text-foreground mt-1 bg-muted p-3 rounded-lg">
                     {pmoc.observacoes}
                   </p>
                 </div>

@@ -57,8 +57,8 @@ export default function ConfiguracaoFiscalForm({ configuracao, empresa, user, on
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configurações Fiscais</h1>
-            <p className="text-gray-600 mt-1">Dados para emissão de notas fiscais</p>
+            <h1 className="text-3xl font-bold text-foreground">Configurações Fiscais</h1>
+            <p className="text-muted-foreground mt-1">Dados para emissão de notas fiscais</p>
           </div>
         </div>
 
@@ -242,7 +242,7 @@ export default function ConfiguracaoFiscalForm({ configuracao, empresa, user, on
                         >
                           Ativar Emissão Automática
                         </label>
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           As notas fiscais serão emitidas automaticamente quando um serviço for finalizado e pago.
                         </p>
                       </div>

@@ -13,7 +13,7 @@ export default function FiltrosPonto({ filtros, onFiltrosChange, tecnicos, mesRe
         <div className="grid md:grid-cols-4 gap-4">
           {/* Seletor de mês */}
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2">Período</Label>
+            <Label className="text-sm font-medium text-foreground mb-2">Período</Label>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -22,7 +22,7 @@ export default function FiltrosPonto({ filtros, onFiltrosChange, tecnicos, mesRe
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <div className="flex-1 text-center font-semibold text-gray-900">
+              <div className="flex-1 text-center font-semibold text-foreground">
                 {format(mesReferencia, 'MMMM yyyy', { locale: ptBR })}
               </div>
               <Button
@@ -37,7 +37,7 @@ export default function FiltrosPonto({ filtros, onFiltrosChange, tecnicos, mesRe
 
           {/* Filtro por técnico */}
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2">Técnico</Label>
+            <Label className="text-sm font-medium text-foreground mb-2">Técnico</Label>
             <select
               value={filtros.tecnico_id}
               onChange={(e) => onFiltrosChange({ ...filtros, tecnico_id: e.target.value })}
@@ -54,7 +54,7 @@ export default function FiltrosPonto({ filtros, onFiltrosChange, tecnicos, mesRe
 
           {/* Filtro por status */}
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2">Status</Label>
+            <Label className="text-sm font-medium text-foreground mb-2">Status</Label>
             <select
               value={filtros.status}
               onChange={(e) => onFiltrosChange({ ...filtros, status: e.target.value })}

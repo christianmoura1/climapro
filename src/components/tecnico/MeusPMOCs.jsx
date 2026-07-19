@@ -121,7 +121,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                 <ChevronRight className="w-4 h-4" />
               </Button>
               <div className="ml-4">
-                <h3 className="text-base font-semibold text-gray-900">
+                <h3 className="text-base font-semibold text-foreground">
                   {format(dataAtual, 'MMMM yyyy', { locale: ptBR })}
                 </h3>
               </div>
@@ -132,7 +132,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
           {/* Dias da semana */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((dia) => (
-              <div key={dia} className="text-center font-semibold text-gray-600 text-sm py-2">
+              <div key={dia} className="text-center font-semibold text-muted-foreground text-sm py-2">
                 {dia}
               </div>
             ))}
@@ -149,11 +149,11 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                 <div
                   key={idx}
                   className={`min-h-[100px] p-2 border rounded-lg ${
-                    isHoje ? 'bg-indigo-50 border-indigo-500 border-2' : 'bg-white border-gray-200'
+                    isHoje ? 'bg-indigo-50 border-indigo-500 border-2' : 'bg-white border-border'
                   } ${!isMesAtual ? 'opacity-40' : ''} hover:shadow-md transition-shadow`}
                 >
                   <div className={`text-sm font-semibold mb-2 ${
-                    isHoje ? 'text-indigo-600' : isMesAtual ? 'text-gray-900' : 'text-gray-400'
+                    isHoje ? 'text-indigo-600' : isMesAtual ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {format(dia, 'd')}
                   </div>
@@ -161,7 +161,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                   <div className="space-y-1">
                     {pmocsNoDia.slice(0, 2).map((pmoc) => {
                       const cliente = clientes.find(c => c.id === pmoc.cliente_id);
-                      const statusColor = statusColors[pmoc.status] || 'bg-gray-100 border-gray-300 text-gray-800';
+                      const statusColor = statusColors[pmoc.status] || 'bg-muted border-border text-foreground';
                       
                       return (
                         <div
@@ -179,7 +179,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                       );
                     })}
                     {pmocsNoDia.length > 2 && (
-                      <div className="text-xs text-gray-500 pl-1">
+                      <div className="text-xs text-muted-foreground pl-1">
                         +{pmocsNoDia.length - 2} mais
                       </div>
                     )}
@@ -202,7 +202,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
         </CardHeader>
         <CardContent className="p-0">
           {pmocsFiltrados.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-muted-foreground">
               <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p>Nenhum PMOC encontrado com os filtros selecionados</p>
             </div>
@@ -213,17 +213,17 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                 const podeExecutar = pmoc.status === 'ativo' || pmoc.status === 'aguardando_execucao' || pmoc.status === 'reaberto';
                 
                 return (
-                  <div key={pmoc.id} className="p-4 hover:bg-gray-50">
+                  <div key={pmoc.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <p className="font-semibold text-gray-900">PMOC {pmoc.periodicidade}</p>
+                          <p className="font-semibold text-foreground">PMOC {pmoc.periodicidade}</p>
                           <Badge className={
                             pmoc.status === 'ativo' || pmoc.status === 'aguardando_execucao' ? 'bg-green-100 text-green-800' :
                             pmoc.status === 'aguardando_aprovacao_empresa' ? 'bg-orange-100 text-orange-800' :
                             pmoc.status === 'reaberto' ? 'bg-red-100 text-red-800' :
                             pmoc.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-gray-100 text-gray-800'
+                            'bg-muted text-foreground'
                           }>
                             {pmoc.status === 'aguardando_execucao' ? 'Aguardando Execução' :
                              pmoc.status === 'aguardando_aprovacao_empresa' ? 'Aguardando Aprovação' :
@@ -233,13 +233,13 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                         </div>
                         
                         {cliente && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <User className="w-4 h-4" />
                             <span>{cliente.nome}</span>
                           </div>
                         )}
                         
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                           <Calendar className="w-4 h-4" />
                           <span>
                             {pmoc.status === 'reaberto' ? 'Reaberto para correção' :
@@ -258,7 +258,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                         )}
 
                         {pmoc.observacoes && pmoc.status !== 'reaberto' && (
-                          <p className="text-sm text-gray-500 mt-2 bg-gray-50 p-2 rounded">
+                          <p className="text-sm text-muted-foreground mt-2 bg-muted p-2 rounded">
                             {pmoc.observacoes}
                           </p>
                         )}
@@ -310,7 +310,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
               </Button>
             </div>
 
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               {pmocsFiltrados.length} PMOC(s) encontrado(s)
             </div>
           </div>
@@ -318,7 +318,7 @@ export default function MeusPMOCs({ pmocs, clientes }) {
           {/* Filtros */}
           <div className="flex items-center gap-4 flex-wrap border-t pt-4">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-500" />
+              <Filter className="w-4 h-4 text-muted-foreground" />
               <Label className="text-sm font-medium">Filtros:</Label>
             </div>
 

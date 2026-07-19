@@ -108,10 +108,10 @@ ClimaPro`
 
         <CardContent className="space-y-4 pt-6">
           <div>
-            <p className="font-semibold text-gray-900 mb-1">{chamado.titulo}</p>
-            <p className="text-sm text-gray-600">{chamado.descricao}</p>
+            <p className="font-semibold text-foreground mb-1">{chamado.titulo}</p>
+            <p className="text-sm text-muted-foreground">{chamado.descricao}</p>
             {cliente && (
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 👤 Cliente: {cliente.nome}
               </p>
             )}

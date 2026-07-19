@@ -209,12 +209,12 @@ ClimaPro`
             </CardTitle>
             <div className="flex gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-600">Total Pendente</p>
+                <p className="text-sm text-muted-foreground">Total Pendente</p>
                 <p className="text-xl font-bold text-orange-600">R$ {valorTotalPendente.toFixed(2)}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-600">Quantidade</p>
-                <p className="text-xl font-bold text-gray-900">{pendentes.length}</p>
+                <p className="text-sm text-muted-foreground">Quantidade</p>
+                <p className="text-xl font-bold text-foreground">{pendentes.length}</p>
               </div>
             </div>
           </div>
@@ -222,30 +222,30 @@ ClimaPro`
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-muted border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Técnico</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Comprovante</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Técnico</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Data</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Categoria</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descrição</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Valor</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Comprovante</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {movimentacoes.map((mov) => {
                   const tecnico = tecnicos.find(t => t.id === mov.tecnico_id);
                   return (
-                    <tr key={mov.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <tr key={mov.id} className="hover:bg-muted">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
+                          <User className="w-4 h-4 text-muted-foreground" />
                           {tecnico?.nome || 'Técnico não encontrado'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {mov.data_movimentacao 
                           ? format(new Date(mov.data_movimentacao), "dd/MM/yyyy", { locale: ptBR })
                           : '-'}
@@ -255,10 +255,10 @@ ClimaPro`
                           {mov.tipo === 'entrada' ? 'Entrada' : 'Despesa'}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground capitalize">
                         {mov.categoria}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                      <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
                         {mov.descricao || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
@@ -278,7 +278,7 @@ ClimaPro`
                             Ver
                           </a>
                         ) : (
-                          <span className="text-gray-400 text-sm">-</span>
+                          <span className="text-muted-foreground text-sm">-</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -331,7 +331,7 @@ ClimaPro`
             <DialogTitle>Rejeitar Movimentação</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Por favor, informe o motivo da rejeição. O técnico receberá essa informação.
             </p>
             <div className="space-y-2">

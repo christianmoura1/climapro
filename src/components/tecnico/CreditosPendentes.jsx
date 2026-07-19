@@ -196,19 +196,19 @@ ClimaPro` // Updated body
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-muted border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Data</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descrição</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Valor</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {creditos.map((credito) => (
-                  <tr key={credito.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={credito.id} className="hover:bg-muted">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {format(new Date(credito.data_envio), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -216,7 +216,7 @@ ClimaPro` // Updated body
                         {tipoLabels[credito.tipo] || credito.tipo}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                    <td className="px-6 py-4 text-sm text-foreground max-w-xs">
                       {credito.descricao}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-green-600">

@@ -376,10 +376,10 @@ ${mensagemParaEnviar}`);
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -471,8 +471,8 @@ ${mensagemParaEnviar}`);
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-foreground">Clientes</h1>
+              <p className="text-muted-foreground mt-1">
                 {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''} · Gerencie seus clientes e acessos ao portal
               </p>
             </div>
@@ -503,7 +503,7 @@ ${mensagemParaEnviar}`);
 
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               placeholder="Buscar por nome ou telefone..."
               value={searchTerm}
@@ -516,12 +516,12 @@ ${mensagemParaEnviar}`);
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="text-gray-600 mt-4">Carregando clientes...</p>
+            <p className="text-muted-foreground mt-4">Carregando clientes...</p>
           </div>
         ) : filteredClientes.length === 0 ? (
           <div className="text-center py-12">
             <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">Nenhum cliente cadastrado ainda.</p>
+            <p className="text-muted-foreground">Nenhum cliente cadastrado ainda.</p>
             <Button 
               onClick={() => setShowForm(true)}
               className="mt-4 bg-green-600 hover:bg-green-700"
@@ -547,7 +547,7 @@ ${mensagemParaEnviar}`);
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold text-foreground truncate">
                             {cliente.nome}
                           </h3>
                           {cliente.tem_acesso_portal && (
@@ -558,12 +558,12 @@ ${mensagemParaEnviar}`);
                           )}
                         </div>
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Phone className="w-4 h-4" />
                             <span>{cliente.telefone}</span>
                           </div>
                           {cliente.email && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Mail className="w-4 h-4" />
                               <span className="truncate">{cliente.email}</span>
                             </div>

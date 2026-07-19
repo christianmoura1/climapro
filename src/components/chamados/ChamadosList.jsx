@@ -98,7 +98,7 @@ ClimaPro`
       <Card>
         <CardContent className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Carregando chamados...</p>
+          <p className="text-muted-foreground mt-4">Carregando chamados...</p>
         </CardContent>
       </Card>
     );
@@ -107,7 +107,7 @@ ClimaPro`
   if (chamados.length === 0) {
     return (
       <Card>
-        <CardContent className="p-8 text-center text-gray-500">
+        <CardContent className="p-8 text-center text-muted-foreground">
           Nenhum chamado encontrado
         </CardContent>
       </Card>
@@ -126,7 +126,7 @@ ClimaPro`
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {chamado.titulo}
                     </h3>
                     <Badge className={status.color}>
@@ -145,9 +145,9 @@ ClimaPro`
                     )}
                   </div>
                   
-                  <p className="text-gray-600 mb-3">{chamado.descricao}</p>
+                  <p className="text-muted-foreground mb-3">{chamado.descricao}</p>
 
-                  <div className="grid md:grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
                       <span>

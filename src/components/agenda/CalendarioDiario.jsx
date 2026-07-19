@@ -38,18 +38,18 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
       {/* Linha do tempo */}
       <Card className="shadow-lg border-none">
         <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Linha do Tempo</h3>
+          <h3 className="text-lg font-bold text-foreground mb-4">Linha do Tempo</h3>
           <div className="space-y-2">
             {horas.map((hora) => {
               const eventos = getEventosNoHorario(hora);
               return (
                 <div key={hora} className="flex gap-3">
-                  <div className="text-sm font-medium text-gray-600 w-16 pt-2">
+                  <div className="text-sm font-medium text-muted-foreground w-16 pt-2">
                     {hora}:00
                   </div>
                   <div className="flex-1 space-y-2">
                     {eventos.length === 0 ? (
-                      <div className="border-l-2 border-gray-200 pl-4 py-2 text-sm text-gray-400">
+                      <div className="border-l-2 border-border pl-4 py-2 text-sm text-muted-foreground">
                         Horário livre
                       </div>
                     ) : (
@@ -74,7 +74,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                             className="border-l-4 pl-4 py-2 rounded-r cursor-pointer hover:shadow-md transition-shadow bg-white"
                             style={{ borderColor }}
                           >
-                            <div className="font-semibold text-gray-900">
+                            <div className="font-semibold text-foreground">
                               {tipoIcons[evento.tipo]} {evento.titulo}
                             </div>
                             {evento.status === 'concluido' && (
@@ -87,16 +87,16 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                                 ⏰ Pendente
                               </Badge>
                             )}
-                            <div className="text-sm text-gray-600 mt-1">
+                            <div className="text-sm text-muted-foreground mt-1">
                               {cliente?.nome}
                             </div>
                             {tecnico && (
-                              <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                                 <User className="w-3 h-3" />
                                 {tecnico.nome}
                               </div>
                             )}
-                            <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                               <Clock className="w-3 h-3" />
                               {format(new Date(evento.data_inicio), 'HH:mm')} - {format(new Date(evento.data_fim), 'HH:mm')}
                             </div>
@@ -115,12 +115,12 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
       {/* Lista de eventos */}
       <Card className="shadow-lg border-none">
         <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
+          <h3 className="text-lg font-bold text-foreground mb-4">
             Eventos do Dia ({eventosNoDia.length})
           </h3>
           <div className="space-y-3">
             {eventosNoDia.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 Nenhum evento agendado para hoje
               </div>
             ) : (
@@ -146,7 +146,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                     className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-foreground">
                         {tipoIcons[evento.tipo]} {evento.titulo}
                       </div>
                       <Badge className={status.color}>
@@ -154,7 +154,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                       </Badge>
                     </div>
                     
-                    <div className="space-y-1 text-sm text-gray-600">
+                    <div className="space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         {format(new Date(evento.data_inicio), 'HH:mm')} - {format(new Date(evento.data_fim), 'HH:mm')}

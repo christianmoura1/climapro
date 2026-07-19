@@ -10,7 +10,7 @@ export default function LancamentosList({ lancamentos, tecnicos, onDelete }) {
   if (!lancamentos || lancamentos.length === 0) {
     return (
       <Card className="shadow-lg border-none">
-        <CardContent className="p-12 text-center text-gray-500">
+        <CardContent className="p-12 text-center text-muted-foreground">
           Nenhum lançamento registrado ainda
         </CardContent>
       </Card>
@@ -39,24 +39,24 @@ export default function LancamentosList({ lancamentos, tecnicos, onDelete }) {
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-muted border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Técnico</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Data</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tipo</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Categoria</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descrição</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Técnico</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Valor</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {lancamentos.map((lancamento) => {
                 const tecnico = tecnicos.find(t => t.id === lancamento.tecnico_id);
                 return (
-                  <tr key={lancamento.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={lancamento.id} className="hover:bg-muted">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {lancamento.data_lancamento 
                         ? format(new Date(lancamento.data_lancamento), "dd/MM/yyyy", { locale: ptBR })
                         : '-'}
@@ -74,13 +74,13 @@ export default function LancamentosList({ lancamentos, tecnicos, onDelete }) {
                         </Badge>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {lancamento.categoria || '-'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
                       {lancamento.descricao || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {tecnico?.nome || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
@@ -92,7 +92,7 @@ export default function LancamentosList({ lancamentos, tecnicos, onDelete }) {
                       <Badge variant="outline" className={
                         lancamento.status === 'pago' ? 'border-green-500 text-green-700' :
                         lancamento.status === 'pendente' ? 'border-yellow-500 text-yellow-700' :
-                        'border-gray-500 text-gray-700'
+                        'border-gray-500 text-foreground'
                       }>
                         {lancamento.status || 'pendente'}
                       </Badge>

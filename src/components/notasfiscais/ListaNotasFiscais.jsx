@@ -19,8 +19,8 @@ export default function ListaNotasFiscais({ notas, clientes }) {
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
           <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg font-medium mb-2">Nenhuma nota fiscal emitida ainda</p>
-          <p className="text-gray-500 text-sm">Clique em "Emitir Nota" para começar</p>
+          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhuma nota fiscal emitida ainda</p>
+          <p className="text-muted-foreground text-sm">Clique em "Emitir Nota" para começar</p>
         </CardContent>
       </Card>
     );
@@ -34,15 +34,15 @@ export default function ListaNotasFiscais({ notas, clientes }) {
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-muted border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Emissão</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Número</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Cliente</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descrição</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Data Emissão</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Valor</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -51,22 +51,22 @@ export default function ListaNotasFiscais({ notas, clientes }) {
                 const status = statusConfig[nota.status] || statusConfig.processando;
                 
                 return (
-                  <tr key={nota.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={nota.id} className="hover:bg-muted">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                       {nota.numero_nota || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {cliente?.nome || '-'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
+                    <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
                       {nota.descricao_servico}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                       {nota.data_emissao 
                         ? format(new Date(nota.data_emissao), "dd/MM/yyyy HH:mm", { locale: ptBR })
                         : '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                       R$ {nota.valor_bruto.toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

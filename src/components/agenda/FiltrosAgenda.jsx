@@ -6,7 +6,7 @@ export default function FiltrosAgenda({ filtros, onFiltrosChange, tecnicos }) {
   return (
     <div className="flex gap-4 mt-6 flex-wrap">
       <div className="flex items-center gap-2">
-        <Filter className="w-4 h-4 text-gray-500" />
+        <Filter className="w-4 h-4 text-muted-foreground" />
         <Label className="text-sm font-medium">Filtros:</Label>
       </div>
 

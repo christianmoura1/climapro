@@ -144,10 +144,10 @@ export default function ValorTecnicosPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -164,8 +164,8 @@ export default function ValorTecnicosPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Controle de Valores com Técnicos</h1>
-              <p className="text-gray-600 mt-1">Gerencie valores e chamados por técnico</p>
+              <h1 className="text-3xl font-bold text-foreground">Controle de Valores com Técnicos</h1>
+              <p className="text-muted-foreground mt-1">Gerencie valores e chamados por técnico</p>
             </div>
           </div>
         </div>
@@ -193,14 +193,14 @@ export default function ValorTecnicosPage() {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-muted border-b">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Técnico</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Chamados</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Valor/Chamado</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Total Mês</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observações</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ações</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Técnico</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Chamados</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Valor/Chamado</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Total Mês</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Observações</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -212,10 +212,10 @@ export default function ValorTecnicosPage() {
                     const totalMes = chamadosExecutados * parseFloat(valorPorChamado || 0);
 
                     return (
-                      <tr key={tecnico.id} className="hover:bg-gray-50">
+                      <tr key={tecnico.id} className="hover:bg-muted">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-gray-400" />
+                            <Users className="w-4 h-4 text-muted-foreground" />
                             <span className="font-medium">{tecnico.nome}</span>
                           </div>
                         </td>
@@ -260,9 +260,9 @@ export default function ValorTecnicosPage() {
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-gray-100 border-t-2">
+                <tfoot className="bg-muted border-t-2">
                   <tr>
-                    <td colSpan="3" className="px-6 py-4 font-bold text-gray-900">TOTAL GERAL</td>
+                    <td colSpan="3" className="px-6 py-4 font-bold text-foreground">TOTAL GERAL</td>
                     <td className="px-6 py-4 text-center text-2xl font-bold text-green-600">
                       R$ {calcularTotalGeral().toFixed(2)}
                     </td>

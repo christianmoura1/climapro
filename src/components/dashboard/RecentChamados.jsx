@@ -50,7 +50,7 @@ export default function RecentChamados({ chamados }) {
       </CardHeader>
       <CardContent className="p-0">
         {chamados.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-muted-foreground">
             Nenhum chamado registrado ainda
           </div>
         ) : (
@@ -58,18 +58,18 @@ export default function RecentChamados({ chamados }) {
             {chamados.map((chamado) => {
               const StatusIcon = statusConfig[chamado.status]?.icon || AlertCircle;
               return (
-                <div key={chamado.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={chamado.id} className="p-4 hover:bg-muted transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-gray-900">{chamado.titulo}</h4>
+                    <h4 className="font-semibold text-foreground">{chamado.titulo}</h4>
                     <Badge className={statusConfig[chamado.status]?.color || ''}>
                       <StatusIcon className="w-3 h-3 mr-1" />
                       {chamado.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
                     {chamado.descricao}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     <span>
                       {formatarDataBrasil(chamado.created_date)}

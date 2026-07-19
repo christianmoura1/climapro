@@ -97,7 +97,7 @@ export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }
                 placeholder="Ex: gelax"
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Usado apenas para identificação interna (ex: "gelax")
               </p>
             </div>
@@ -143,7 +143,7 @@ export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }
                 onChange={(e) => setFormData({...formData, usuario_principal_email: e.target.value})}
                 placeholder="usuario@empresa.com"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Este usuário terá acesso administrativo à empresa
               </p>
             </div>

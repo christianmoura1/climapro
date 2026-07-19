@@ -13,7 +13,7 @@ const statusConfig = {
   em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
   aguardando_aprovacao_empresa: { color: "bg-yellow-100 text-yellow-800", label: "Aguardando Aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" }
+  cancelado: { color: "bg-muted text-foreground", label: "Cancelado" }
 };
 
 export default function HistoricoChamadosEquipamento({ 
@@ -156,10 +156,10 @@ export default function HistoricoChamadosEquipamento({
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-foreground">
             Histórico do Equipamento
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {equipamento.marca} {equipamento.modelo} - {equipamento.localizacao}
           </p>
         </div>
@@ -175,32 +175,32 @@ export default function HistoricoChamadosEquipamento({
         <CardContent>
           <div className="grid md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-gray-600">Tipo</p>
-              <p className="font-semibold text-gray-900 capitalize">
+              <p className="text-sm text-muted-foreground">Tipo</p>
+              <p className="font-semibold text-foreground capitalize">
                 {equipamento.tipo.replace('_', ' ')}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Marca / Modelo</p>
-              <p className="font-semibold text-gray-900">
+              <p className="text-sm text-muted-foreground">Marca / Modelo</p>
+              <p className="font-semibold text-foreground">
                 {equipamento.marca} {equipamento.modelo}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Capacidade</p>
-              <p className="font-semibold text-gray-900">{equipamento.capacidade}</p>
+              <p className="text-sm text-muted-foreground">Capacidade</p>
+              <p className="font-semibold text-foreground">{equipamento.capacidade}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Localização</p>
-              <p className="font-semibold text-gray-900">{equipamento.localizacao}</p>
+              <p className="text-sm text-muted-foreground">Localização</p>
+              <p className="font-semibold text-foreground">{equipamento.localizacao}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Número de Série</p>
-              <p className="font-semibold text-gray-900">{equipamento.numero_serie || 'N/A'}</p>
+              <p className="text-sm text-muted-foreground">Número de Série</p>
+              <p className="font-semibold text-foreground">{equipamento.numero_serie || 'N/A'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Cliente</p>
-              <p className="font-semibold text-gray-900">{cliente?.nome || 'N/A'}</p>
+              <p className="text-sm text-muted-foreground">Cliente</p>
+              <p className="font-semibold text-foreground">{cliente?.nome || 'N/A'}</p>
             </div>
           </div>
         </CardContent>
@@ -215,7 +215,7 @@ export default function HistoricoChamadosEquipamento({
         </CardHeader>
         <CardContent className="p-0">
           {chamados.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-muted-foreground">
               Nenhum chamado registrado para este equipamento
             </div>
           ) : (
@@ -225,11 +225,11 @@ export default function HistoricoChamadosEquipamento({
                 const status = statusConfig[chamado.status];
                 
                 return (
-                  <div key={chamado.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div key={chamado.id} className="p-4 hover:bg-muted transition-colors">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-gray-900">{chamado.titulo}</h3>
+                          <h3 className="font-semibold text-foreground">{chamado.titulo}</h3>
                           <Badge className={status?.color}>
                             {status?.label}
                           </Badge>
@@ -237,8 +237,8 @@ export default function HistoricoChamadosEquipamento({
                             <Badge className="bg-red-600 text-white">🚨 Urgente</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">{chamado.descricao}</p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <p className="text-sm text-muted-foreground mb-2">{chamado.descricao}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           {tecnico && (
                             <div className="flex items-center gap-1">
                               <User className="w-3 h-3" />

@@ -128,9 +128,9 @@ export default function EmitirNotaForm({ configuracaoFiscal, clientes, empresa, 
           </div>
 
           {clienteSelecionado && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm font-medium text-gray-700 mb-2">Dados do Cliente:</p>
-              <div className="text-sm text-gray-600 space-y-1">
+            <div className="p-4 bg-muted rounded-lg">
+              <p className="text-sm font-medium text-foreground mb-2">Dados do Cliente:</p>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p><strong>Nome:</strong> {clienteSelecionado.nome}</p>
                 <p><strong>Email:</strong> {clienteSelecionado.email}</p>
                 {clienteSelecionado.telefone && (
@@ -261,17 +261,17 @@ export default function EmitirNotaForm({ configuracaoFiscal, clientes, empresa, 
             <p className="text-sm font-medium text-indigo-900 mb-2">Resumo da Nota:</p>
             <div className="text-sm space-y-1">
               <div className="flex justify-between">
-                <span className="text-gray-600">Valor Bruto:</span>
+                <span className="text-muted-foreground">Valor Bruto:</span>
                 <span className="font-semibold">R$ {formData.valor_bruto.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Total Retenções:</span>
+                <span className="text-muted-foreground">Total Retenções:</span>
                 <span className="text-red-600">
                   - R$ {Object.values(formData.retencoes).reduce((sum, val) => sum + val, 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between border-t pt-1 mt-1">
-                <span className="font-semibold text-gray-900">Valor Líquido:</span>
+                <span className="font-semibold text-foreground">Valor Líquido:</span>
                 <span className="font-bold text-green-600">
                   R$ {(formData.valor_bruto - Object.values(formData.retencoes).reduce((sum, val) => sum + val, 0)).toFixed(2)}
                 </span>

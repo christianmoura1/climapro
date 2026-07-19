@@ -46,7 +46,7 @@ export default function InitialChoice() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -61,10 +61,10 @@ export default function InitialChoice() {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <Snowflake className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            <h1 className="text-4xl font-bold text-foreground mb-3">
               Bem-vindo ao ClimaPro! 🌬️
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Escolha se deseja entrar no sistema ou cadastrar sua empresa
             </p>
           </div>
@@ -119,8 +119,8 @@ export default function InitialChoice() {
           </div>
 
           {/* Informações adicionais */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-center text-sm text-gray-600">
+          <div className="mt-8 pt-8 border-t border-border">
+            <p className="text-center text-sm text-muted-foreground">
               Já possui conta mas esqueceu a senha? 
               <button 
                 onClick={handleEntrarSistema}
@@ -135,15 +135,15 @@ export default function InitialChoice() {
           <div className="mt-8 grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-blue-600 font-bold text-2xl mb-1">100%</div>
-              <div className="text-gray-600 text-sm">Seguro</div>
+              <div className="text-muted-foreground text-sm">Seguro</div>
             </div>
             <div>
               <div className="text-purple-600 font-bold text-2xl mb-1">24/7</div>
-              <div className="text-gray-600 text-sm">Disponível</div>
+              <div className="text-muted-foreground text-sm">Disponível</div>
             </div>
             <div>
               <div className="text-green-600 font-bold text-2xl mb-1">Grátis</div>
-              <div className="text-gray-600 text-sm">Teste 30 dias</div>
+              <div className="text-muted-foreground text-sm">Teste 30 dias</div>
             </div>
           </div>
         </CardContent>

@@ -30,7 +30,7 @@ export default function CalendarioMensal({ dataAtual, eventos, tecnicos, cliente
         {/* Dias da semana */}
         <div className="grid grid-cols-7 gap-2 mb-4">
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((dia) => (
-            <div key={dia} className="text-center font-semibold text-gray-600 text-sm py-2">
+            <div key={dia} className="text-center font-semibold text-muted-foreground text-sm py-2">
               {dia}
             </div>
           ))}
@@ -47,11 +47,11 @@ export default function CalendarioMensal({ dataAtual, eventos, tecnicos, cliente
               <div
                 key={idx}
                 className={`min-h-[120px] p-2 border rounded-lg ${
-                  isHoje ? 'bg-indigo-50 border-indigo-500 border-2' : 'bg-white border-gray-200'
+                  isHoje ? 'bg-indigo-50 border-indigo-500 border-2' : 'bg-white border-border'
                 } ${!isMesAtual ? 'opacity-40' : ''} hover:shadow-md transition-shadow`}
               >
                 <div className={`text-sm font-semibold mb-2 ${
-                  isHoje ? 'text-indigo-600' : isMesAtual ? 'text-gray-900' : 'text-gray-400'
+                  isHoje ? 'text-indigo-600' : isMesAtual ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {format(dia, 'd')}
                 </div>
@@ -82,14 +82,14 @@ export default function CalendarioMensal({ dataAtual, eventos, tecnicos, cliente
                         <div className="font-semibold truncate">
                           {tipoIcons[evento.tipo]} {evento.titulo}
                         </div>
-                        <div className="text-gray-600 truncate">
+                        <div className="text-muted-foreground truncate">
                           {format(new Date(evento.data_inicio), 'HH:mm')}
                         </div>
                       </div>
                     );
                   })}
                   {eventosNoDia.length > 3 && (
-                    <div className="text-xs text-gray-500 pl-1">
+                    <div className="text-xs text-muted-foreground pl-1">
                       +{eventosNoDia.length - 3} mais
                     </div>
                   )}

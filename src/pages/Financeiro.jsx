@@ -522,8 +522,8 @@ export default function FinanceiroPage() {
               <Button variant="outline" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Financeiro</h1>
-              <p className="text-gray-600 mt-1">Controle completo de receitas e despesas</p>
+              <h1 className="text-3xl font-bold text-foreground">Financeiro</h1>
+              <p className="text-muted-foreground mt-1">Controle completo de receitas e despesas</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -569,8 +569,8 @@ export default function FinanceiroPage() {
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <div>
-                    <p className="font-semibold text-gray-900">R$ {despesasPendentes.toFixed(2)} em despesas pendentes</p>
-                    <p className="text-sm text-gray-600">Escolha se deseja incluí-las no cálculo</p>
+                    <p className="font-semibold text-foreground">R$ {despesasPendentes.toFixed(2)} em despesas pendentes</p>
+                    <p className="text-sm text-muted-foreground">Escolha se deseja incluí-las no cálculo</p>
                   </div>
                 </div>
                 <Button variant={incluirPendentes ? "default" : "outline"} onClick={() => setIncluirPendentes(!incluirPendentes)}>
@@ -583,7 +583,7 @@ export default function FinanceiroPage() {
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-lg border-none">
-            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-gray-600">Receitas</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Receitas</CardTitle></CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <p className="text-3xl font-bold text-green-600">R$ {receitas.toFixed(2)}</p>
@@ -593,18 +593,18 @@ export default function FinanceiroPage() {
           </Card>
 
           <Card className="shadow-lg border-none">
-            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-gray-600">Despesas da Empresa</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Despesas da Empresa</CardTitle></CardHeader>
             <CardContent>
               <div>
                 <p className="text-3xl font-bold text-red-600">R$ {despesas.toFixed(2)}</p>
-                <p className="text-xs text-gray-500 mt-1">Operacionais: R$ {(despesasPagas + (incluirPendentes ? despesasPendentes : 0)).toFixed(2)}</p>
-                <p className="text-xs text-gray-500">Créditos: R$ {creditosEnviadosAprovados.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Operacionais: R$ {(despesasPagas + (incluirPendentes ? despesasPendentes : 0)).toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground">Créditos: R$ {creditosEnviadosAprovados.toFixed(2)}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-lg border-none">
-            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-gray-600">Gastos dos Técnicos</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Gastos dos Técnicos</CardTitle></CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-purple-600">R$ {totalGastosTecnicos.toFixed(2)}</p>
               <p className="text-xs text-purple-600 mt-1">Controle (não afeta saldo)</p>
@@ -612,7 +612,7 @@ export default function FinanceiroPage() {
           </Card>
 
           <Card className="shadow-lg border-none">
-            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-gray-600">Saldo</CardTitle></CardHeader>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Saldo</CardTitle></CardHeader>
             <CardContent>
               <p className={`text-3xl font-bold ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>R$ {saldo.toFixed(2)}</p>
             </CardContent>
@@ -625,7 +625,7 @@ export default function FinanceiroPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-orange-600"/>Créditos para Técnicos</CardTitle>
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-gray-500" />
+                  <Filter className="w-4 h-4 text-muted-foreground" />
                   <Select value={filtroTecnicoCreditos} onValueChange={setFiltroTecnicoCreditos}>
                     <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -644,11 +644,11 @@ export default function FinanceiroPage() {
                 <div className="bg-red-50 p-4 rounded-lg"><p className="text-sm text-red-600">Rejeitados</p><p className="text-2xl font-bold text-red-900">{creditosRejeitadosFiltrados}</p></div>
               </div>
               {creditosFiltrados.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Nenhum crédito encontrado</div>
+                <div className="text-center py-8 text-muted-foreground">Nenhum crédito encontrado</div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-muted border-b">
                       <tr>
                         <th className="px-4 py-2 text-left">Data</th>
                         <th className="px-4 py-2 text-left">Técnico</th>
@@ -663,7 +663,7 @@ export default function FinanceiroPage() {
                       {creditosFiltrados.map((credito) => {
                         const tec = tecnicos.find(t => t.id === credito.tecnico_id);
                         return (
-                          <tr key={credito.id} className="hover:bg-gray-50">
+                          <tr key={credito.id} className="hover:bg-muted">
                             <td className="px-4 py-2">{format(new Date(credito.data_envio), 'dd/MM/yyyy', { locale: ptBR })}</td>
                             <td className="px-4 py-2">{tec?.nome || 'N/A'}</td>
                             <td className="px-4 py-2 capitalize">{credito.tipo}</td>
@@ -687,7 +687,7 @@ export default function FinanceiroPage() {
         )}
 
         {loadingMovimentacoes ? (
-          <Card className="mb-8"><CardContent className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div><p className="text-gray-600 text-sm">Carregando...</p></CardContent></Card>
+          <Card className="mb-8"><CardContent className="p-8 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div><p className="text-muted-foreground text-sm">Carregando...</p></CardContent></Card>
         ) : movimentacoesPendentes.length > 0 ? (
           <div className="mb-8"><AprovarMovimentacoes movimentacoes={movimentacoesPendentes} tecnicos={tecnicos} /></div>
         ) : null}
@@ -705,7 +705,7 @@ export default function FinanceiroPage() {
                   <Badge className="bg-purple-100 text-purple-800">Total: R$ {totalGastosTecnicosFiltrados.toFixed(2)}</Badge>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-gray-500" />
+                  <Filter className="w-4 h-4 text-muted-foreground" />
                   <Select value={filtroTecnicoGastos} onValueChange={setFiltroTecnicoGastos}>
                     <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -718,7 +718,7 @@ export default function FinanceiroPage() {
             </CardHeader>
             <CardContent>
               {gastosTecnicosFiltrados.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">Nenhum gasto encontrado</div>
+                <div className="text-center py-8 text-muted-foreground">Nenhum gasto encontrado</div>
               ) : (
                 <GastosTecnicosLista 
                   movimentacoes={gastosTecnicosFiltrados} 
@@ -760,7 +760,7 @@ export default function FinanceiroPage() {
             <CardContent>
               <div className="space-y-3">
                 {gastosPorTecnico.map((item, i) => (
-                  <div key={i} className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={i} className="flex justify-between p-3 bg-muted rounded-lg">
                     <span className="font-medium">{i + 1}. {item.tecnico}</span>
                     <span className="text-purple-600 font-bold">R$ {item.total.toFixed(2)}</span>
                   </div>
@@ -774,7 +774,7 @@ export default function FinanceiroPage() {
             <CardContent>
               <div className="space-y-3">
                 {topCategorias.map(([cat, val], i) => (
-                  <div key={i} className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={i} className="flex justify-between p-3 bg-muted rounded-lg">
                     <span className="font-medium">{i + 1}. {cat}</span>
                     <span className="text-red-600 font-bold">R$ {val.toFixed(2)}</span>
                   </div>

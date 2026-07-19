@@ -518,10 +518,10 @@ ClimaPro`;
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h2>
-          <p className="text-gray-600">Apenas o administrador global pode acessar esta área.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Acesso Negado</h2>
+          <p className="text-muted-foreground">Apenas o administrador global pode acessar esta área.</p>
         </div>
       </div>
     );
@@ -533,8 +533,8 @@ ClimaPro`;
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo Global</h1>
-            <p className="text-gray-600 mt-1">Gestão financeira e operacional</p>
+            <h1 className="text-3xl font-bold text-foreground">Painel Administrativo Global</h1>
+            <p className="text-muted-foreground mt-1">Gestão financeira e operacional</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -664,11 +664,11 @@ ClimaPro`;
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Técnicos Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Técnicos Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{tecnicosAtivos}</p>
+                <p className="text-3xl font-bold text-foreground">{tecnicosAtivos}</p>
                 <Users className="w-8 h-8 text-teal-500" />
               </div>
             </CardContent>
@@ -676,11 +676,11 @@ ClimaPro`;
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Clientes Cadastrados</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Clientes Cadastrados</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{clientesAtivos}</p>
+                <p className="text-3xl font-bold text-foreground">{clientesAtivos}</p>
                 <Users className="w-8 h-8 text-green-500" />
               </div>
             </CardContent>

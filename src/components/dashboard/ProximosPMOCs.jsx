@@ -19,26 +19,26 @@ export default function ProximosPMOCs({ pmocs }) {
       </CardHeader>
       <CardContent className="p-0">
         {pmocs.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
+          <div className="p-8 text-center text-muted-foreground">
             Nenhum PMOC cadastrado ainda
           </div>
         ) : (
           <div className="divide-y">
             {pmocs.map((pmoc) => (
-              <div key={pmoc.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div key={pmoc.id} className="p-4 hover:bg-muted transition-colors">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-600" />
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-foreground">
                       PMOC {pmoc.periodicidade}
                     </span>
                   </div>
-                  <Badge className={pmoc.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                  <Badge className={pmoc.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-muted text-foreground'}>
                     {pmoc.status}
                   </Badge>
                 </div>
                 {pmoc.proxima_manutencao && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <AlertTriangle className="w-4 h-4 text-orange-500" />
                     <span>
                       Próxima manutenção: {format(new Date(pmoc.proxima_manutencao), "dd/MM/yyyy")}

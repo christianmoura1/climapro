@@ -10,7 +10,7 @@ export default function GastosTecnicosLista({ movimentacoes, tecnicos, onVerDeta
   if (!movimentacoes || movimentacoes.length === 0) {
     return (
       <Card className="shadow-lg border-none">
-        <CardContent className="p-12 text-center text-gray-500">
+        <CardContent className="p-12 text-center text-muted-foreground">
           Nenhum gasto de técnico registrado ainda
         </CardContent>
       </Card>
@@ -46,15 +46,15 @@ export default function GastosTecnicosLista({ movimentacoes, tecnicos, onVerDeta
       <CardContent className="p-0">
         <div className="divide-y">
           {gastosPorTecnico.map(({ tecnico, gastos, total }) => (
-            <div key={tecnico.id} className="p-4 hover:bg-gray-50">
+            <div key={tecnico.id} className="p-4 hover:bg-muted">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                     <User className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{tecnico.nome}</h3>
-                    <p className="text-xs text-gray-500">{gastos.length} gasto(s)</p>
+                    <h3 className="font-semibold text-foreground">{tecnico.nome}</h3>
+                    <p className="text-xs text-muted-foreground">{gastos.length} gasto(s)</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -79,11 +79,11 @@ export default function GastosTecnicosLista({ movimentacoes, tecnicos, onVerDeta
                   <div key={gasto.id} className="flex justify-between items-center text-sm bg-purple-50 p-2 rounded">
                     <div className="flex items-center gap-2 flex-1">
                       <Calendar className="w-3 h-3 text-purple-600" />
-                      <span className="text-gray-600">
+                      <span className="text-muted-foreground">
                         {format(new Date(gasto.data_movimentacao || gasto.created_date), 'dd/MM/yyyy', { locale: ptBR })}
                       </span>
-                      <span className="text-gray-500">-</span>
-                      <span className="text-gray-700">{gasto.categoria}</span>
+                      <span className="text-muted-foreground">-</span>
+                      <span className="text-foreground">{gasto.categoria}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-purple-700">R$ {parseFloat(gasto.valor).toFixed(2)}</span>
@@ -102,7 +102,7 @@ export default function GastosTecnicosLista({ movimentacoes, tecnicos, onVerDeta
                   </div>
                 ))}
                 {gastos.length > 3 && (
-                  <p className="text-xs text-gray-500 text-center">+{gastos.length - 3} gasto(s) adicional(is)</p>
+                  <p className="text-xs text-muted-foreground text-center">+{gastos.length - 3} gasto(s) adicional(is)</p>
                 )}
               </div>
             </div>

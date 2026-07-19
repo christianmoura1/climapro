@@ -19,17 +19,17 @@ export default function GastosTecnicosPendentes({ gastos, tecnicos, onAprovar, o
           {gastos.map((gasto) => {
             const tecnico = tecnicos.find(t => t.id === gasto.tecnico_id);
             return (
-              <div key={gasto.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div key={gasto.id} className="p-4 hover:bg-muted transition-colors">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="font-semibold text-gray-900">{tecnico?.nome}</span>
+                      <span className="font-semibold text-foreground">{tecnico?.nome}</span>
                       <Badge className="bg-yellow-100 text-yellow-800">
                         {gasto.tipo_gasto}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{gasto.descricao}</p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground mb-2">{gasto.descricao}</p>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span>Data: {format(new Date(gasto.data_gasto), "dd/MM/yyyy")}</span>
                       <span className="font-bold text-orange-600">R$ {gasto.valor.toFixed(2)}</span>
                     </div>

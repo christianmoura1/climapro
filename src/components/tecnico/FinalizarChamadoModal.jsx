@@ -254,9 +254,9 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
 
             <div className="space-y-2">
               <Label>Chamado</Label>
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="font-semibold text-gray-900">{chamado.titulo}</p>
-                <p className="text-sm text-gray-600 mt-1">{chamado.descricao}</p>
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="font-semibold text-foreground">{chamado.titulo}</p>
+                <p className="text-sm text-muted-foreground mt-1">{chamado.descricao}</p>
               </div>
             </div>
 
@@ -268,7 +268,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 placeholder="Ex: João Silva"
                 required
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Nome completo da pessoa que recebeu o serviço
               </p>
             </div>
@@ -289,7 +289,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 <Image className="w-4 h-4" />
                 Fotos do Serviço (até 10 fotos)
               </Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <div className="border-2 border-dashed border-border rounded-lg p-4">
                 <input
                   type="file"
                   accept="image/*"
@@ -303,13 +303,13 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   htmlFor="photos-finalizacao"
                   className={`flex flex-col items-center justify-center cursor-pointer ${formData.fotos_finalizacao.length >= 10 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
+                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                  <span className="text-sm text-muted-foreground">
                     {uploadingFile ? 'Fazendo upload...' : 
                      formData.fotos_finalizacao.length >= 10 ? 'Limite de 10 fotos atingido' :
                      `Clique para adicionar fotos (${formData.fotos_finalizacao.length}/10)`}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1">PNG, JPG até 10MB cada</span>
+                  <span className="text-xs text-muted-foreground mt-1">PNG, JPG até 10MB cada</span>
                 </label>
               </div>
 
@@ -320,7 +320,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                       <img
                         src={url}
                         alt={`Foto ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                        className="w-full h-24 object-cover rounded-lg border-2 border-border"
                       />
                       <button
                         type="button"
@@ -344,7 +344,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 <Video className="w-4 h-4" />
                 Vídeos do Serviço (até 2 vídeos)
               </Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <div className="border-2 border-dashed border-border rounded-lg p-4">
                 <input
                   type="file"
                   accept="video/*"
@@ -358,13 +358,13 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   htmlFor="videos-finalizacao"
                   className={`flex flex-col items-center justify-center cursor-pointer ${formData.videos_finalizacao.length >= 2 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">
+                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                  <span className="text-sm text-muted-foreground">
                     {uploadingFile ? 'Fazendo upload...' : 
                      formData.videos_finalizacao.length >= 2 ? 'Limite de 2 vídeos atingido' :
                      `Clique para adicionar vídeos (${formData.videos_finalizacao.length}/2)`}
                   </span>
-                  <span className="text-xs text-gray-400 mt-1">MP4, MOV até 50MB cada</span>
+                  <span className="text-xs text-muted-foreground mt-1">MP4, MOV até 50MB cada</span>
                 </label>
               </div>
 
@@ -374,7 +374,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                     <div key={index} className="relative group">
                       <video
                         src={url}
-                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                        className="w-full h-32 object-cover rounded-lg border-2 border-border"
                         controls
                       />
                       <button
@@ -405,7 +405,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   Limpar
                 </Button>
               </div>
-              <div className="border-2 border-gray-300 rounded-lg bg-white relative h-48"> {/* Added relative and h-48 */}
+              <div className="border-2 border-border rounded-lg bg-white relative h-48"> {/* Added relative and h-48 */}
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full touch-none" // Made canvas fill parent
@@ -419,7 +419,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   onTouchEnd={stopDrawing}
                 />
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 ✍️ Peça para o cliente assinar com o dedo (mobile) ou mouse (desktop)
               </p>
             </div>

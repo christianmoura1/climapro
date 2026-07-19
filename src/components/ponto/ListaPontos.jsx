@@ -196,7 +196,7 @@ Sistema ClimaPro`
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando registros...</p>
+          <p className="text-muted-foreground">Carregando registros...</p>
         </CardContent>
       </Card>
     );
@@ -206,7 +206,7 @@ Sistema ClimaPro`
     return (
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
-          <p className="text-gray-600">Nenhum registro de ponto encontrado</p>
+          <p className="text-muted-foreground">Nenhum registro de ponto encontrado</p>
         </CardContent>
       </Card>
     );
@@ -250,8 +250,8 @@ Sistema ClimaPro`
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">{tecnico?.nome || 'Técnico Desconhecido'}</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-lg font-bold text-foreground">{tecnico?.nome || 'Técnico Desconhecido'}</h3>
+                    <p className="text-sm text-muted-foreground">
                       {formatarDataBrasilia(pontosDia[0].data_hora, "dd 'de' MMMM 'de' yyyy")}
                     </p>
                   </div>
@@ -284,25 +284,25 @@ Sistema ClimaPro`
                     const config = tiposConfig[ponto.tipo_registro] || {
                       label: ponto.tipo_registro || "Desconhecido",
                       icon: "❓",
-                      cor: "bg-gray-100 text-gray-800"
+                      cor: "bg-muted text-foreground"
                     };
                     
                     return (
-                      <div key={ponto.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div key={ponto.id} className="flex items-center justify-between p-4 bg-muted rounded-lg hover:bg-muted transition-colors">
                         <div className="flex items-center gap-4 flex-1">
                           <Badge className={config.cor}>
                             {config.icon} {config.label}
                           </Badge>
                           <div>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-foreground">
                               {formatarDataBrasilia(ponto.data_hora, 'HH:mm:ss')}
                             </p>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <MapPin className="w-3 h-3" />
                               <span className="truncate max-w-md">{ponto.endereco}</span>
                             </div>
                             {ponto.observacoes && (
-                              <p className="text-xs text-gray-500 mt-1">{ponto.observacoes}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{ponto.observacoes}</p>
                             )}
                             {ponto.status === 'aguardando_aprovacao' && (
                               <Badge className="bg-yellow-100 text-yellow-800 mt-2">
@@ -368,7 +368,7 @@ Sistema ClimaPro`
               </div>
               <div>
                 <Label>Horário Original</Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   {formatarDataBrasilia(editandoPonto.data_hora, "dd/MM/yyyy HH:mm:ss")}
                 </p>
               </div>

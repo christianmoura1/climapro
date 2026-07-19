@@ -197,10 +197,10 @@ export default function EquipamentosPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -251,8 +251,8 @@ export default function EquipamentosPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Equipamentos</h1>
-              <p className="text-gray-600 mt-1">Gerencie todos os equipamentos</p>
+              <h1 className="text-3xl font-bold text-foreground">Equipamentos</h1>
+              <p className="text-muted-foreground mt-1">Gerencie todos os equipamentos</p>
             </div>
           </div>
           <Button 
@@ -282,7 +282,7 @@ export default function EquipamentosPage() {
 
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               placeholder="Buscar por número, marca ou modelo..."
               value={searchTerm}
@@ -306,14 +306,14 @@ export default function EquipamentosPage() {
             {buscaCliente && (
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 onMouseDown={() => { setBuscaCliente(""); setFiltroCliente(""); }}
               >
                 ✕
               </button>
             )}
             {showClienteSugestoes && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
                 <div
                   className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${filtroCliente === "" ? 'bg-blue-100 font-semibold' : ''}`}
                   onMouseDown={() => { setFiltroCliente(""); setBuscaCliente(""); setShowClienteSugestoes(false); }}
@@ -330,14 +330,14 @@ export default function EquipamentosPage() {
                   </div>
                 ))}
                 {buscaCliente && clientesFiltrados.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-gray-400">Nenhum cliente encontrado</div>
+                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum cliente encontrado</div>
                 )}
               </div>
             )}
           </div>
         </div>
 
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-muted-foreground">
           Exibindo {filteredEquipamentos.length} de {equipamentos.length} equipamentos
         </div>
 

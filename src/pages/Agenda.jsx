@@ -151,10 +151,10 @@ export default function AgendaPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -171,8 +171,8 @@ export default function AgendaPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Agenda</h1>
-              <p className="text-gray-600 mt-1">Gerenciamento de atendimentos e manutenções</p>
+              <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
+              <p className="text-muted-foreground mt-1">Gerenciamento de atendimentos e manutenções</p>
             </div>
           </div>
           <Button
@@ -187,7 +187,7 @@ export default function AgendaPage() {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Eventos Hoje</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Eventos Hoje</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -199,7 +199,7 @@ export default function AgendaPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -211,7 +211,7 @@ export default function AgendaPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Técnicos Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Técnicos Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -223,7 +223,7 @@ export default function AgendaPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Próximos Eventos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Próximos Eventos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -248,7 +248,7 @@ export default function AgendaPage() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
                 <div className="ml-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-lg font-semibold text-foreground">
                     {visualizacao === 'mes' && format(dataAtual, 'MMMM yyyy', { locale: ptBR })}
                     {visualizacao === 'semana' && `Semana de ${format(startOfWeek(dataAtual), 'd MMM', { locale: ptBR })} - ${format(endOfWeek(dataAtual), 'd MMM', { locale: ptBR })}`}
                     {visualizacao === 'dia' && format(dataAtual, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}

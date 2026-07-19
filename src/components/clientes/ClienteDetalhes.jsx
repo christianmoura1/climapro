@@ -15,7 +15,7 @@ const STATUS_CONFIG = {
   aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
   aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguard. Aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+  cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
 
 // tipoConfig object removed as it is no longer used for rendering equipment badges
@@ -86,8 +86,8 @@ export default function ClienteDetalhes({
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">{cliente.nome}</h1>
-              <p className="text-gray-600 mt-1">Detalhes do cliente, equipamentos e histórico</p>
+              <h1 className="text-3xl font-bold text-foreground">{cliente.nome}</h1>
+              <p className="text-muted-foreground mt-1">Detalhes do cliente, equipamentos e histórico</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -121,10 +121,10 @@ export default function ClienteDetalhes({
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3 text-sm">
-                {cliente.telefone && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span>{cliente.telefone}</span></div>}
-                {cliente.whatsapp && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-gray-400" /><span>{cliente.whatsapp}</span></div>}
-                {cliente.email && <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-gray-400" /><span>{cliente.email}</span></div>}
-                {cliente.endereco && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-gray-400" /><span>{cliente.endereco}</span></div>}
+                {cliente.telefone && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /><span>{cliente.telefone}</span></div>}
+                {cliente.whatsapp && <div className="flex items-center gap-2"><Phone className="w-4 h-4 text-muted-foreground" /><span>{cliente.whatsapp}</span></div>}
+                {cliente.email && <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /><span>{cliente.email}</span></div>}
+                {cliente.endereco && <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-muted-foreground" /><span>{cliente.endereco}</span></div>}
               </div>
               {cliente.tem_acesso_portal && (
                 <div className="flex items-center gap-3 pt-2">
@@ -137,7 +137,7 @@ export default function ClienteDetalhes({
                   </Button>
                 </div>
               )}
-              {cliente.observacoes && <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{cliente.observacoes}</p>}
+              {cliente.observacoes && <p className="text-sm text-foreground bg-muted p-3 rounded-lg">{cliente.observacoes}</p>}
             </CardContent>
           </Card>
 
@@ -153,7 +153,7 @@ export default function ClienteDetalhes({
                   <button
                     type="button"
                     onClick={() => setEstAtivaIdx(null)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === null ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === null ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted-foreground border-border hover:bg-muted'}`}
                   >
                     🏢 Todos ({estabelecimentos.length} estabelecimentos)
                   </button>
@@ -162,7 +162,7 @@ export default function ClienteDetalhes({
                       key={idx}
                       type="button"
                       onClick={() => setEstAtivaIdx(idx)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === idx ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === idx ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted-foreground border-border hover:bg-muted'}`}
                     >
                       {est.nome === 'Casa' || est.nome === 'casa' ? '🏠' :
                        est.nome === 'Loja' || est.nome === 'loja' ? '🏪' :
@@ -175,7 +175,7 @@ export default function ClienteDetalhes({
               </CardHeader>
               <CardContent className="p-4">
                 {estAtiva && (
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
+                  <div className="mb-4 p-3 bg-muted rounded-lg text-sm text-foreground">
                     <p><strong>Endereço:</strong> {estAtiva.endereco || 'Não cadastrado'}</p>
                     {estAtiva.latitude && estAtiva.longitude && (
                       <Button size="sm" variant="outline" className="mt-2" onClick={() => window.open(`https://www.google.com/maps?q=${estAtiva.latitude},${estAtiva.longitude}`, '_blank')}>
@@ -187,12 +187,12 @@ export default function ClienteDetalhes({
 
                 {/* Equipamentos do estabelecimento */}
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                     <Cpu className="w-4 h-4" />
                     Equipamentos ({equipamentosVisiveis.length})
                   </h4>
                   {equipamentosVisiveis.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-4">Nenhum equipamento neste estabelecimento.</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum equipamento neste estabelecimento.</p>
                   ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {equipamentosVisiveis.map((equipamento) => (
@@ -207,9 +207,9 @@ export default function ClienteDetalhes({
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-gray-900 text-sm truncate">{equipamento.marca} {equipamento.modelo}</h4>
-                                <p className="text-xs text-gray-500">{equipamento.tipo?.replace('_', ' ')}</p>
-                                {equipamento.capacidade && <p className="text-xs text-gray-500">{equipamento.capacidade}</p>}
+                                <h4 className="font-semibold text-foreground text-sm truncate">{equipamento.marca} {equipamento.modelo}</h4>
+                                <p className="text-xs text-muted-foreground">{equipamento.tipo?.replace('_', ' ')}</p>
+                                {equipamento.capacidade && <p className="text-xs text-muted-foreground">{equipamento.capacidade}</p>}
                               </div>
                             </div>
                             <Button size="sm" variant="outline" className="w-full mt-2" onClick={(e) => { e.stopPropagation(); onVisualizarEquipamento && onVisualizarEquipamento(equipamento); }}>
@@ -224,14 +224,14 @@ export default function ClienteDetalhes({
 
                 {/* Histórico de chamados do estabelecimento */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
                     <ClipboardList className="w-4 h-4" />
                     Histórico de Chamados ({chamadosVisiveis.length})
                   </h4>
                   {loadingChamados ? (
-                    <p className="text-sm text-gray-500 text-center py-3">Carregando...</p>
+                    <p className="text-sm text-muted-foreground text-center py-3">Carregando...</p>
                   ) : chamadosVisiveis.length === 0 ? (
-                    <p className="text-sm text-gray-500 text-center py-4">
+                    <p className="text-sm text-muted-foreground text-center py-4">
                       {estAtiva ? `Nenhum chamado encontrado para ${estAtiva.nome}.` : 'Nenhum chamado registrado.'}
                     </p>
                   ) : (
@@ -246,8 +246,8 @@ export default function ClienteDetalhes({
                             onClick={() => isFinalizado && onVisualizarChamado && onVisualizarChamado(chamado)}
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">{chamado.numero_chamado} — {chamado.titulo}</p>
-                              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              <p className="text-sm font-medium text-foreground truncate">{chamado.numero_chamado} — {chamado.titulo}</p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                                 <Clock className="w-3 h-3" />
                                 {chamado.created_date ? format(new Date(chamado.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
                                 {chamado.local && <span className="truncate">· {chamado.local}</span>}
@@ -259,7 +259,7 @@ export default function ClienteDetalhes({
                                 <button
                                   type="button"
                                   onClick={(e) => { e.stopPropagation(); onDeletarChamado(chamado); }}
-                                  className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                                  className="p-1 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
                                   title="Excluir chamado"
                                 >
                                   <X className="w-4 h-4" />
@@ -284,21 +284,21 @@ export default function ClienteDetalhes({
               </CardHeader>
               <CardContent className="p-6">
                 {equipamentos.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500"><Cpu className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p>Nenhum equipamento cadastrado</p></div>
+                  <div className="text-center py-8 text-muted-foreground"><Cpu className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p>Nenhum equipamento cadastrado</p></div>
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {equipamentos.map((equipamento) => (
                       <Card key={equipamento.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onVisualizarEquipamento && onVisualizarEquipamento(equipamento)}>
                         <CardContent className="p-4">
                           <div className="flex items-start gap-3">
-                            {equipamento.foto_url ? <img src={equipamento.foto_url} alt={equipamento.modelo} className="w-16 h-16 object-cover rounded-lg border-2 border-gray-200" /> : <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center"><Cpu className="w-8 h-8 text-blue-600" /></div>}
+                            {equipamento.foto_url ? <img src={equipamento.foto_url} alt={equipamento.modelo} className="w-16 h-16 object-cover rounded-lg border-2 border-border" /> : <div className="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center"><Cpu className="w-8 h-8 text-blue-600" /></div>}
                             <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900 text-sm mb-1">{equipamento.marca} {equipamento.modelo}</h4>
+                              <h4 className="font-semibold text-foreground text-sm mb-1">{equipamento.marca} {equipamento.modelo}</h4>
                               <div className="flex flex-wrap gap-1 mb-2">
                                 <Badge variant="outline" className="text-xs capitalize">{equipamento.tipo?.replace('_', ' ')}</Badge>
                                 {equipamento.capacidade && <Badge variant="outline" className="text-xs">{equipamento.capacidade}</Badge>}
                               </div>
-                              <p className="text-xs text-gray-600">📍 {equipamento.localizacao}</p>
+                              <p className="text-xs text-muted-foreground">📍 {equipamento.localizacao}</p>
                             </div>
                           </div>
                           <div className="mt-3 pt-3 border-t">

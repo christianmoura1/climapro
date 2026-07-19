@@ -14,7 +14,7 @@ const statusConfig = {
   pendente: { label: "Pendente", color: "bg-orange-100 text-orange-800" },
   em_andamento: { label: "Em Andamento", color: "bg-blue-100 text-blue-800" },
   finalizado: { label: "Finalizado", color: "bg-green-100 text-green-800" },
-  cancelado: { label: "Cancelado", color: "bg-gray-100 text-gray-800" }
+  cancelado: { label: "Cancelado", color: "bg-muted text-foreground" }
 };
 
 const tipoProblemaConfig = {
@@ -80,7 +80,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando histórico...</p>
+          <p className="text-muted-foreground">Carregando histórico...</p>
         </CardContent>
       </Card>
     );
@@ -107,36 +107,36 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
         {chamados.length === 0 ? (
           <div className="text-center py-12">
             <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">Nenhum chamado registrado para este cliente</p>
-            <p className="text-sm text-gray-500">Clique em "Novo Chamado" para criar o primeiro</p>
+            <p className="text-muted-foreground mb-2">Nenhum chamado registrado para este cliente</p>
+            <p className="text-sm text-muted-foreground">Clique em "Novo Chamado" para criar o primeiro</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-muted">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Chamado
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Data
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Técnico
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Equipamento
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Tipo
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Descrição
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -148,24 +148,24 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
                   const status = statusConfig[chamado.status] || statusConfig.pendente;
 
                   return (
-                    <tr key={chamado.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={chamado.id} className="hover:bg-muted transition-colors">
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-foreground">
                           {chamado.numero_chamado || `#${chamado.id.slice(0, 8)}`}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {chamado.titulo}
                         </div>
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {chamado.created_date 
                           ? format(new Date(chamado.created_date), "dd/MM/yyyy", { locale: ptBR })
                           : 'N/A'}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm text-foreground">
                             {tecnico?.nome || 'Não atribuído'}
                           </span>
                         </div>
@@ -173,16 +173,16 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
                       <td className="px-4 py-4 whitespace-nowrap">
                         {equipamento ? (
                           <div className="flex items-center gap-2">
-                            <Cpu className="w-4 h-4 text-gray-400" />
-                            <span className="text-sm text-gray-900">
+                            <Cpu className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-foreground">
                               {equipamento.numero_equipamento}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400">N/A</span>
+                          <span className="text-sm text-muted-foreground">N/A</span>
                         )}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-muted-foreground">
                         {tipoProblemaConfig[chamado.tipo_problema] || chamado.tipo_problema}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
@@ -190,7 +190,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
                           {status.label}
                         </Badge>
                       </td>
-                      <td className="px-4 py-4 text-sm text-gray-600">
+                      <td className="px-4 py-4 text-sm text-muted-foreground">
                         <div className="max-w-xs truncate">
                           {chamado.descricao}
                         </div>

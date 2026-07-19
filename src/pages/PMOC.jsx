@@ -409,8 +409,8 @@ ClimaPro`
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">PMOC</h1>
-              <p className="text-gray-600 mt-1">Planos de Manutenção, Operação e Controle</p>
+              <h1 className="text-3xl font-bold text-foreground">PMOC</h1>
+              <p className="text-muted-foreground mt-1">Planos de Manutenção, Operação e Controle</p>
             </div>
           </div>
           <Button 
@@ -453,14 +453,14 @@ ClimaPro`
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-foreground">
                               {cliente?.nome || 'Cliente não identificado'}
                             </h3>
                             <Badge className="bg-purple-100 text-purple-800 capitalize">
                               {pmoc?.periodicidade || 'N/A'}
                             </Badge>
                           </div>
-                          <div className="text-sm text-gray-600 space-y-1">
+                          <div className="text-sm text-muted-foreground space-y-1">
                             <p>🔧 Técnico: {tecnico?.nome || 'Não atribuído'}</p>
                             <p>📅 Executado em: {manutencao.data_execucao ? format(new Date(manutencao.data_execucao), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}</p>
                             <p>🏢 Equipamentos: {manutencao.equipamentos_ids?.length || 0}</p>
@@ -503,7 +503,7 @@ ClimaPro`
                 📋 Histórico de PMOCs Concluídos
               </CardTitle>
               <div className="flex items-center gap-3">
-                <Filter className="w-4 h-4 text-gray-500" />
+                <Filter className="w-4 h-4 text-muted-foreground" />
                 <div className="w-64">
                   <Label className="sr-only">Filtrar por Cliente</Label>
                   <select
@@ -524,7 +524,7 @@ ClimaPro`
           </CardHeader>
           <CardContent className="p-0">
             {manutencoesConcluidas.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 {filtroCliente 
                   ? "Nenhum PMOC concluído para este cliente" 
                   : "Nenhum PMOC concluído ainda"}
@@ -537,11 +537,11 @@ ClimaPro`
                   const pmoc = pmocs.find(p => p.id === manutencao.pmoc_id);
                   
                   return (
-                    <div key={manutencao.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div key={manutencao.id} className="p-4 hover:bg-muted transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-foreground">
                               {cliente?.nome || 'Cliente não identificado'}
                             </h3>
                             <Badge className="bg-purple-100 text-purple-800 capitalize">
@@ -551,7 +551,7 @@ ClimaPro`
                               ✅ Concluído
                             </Badge>
                           </div>
-                          <div className="text-sm text-gray-600 space-y-1">
+                          <div className="text-sm text-muted-foreground space-y-1">
                             <p>🔧 Técnico: {tecnico?.nome || 'Não identificado'}</p>
                             <p>📅 Executado em: {manutencao.data_execucao ? format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : 'N/A'}</p>
                             <p>🏢 Equipamentos: {manutencao.equipamentos_ids?.length || 0}</p>

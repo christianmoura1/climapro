@@ -110,10 +110,10 @@ export default function ManutencoesVencidasModal({ chamados, onClose, onCriarCha
                     <Wrench className="w-5 h-5 text-red-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">
+                    <p className="font-semibold text-foreground truncate">
                       {cliente?.nome || chamado.titulo || 'Cliente'}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         Vencida: {dataVenc}
@@ -121,32 +121,32 @@ export default function ManutencoesVencidasModal({ chamados, onClose, onCriarCha
                       </span>
                     </div>
                   </div>
-                  {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400 shrink-0" /> : <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />}
+                  {isExpanded ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
                 </button>
 
                 {/* Detalhes do último atendimento */}
                 {isExpanded && (
-                  <div className="border-t border-red-100 bg-gray-50 p-4 space-y-3">
+                  <div className="border-t border-red-100 bg-muted p-4 space-y-3">
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Título</p>
-                        <p className="text-gray-900">{chamado.titulo || 'N/A'}</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">Título</p>
+                        <p className="text-foreground">{chamado.titulo || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Técnico</p>
-                        <p className="text-gray-900">{tecnico?.nome || 'N/A'}</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">Técnico</p>
+                        <p className="text-foreground">{tecnico?.nome || 'N/A'}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Finalizado em</p>
-                        <p className="text-gray-900">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">Finalizado em</p>
+                        <p className="text-foreground">
                           {chamado.data_finalizacao
                             ? format(new Date(chamado.data_finalizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
                             : 'N/A'}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase">Local</p>
-                        <p className="text-gray-900 flex items-start gap-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">Local</p>
+                        <p className="text-foreground flex items-start gap-1">
                           <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
                           <span>{chamado.local || 'N/A'}</span>
                         </p>
@@ -155,8 +155,8 @@ export default function ManutencoesVencidasModal({ chamados, onClose, onCriarCha
 
                     {chamado.observacoes_tecnico && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Observações do Técnico</p>
-                        <p className="text-sm text-gray-700 bg-white rounded-lg p-3 border border-gray-200 whitespace-pre-wrap">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Observações do Técnico</p>
+                        <p className="text-sm text-foreground bg-white rounded-lg p-3 border border-border whitespace-pre-wrap">
                           {chamado.observacoes_tecnico}
                         </p>
                       </div>
@@ -164,7 +164,7 @@ export default function ManutencoesVencidasModal({ chamados, onClose, onCriarCha
 
                     {chamado.fotos_finalizacao?.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-1">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase mb-1 flex items-center gap-1">
                           <ImageIcon className="w-3 h-3" />
                           Fotos do Serviço ({chamado.fotos_finalizacao.length})
                         </p>
@@ -174,7 +174,7 @@ export default function ManutencoesVencidasModal({ chamados, onClose, onCriarCha
                               <img
                                 src={url}
                                 alt={`Foto ${idx + 1}`}
-                                className="w-full h-16 object-cover rounded-lg border border-gray-200 hover:opacity-80 transition-opacity"
+                                className="w-full h-16 object-cover rounded-lg border border-border hover:opacity-80 transition-opacity"
                               />
                             </a>
                           ))}

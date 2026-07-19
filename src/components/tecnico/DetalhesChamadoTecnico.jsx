@@ -13,7 +13,7 @@ const STATUS_LABELS = {
   aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
   aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguard. Aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+  cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
 
 // Função para formatar data no horário de Brasília
@@ -114,8 +114,8 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-gray-900">{chamado.titulo}</h2>
-          <p className="text-sm text-gray-600">#{chamado.numero_chamado}</p>
+          <h2 className="text-2xl font-bold text-foreground">{chamado.titulo}</h2>
+          <p className="text-sm text-muted-foreground">#{chamado.numero_chamado}</p>
         </div>
         <Button
           variant="outline"
@@ -147,15 +147,15 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Nome</p>
-              <p className="font-semibold text-gray-900">{cliente?.nome || 'Não informado'}</p>
+              <p className="text-sm text-muted-foreground mb-1">Nome</p>
+              <p className="font-semibold text-foreground">{cliente?.nome || 'Não informado'}</p>
             </div>
 
             {cliente?.telefone && (
               <div>
-                <p className="text-sm text-gray-500 mb-1">Telefone</p>
+                <p className="text-sm text-muted-foreground mb-1">Telefone</p>
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
+                  <Phone className="w-4 h-4 text-muted-foreground" />
                   <a href={`tel:${cliente.telefone}`} className="text-blue-600 hover:underline">
                     {cliente.telefone}
                   </a>
@@ -165,9 +165,9 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
 
             {cliente?.whatsapp && (
               <div>
-                <p className="text-sm text-gray-500 mb-1">WhatsApp</p>
+                <p className="text-sm text-muted-foreground mb-1">WhatsApp</p>
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
+                  <Phone className="w-4 h-4 text-muted-foreground" />
                   <a 
                     href={`https://wa.me/55${cliente.whatsapp.replace(/\D/g, '')}`}
                     target="_blank"
@@ -181,10 +181,10 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
             )}
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">📍 Endereço do Atendimento</p>
+              <p className="text-sm text-muted-foreground mb-1">📍 Endereço do Atendimento</p>
               <div className="flex items-start gap-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
                 <MapPin className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
-                <p className="text-gray-900 flex-1 font-medium">{enderecoAtendimento}</p>
+                <p className="text-foreground flex-1 font-medium">{enderecoAtendimento}</p>
               </div>
             </div>
 
@@ -231,7 +231,7 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <p className="text-sm text-muted-foreground mb-1">Status</p>
               <Badge className={
                 chamado.status === 'pendente' ? 'bg-orange-100 text-orange-800' :
                 chamado.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' :
@@ -246,34 +246,34 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">Prioridade</p>
+              <p className="text-sm text-muted-foreground mb-1">Prioridade</p>
               <Badge className={
                 chamado.prioridade === 'urgente' ? 'bg-red-100 text-red-800' :
                 chamado.prioridade === 'alta' ? 'bg-orange-100 text-orange-800' :
                 chamado.prioridade === 'media' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-gray-100 text-gray-800'
+                'bg-muted text-foreground'
               }>
                 {chamado.prioridade}
               </Badge>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">Descrição do Problema</p>
-              <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Descrição do Problema</p>
+              <p className="text-foreground bg-muted p-3 rounded-lg">
                 {chamado.descricao}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500 mb-1">Data de Abertura</p>
-              <p className="text-gray-900">
+              <p className="text-sm text-muted-foreground mb-1">Data de Abertura</p>
+              <p className="text-foreground">
                 {formatarDataBrasil(chamado.created_date)}
               </p>
             </div>
 
             {chamado.data_finalizacao && (
               <div>
-                <p className="text-sm text-gray-500 mb-1">Data de Finalização</p>
+                <p className="text-sm text-muted-foreground mb-1">Data de Finalização</p>
                 <p className="text-green-600 font-medium">
                   {formatarDataBrasil(chamado.data_finalizacao)}
                 </p>
@@ -282,8 +282,8 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
 
             {chamado.observacoes_tecnico && (
               <div>
-                <p className="text-sm text-gray-500 mb-1">Observações</p>
-                <p className="text-gray-900 bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Observações</p>
+                <p className="text-foreground bg-muted p-3 rounded-lg">
                   {chamado.observacoes_tecnico}
                 </p>
               </div>
@@ -292,8 +292,8 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
             {chamado.fotos_anexos && chamado.fotos_anexos.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <ImageIcon className="w-4 h-4 text-gray-500" />
-                  <p className="text-sm text-gray-500">
+                  <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
                     Fotos Anexadas ({chamado.fotos_anexos.length})
                   </p>
                 </div>
@@ -309,7 +309,7 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
                       <img
                         src={url}
                         alt={`Foto ${idx + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                        className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400 transition-colors"
                       />
                     </a>
                   ))}
@@ -325,20 +325,20 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2 text-base">
             <Cpu className="w-5 h-5" />
-            Equipamentos do Cliente {loadingEquip && <span className="text-xs text-gray-400">(carregando...)</span>}
-            {!loadingEquip && <span className="text-sm font-normal text-gray-500">({equipamentosCliente.length})</span>}
+            Equipamentos do Cliente {loadingEquip && <span className="text-xs text-muted-foreground">(carregando...)</span>}
+            {!loadingEquip && <span className="text-sm font-normal text-muted-foreground">({equipamentosCliente.length})</span>}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           {equipamentosCliente.length === 0 && !loadingEquip ? (
-            <p className="text-sm text-gray-500 text-center py-4">Nenhum equipamento cadastrado para este cliente.</p>
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum equipamento cadastrado para este cliente.</p>
           ) : (
             <div className="space-y-2">
               {equipamentosCliente.map((equip) => (
                 <div key={equip.id} className="border rounded-lg overflow-hidden">
                   <button
                     type="button"
-                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 text-left"
+                    className="w-full flex items-center justify-between p-3 hover:bg-muted text-left"
                     onClick={() => handleVerHistoricoEquip(equip.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -350,31 +350,31 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-sm text-gray-900">{equip.marca} {equip.modelo}</p>
-                        <p className="text-xs text-gray-500">{equip.tipo?.replace('_',' ')} {equip.capacidade ? `· ${equip.capacidade}` : ''} {equip.estabelecimento_nome ? `· ${equip.estabelecimento_nome}` : equip.localizacao ? `· ${equip.localizacao}` : ''}</p>
+                        <p className="font-medium text-sm text-foreground">{equip.marca} {equip.modelo}</p>
+                        <p className="text-xs text-muted-foreground">{equip.tipo?.replace('_',' ')} {equip.capacidade ? `· ${equip.capacidade}` : ''} {equip.estabelecimento_nome ? `· ${equip.estabelecimento_nome}` : equip.localizacao ? `· ${equip.localizacao}` : ''}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <History className="w-4 h-4 text-gray-400" />
-                      <span className="text-xs text-gray-500">{equipExpandido === equip.id ? '▲' : '▼'}</span>
+                      <History className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">{equipExpandido === equip.id ? '▲' : '▼'}</span>
                     </div>
                   </button>
                   {equipExpandido === equip.id && (
-                    <div className="border-t bg-gray-50 p-3">
+                    <div className="border-t bg-muted p-3">
                       {!chamadosPorEquip[equip.id] ? (
-                        <p className="text-xs text-gray-500">Carregando histórico...</p>
+                        <p className="text-xs text-muted-foreground">Carregando histórico...</p>
                       ) : chamadosPorEquip[equip.id].length === 0 ? (
-                        <p className="text-xs text-gray-500">Nenhum chamado registrado para este equipamento.</p>
+                        <p className="text-xs text-muted-foreground">Nenhum chamado registrado para este equipamento.</p>
                       ) : (
                         <div className="space-y-2">
-                          <p className="text-xs font-semibold text-gray-600 mb-1">Últimos {chamadosPorEquip[equip.id].length} chamado(s):</p>
+                          <p className="text-xs font-semibold text-muted-foreground mb-1">Últimos {chamadosPorEquip[equip.id].length} chamado(s):</p>
                           {chamadosPorEquip[equip.id].map((c) => {
                             const cfg = STATUS_LABELS[c.status] || STATUS_LABELS.pendente;
                             return (
                               <div key={c.id} className="flex items-start justify-between gap-2 bg-white rounded p-2 border text-xs">
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-gray-800 truncate">{c.numero_chamado} — {c.titulo}</p>
-                                  <div className="flex items-center gap-1 text-gray-400 mt-0.5">
+                                  <p className="font-medium text-foreground truncate">{c.numero_chamado} — {c.titulo}</p>
+                                  <div className="flex items-center gap-1 text-muted-foreground mt-0.5">
                                     <Clock className="w-3 h-3" />
                                     {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
                                   </div>

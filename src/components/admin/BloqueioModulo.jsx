@@ -13,13 +13,13 @@ export default function BloqueioModulo({ nomeModulo }) {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-10 h-10 text-red-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             Módulo Desativado
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             O módulo <strong>{nomeModulo}</strong> está desativado para sua conta.
           </p>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-muted-foreground mb-8">
             Entre em contato com o administrador para ativar este recurso.
           </p>
           <Link to={createPageUrl("Dashboard")}>

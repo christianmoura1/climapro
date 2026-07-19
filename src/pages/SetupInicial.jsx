@@ -185,7 +185,7 @@ export default function SetupInicial() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -218,11 +218,11 @@ export default function SetupInicial() {
             {[1, 2, 3].map((num) => (
               <div key={num} className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                  step >= num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                  step >= num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-muted-foreground'
                 }`}>
                   {step > num ? <CheckCircle className="w-6 h-6" /> : num}
                 </div>
-                <span className="text-xs mt-2 font-medium text-gray-600">
+                <span className="text-xs mt-2 font-medium text-muted-foreground">
                   {num === 1 && "Empresa"}
                   {num === 2 && "Técnico"}
                   {num === 3 && "Cliente"}
@@ -239,8 +239,8 @@ export default function SetupInicial() {
                   <Building2 className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Dados da Empresa</h3>
-                  <p className="text-sm text-gray-500">Informações básicas da sua empresa</p>
+                  <h3 className="text-xl font-bold text-foreground">Dados da Empresa</h3>
+                  <p className="text-sm text-muted-foreground">Informações básicas da sua empresa</p>
                 </div>
               </div>
 
@@ -302,8 +302,8 @@ export default function SetupInicial() {
                   <User className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Cadastrar Técnico</h3>
-                  <p className="text-sm text-gray-500">Adicione o primeiro técnico da equipe</p>
+                  <h3 className="text-xl font-bold text-foreground">Cadastrar Técnico</h3>
+                  <p className="text-sm text-muted-foreground">Adicione o primeiro técnico da equipe</p>
                 </div>
               </div>
 
@@ -374,8 +374,8 @@ export default function SetupInicial() {
                   <Users className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Cadastrar Cliente</h3>
-                  <p className="text-sm text-gray-500">Adicione o primeiro cliente</p>
+                  <h3 className="text-xl font-bold text-foreground">Cadastrar Cliente</h3>
+                  <p className="text-sm text-muted-foreground">Adicione o primeiro cliente</p>
                 </div>
               </div>
 

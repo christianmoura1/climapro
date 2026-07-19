@@ -28,8 +28,8 @@ export default function DetalhesEventoModal({ evento, onClose, onUpdate, cliente
     chamado: { label: "Chamado", icon: "🔧", color: "bg-red-100 text-red-800" },
     pmoc: { label: "PMOC", icon: "🧊", color: "bg-blue-100 text-blue-800" },
     reuniao: { label: "Reunião", icon: "👥", color: "bg-purple-100 text-purple-800" },
-    manual: { label: "Manual", icon: "🗓️", color: "bg-gray-100 text-gray-800" },
-    outro: { label: "Outro", icon: "📋", color: "bg-gray-100 text-gray-800" } // Retained 'outro'
+    manual: { label: "Manual", icon: "🗓️", color: "bg-muted text-foreground" },
+    outro: { label: "Outro", icon: "📋", color: "bg-muted text-foreground" } // Retained 'outro'
   };
 
   const statusConfig = {
@@ -191,18 +191,18 @@ ClimaPro`
         <CardContent className="space-y-6 pt-6">
           {evento.descricao && (
             <div>
-              <Label className="font-semibold text-gray-700">Descrição:</Label>
-              <p className="text-gray-600 mt-1">{evento.descricao}</p>
+              <Label className="font-semibold text-foreground">Descrição:</Label>
+              <p className="text-muted-foreground mt-1">{evento.descricao}</p>
             </div>
           )}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <Label className="font-semibold text-gray-700 flex items-center gap-2">
+              <Label className="font-semibold text-foreground flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 Data e Hora:
               </Label>
-              <p className="text-gray-600 mt-1">
+              <p className="text-muted-foreground mt-1">
                 {format(new Date(evento.data_inicio), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 {evento.data_fim && ` - ${format(new Date(evento.data_fim), 'HH:mm')}`}
               </p>
@@ -210,13 +210,13 @@ ClimaPro`
 
             {cliente && (
               <div>
-                <Label className="font-semibold text-gray-700 flex items-center gap-2">
+                <Label className="font-semibold text-foreground flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Cliente:
                 </Label>
-                <p className="text-gray-600 mt-1">{cliente.nome}</p>
+                <p className="text-muted-foreground mt-1">{cliente.nome}</p>
                 {cliente.telefone && (
-                  <p className="text-sm text-gray-500">{cliente.telefone}</p>
+                  <p className="text-sm text-muted-foreground">{cliente.telefone}</p>
                 )}
               </div>
             )}
@@ -224,24 +224,24 @@ ClimaPro`
 
           {tecnico && (
             <div>
-              <Label className="font-semibold text-gray-700 flex items-center gap-2">
+              <Label className="font-semibold text-foreground flex items-center gap-2">
                 <User className="w-4 h-4" />
                 Técnico Responsável:
               </Label>
-              <p className="text-gray-600 mt-1">{tecnico.nome}</p>
+              <p className="text-muted-foreground mt-1">{tecnico.nome}</p>
               {tecnico.telefone && (
-                <p className="text-sm text-gray-500">{tecnico.telefone}</p>
+                <p className="text-sm text-muted-foreground">{tecnico.telefone}</p>
               )}
             </div>
           )}
 
           {evento.endereco && (
             <div>
-              <Label className="font-semibold text-gray-700 flex items-center gap-2">
+              <Label className="font-semibold text-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Endereço:
               </Label>
-              <p className="text-gray-600 mt-1">{evento.endereco}</p>
+              <p className="text-muted-foreground mt-1">{evento.endereco}</p>
               {(evento.latitude && evento.longitude) || evento.endereco && (
                 <Button
                   size="sm"
@@ -258,8 +258,8 @@ ClimaPro`
 
           {evento.observacoes && (
             <div>
-              <Label className="font-semibold text-gray-700">Observações:</Label>
-              <p className="text-gray-600 mt-1 bg-gray-50 p-3 rounded">{evento.observacoes}</p>
+              <Label className="font-semibold text-foreground">Observações:</Label>
+              <p className="text-muted-foreground mt-1 bg-muted p-3 rounded">{evento.observacoes}</p>
             </div>
           )}
 

@@ -361,7 +361,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
           <div className="flex justify-between items-center">
             <div>
               <CardTitle className="text-2xl">📋 Relatório do PMOC Executado</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">Manutenção concluída com sucesso</p>
+              <p className="text-sm text-muted-foreground mt-1">Manutenção concluída com sucesso</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -394,19 +394,19 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
             <CardContent className="p-4">
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Técnico Responsável</p>
+                  <p className="text-xs text-muted-foreground">Técnico Responsável</p>
                   <p className="font-semibold">{tecnico?.nome}</p>
-                  <p className="text-xs text-gray-500">{tecnico?.especialidade}</p>
+                  <p className="text-xs text-muted-foreground">{tecnico?.especialidade}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data de Execução</p>
+                  <p className="text-xs text-muted-foreground">Data de Execução</p>
                   <p className="text-sm flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Periodicidade</p>
+                  <p className="text-xs text-muted-foreground">Periodicidade</p>
                   <Badge className="bg-purple-600 text-white capitalize">{pmoc.periodicidade}</Badge>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                       <h4 className="font-semibold">
                         {equipamento.tipo} {equipamento.marca} {equipamento.modelo}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         📍 {equipamento.localizacao}
                       </p>
                     </CardHeader>
@@ -440,7 +440,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                             <div className="flex-1">
                               <p>{item.descricao}</p>
                               {item.observacao && (
-                                <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded">
                                   💬 {item.observacao}
                                 </p>
                               )}
@@ -453,8 +453,8 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                       {fotos.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <ImageIcon className="w-4 h-4 text-gray-500" />
-                            <p className="text-sm font-medium text-gray-700">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            <p className="text-sm font-medium text-foreground">
                               Fotos do Serviço ({fotos.length})
                             </p>
                           </div>
@@ -470,7 +470,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                                 <img
                                   src={url}
                                   alt={`Foto ${fotoIndex + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                                  className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400 transition-colors"
                                 />
                               </a>
                             ))}
@@ -494,7 +494,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap bg-white p-4 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap bg-white p-4 rounded-lg">
                   {manutencao.observacoes_tecnico}
                 </p>
               </CardContent>
@@ -511,7 +511,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap bg-white p-4 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap bg-white p-4 rounded-lg">
                   {manutencao.observacoes_empresa}
                 </p>
               </CardContent>
@@ -529,15 +529,15 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                   <img
                     src={manutencao.assinatura_tecnico}
                     alt="Assinatura"
-                    className="max-w-md mx-auto border-2 border-gray-300 rounded-lg"
+                    className="max-w-md mx-auto border-2 border-border rounded-lg"
                   />
-                  <p className="mt-3 font-medium text-gray-900">
+                  <p className="mt-3 font-medium text-foreground">
                     {manutencao.nome_responsavel_local}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Responsável pelo local
                   </p>
-                  <p className="text-xs text-gray-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     Assinado em: {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
@@ -555,7 +555,7 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   📍 {manutencao.endereco || 'Localização GPS registrada'}
                 </p>
                 <div className="border-2 border-purple-300 rounded-lg overflow-hidden">

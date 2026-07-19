@@ -34,12 +34,12 @@ export default function DetalheGastosTecnico({ tecnico, gastos, onVoltar, onExcl
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gastos do Técnico</h1>
-              <p className="text-gray-600 mt-1">{tecnico.nome}</p>
+              <h1 className="text-3xl font-bold text-foreground">Gastos do Técnico</h1>
+              <p className="text-muted-foreground mt-1">{tecnico.nome}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm text-gray-600">Total de Gastos</p>
+            <p className="text-sm text-muted-foreground">Total de Gastos</p>
             <p className="text-3xl font-bold text-purple-600">R$ {totalGastos.toFixed(2)}</p>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function DetalheGastosTecnico({ tecnico, gastos, onVoltar, onExcl
           <CardContent className="p-0">
             <div className="divide-y">
               {gastos.map(gasto => (
-                <div key={gasto.id} className="p-4 hover:bg-gray-50">
+                <div key={gasto.id} className="p-4 hover:bg-muted">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
@@ -86,9 +86,9 @@ export default function DetalheGastosTecnico({ tecnico, gastos, onVoltar, onExcl
                         </Badge>
                       </div>
                       
-                      <p className="font-semibold text-gray-900 mb-1">{gasto.descricao || 'Sem descrição'}</p>
+                      <p className="font-semibold text-foreground mb-1">{gasto.descricao || 'Sem descrição'}</p>
                       
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           <span>

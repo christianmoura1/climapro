@@ -102,7 +102,7 @@ ClimaPro`
           <div className="flex justify-between items-center">
             <div>
               <CardTitle className="text-2xl">✅ Validar Conclusão do PMOC</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">Revise o serviço executado</p>
+              <p className="text-sm text-muted-foreground mt-1">Revise o serviço executado</p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="w-4 h-4" />
@@ -116,19 +116,19 @@ ClimaPro`
             <CardContent className="p-4">
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Técnico Responsável</p>
+                  <p className="text-xs text-muted-foreground">Técnico Responsável</p>
                   <p className="font-semibold">{tecnico?.nome}</p>
-                  <p className="text-xs text-gray-500">{tecnico?.especialidade}</p>
+                  <p className="text-xs text-muted-foreground">{tecnico?.especialidade}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data de Execução</p>
+                  <p className="text-xs text-muted-foreground">Data de Execução</p>
                   <p className="text-sm flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Periodicidade</p>
+                  <p className="text-xs text-muted-foreground">Periodicidade</p>
                   <Badge className="bg-purple-600 text-white capitalize">{pmoc.periodicidade}</Badge>
                 </div>
               </div>
@@ -149,7 +149,7 @@ ClimaPro`
                       <h4 className="font-semibold">
                         {equipamento.tipo} {equipamento.marca} {equipamento.modelo}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         📍 {equipamento.localizacao}
                       </p>
                     </CardHeader>
@@ -162,7 +162,7 @@ ClimaPro`
                             <div className="flex-1">
                               <p>{item.descricao}</p>
                               {item.observacao && (
-                                <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded">
                                   💬 {item.observacao}
                                 </p>
                               )}
@@ -175,8 +175,8 @@ ClimaPro`
                       {fotos.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <ImageIcon className="w-4 h-4 text-gray-500" />
-                            <p className="text-sm font-medium text-gray-700">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            <p className="text-sm font-medium text-foreground">
                               Fotos do Serviço ({fotos.length})
                             </p>
                           </div>
@@ -192,7 +192,7 @@ ClimaPro`
                                 <img
                                   src={url}
                                   alt={`Foto ${fotoIndex + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                                  className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400 transition-colors"
                                 />
                               </a>
                             ))}
@@ -216,7 +216,7 @@ ClimaPro`
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap bg-white p-4 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap bg-white p-4 rounded-lg">
                   {manutencao.observacoes_tecnico}
                 </p>
               </CardContent>
@@ -233,7 +233,7 @@ ClimaPro`
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap bg-white p-4 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap bg-white p-4 rounded-lg">
                   {manutencao.observacoes_empresa}
                 </p>
               </CardContent>
