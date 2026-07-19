@@ -57,13 +57,4 @@ export default [
       "react-hooks/rules-of-hooks": "error",
     },
   },
-  {
-    // Componentes @react-three/fiber usam props do Three.js (position, args,
-    // roughness, etc.) que não são atributos DOM válidos — a regra padrão
-    // não conhece esses elementos intrínsecos (mesh, boxGeometry, ...).
-    files: ["src/components/landing/**/*.{js,jsx}"],
-    rules: {
-      "react/no-unknown-property": "off",
-    },
-  },
 ];

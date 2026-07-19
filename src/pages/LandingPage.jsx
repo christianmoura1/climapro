@@ -26,45 +26,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { lazyWithRetry } from "@/lib/lazyWithRetry";
-
-const ExplodedViewSection = lazyWithRetry(() => import("@/components/landing/ExplodedViewSection"));
-
-// Só baixa o chunk do Three.js + modelos 3D quando o usuário se aproxima da
-// seção (1.5 telas antes) — mantém o carregamento inicial da página leve.
-function DeferredExplodedView() {
-  const holderRef = React.useRef(null);
-  const [ready, setReady] = React.useState(false);
-
-  React.useEffect(() => {
-    const el = holderRef.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setReady(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setReady(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: "150% 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  if (!ready) {
-    return <div ref={holderRef} className="h-screen" aria-hidden="true" />;
-  }
-  return (
-    <React.Suspense fallback={<div className="h-screen" aria-hidden="true" />}>
-      <ExplodedViewSection />
-    </React.Suspense>
-  );
-}
+import HowItWorksSection from "@/components/landing/HowItWorksSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -331,8 +293,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Exploded View — desmontagem 3D do equipamento sincronizada com o scroll */}
-      <DeferredExplodedView />
+      {/* Como funciona o sistema — etapas do fluxo sincronizadas com o scroll */}
+      <HowItWorksSection />
 
       {/* Features */}
       <section id="funcionalidades" className="py-24 bg-muted/30">
