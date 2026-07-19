@@ -21,6 +21,7 @@ import { createPageUrl } from "@/utils";
 import ListaPontos from "../components/ponto/ListaPontos";
 import FiltrosPonto from "../components/ponto/FiltrosPonto";
 import AdicionarPontoManual from "../components/ponto/AdicionarPontoManual";
+import { PageLoading } from "@/components/ui/page-loading";
 
 // Funções auxiliares para trabalhar com datas em Brasília
 const obterDataLocal = (dataString) => {
@@ -264,12 +265,7 @@ export default function PontoEletronicoPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 

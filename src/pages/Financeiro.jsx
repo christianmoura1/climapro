@@ -23,6 +23,7 @@ import BloqueioModulo from "../components/admin/BloqueioModulo";
 import AprovarMovimentacoes from "../components/financeiro/AprovarMovimentacoes";
 import GastosTecnicosLista from "../components/financeiro/GastosTecnicosLista";
 import DetalheGastosTecnico from "../components/financeiro/DetalheGastosTecnico";
+import { PageLoading } from "@/components/ui/page-loading";
 
 export default function FinanceiroPage() {
   const navigate = useNavigate();
@@ -500,9 +501,9 @@ export default function FinanceiroPage() {
     return Object.entries(categorias).sort((a, b) => b[1] - a[1]).slice(0, 5);
   }, [lancamentosFiltrados]);
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div></div>;
+  if (!user) return <PageLoading />;
   if (moduloAtivo === false) return <BloqueioModulo nomeModulo="Financeiro" />;
-  if (moduloAtivo === null) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div></div>;
+  if (moduloAtivo === null) return <PageLoading />;
   if (tecnicoSelecionado) return (
     <DetalheGastosTecnico 
       tecnico={tecnicoSelecionado} 

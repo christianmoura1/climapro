@@ -18,6 +18,7 @@ import ChamadosList from "../components/chamados/ChamadosList";
 import ChamadoForm from "../components/chamados/ChamadoForm";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // New import
 import AprovarChamadoEmpresa from "../components/chamados/AprovarChamadoEmpresa"; // New import
+import { PageLoading } from "@/components/ui/page-loading";
 
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
@@ -479,12 +480,7 @@ ClimaPro - Sistema de Gestão`
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 

@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
+import { PageLoading } from "@/components/ui/page-loading";
 
 const tipoConfig = {
   ar_condicionado: { label: "Ar Condicionado", color: "bg-blue-100 text-blue-800" },
@@ -54,12 +55,7 @@ export default function EquipamentoDetalhesPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 

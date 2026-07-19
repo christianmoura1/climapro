@@ -26,6 +26,7 @@ import ChamadoClienteForm from "../components/cliente/ChamadoClienteForm";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // Added import
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
+import { PageLoading } from "@/components/ui/page-loading";
 
 export default function ClienteDashboard() {
   const navigate = useNavigate();
@@ -254,12 +255,7 @@ ${mensagem}
 
   if (!user || !cliente) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
+      <PageLoading />
     );
   }
 
