@@ -102,7 +102,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "InitialChoice",
+    mainPage: "LandingPage",
     Pages: PAGES,
     Layout: __Layout,
 };
