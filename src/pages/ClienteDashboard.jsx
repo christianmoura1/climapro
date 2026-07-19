@@ -23,7 +23,6 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import ChamadoClienteForm from "../components/cliente/ChamadoClienteForm";
-import { criarChamadoCliente } from "@/functions/criarChamadoCliente";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // Added import
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
@@ -152,19 +151,24 @@ export default function ClienteDashboard() {
 
   const criarChamadoMutation = useMutation({
     mutationFn: async (data) => {
-      // 1. Criar chamado via backend function (contorna RLS)
+      // Criação direta: a policy de RLS em `chamado` já garante que um cliente
+      // só consegue criar chamados com o próprio cliente_id (ver supabase/migrations).
       const empresaIdFinal = empresaId || cliente.empresa_id;
-      const response = await criarChamadoCliente({
+      const chamado = await base44.entities.Chamado.create({
         ...data,
         empresa_id: empresaIdFinal,
         cliente_id: cliente.id,
+        numero_chamado: `CH${Date.now()}`,
+        data_abertura: new Date().toISOString(),
+        status: 'pendente',
+        tipo_problema: data.tipo_problema || 'manutencao_corretiva',
+        prioridade: data.prioridade || 'media',
       });
-      const chamado = response.data.chamado;
 
-      // 2. Buscar dados da empresa
+      // Buscar dados da empresa
       const empresas = await base44.entities.Empresa.list();
       const minhaEmpresa = empresas.find(e => e.id === empresaIdFinal);
-      
+
       return { chamado, empresa: minhaEmpresa };
     },
     onSuccess: ({ chamado, empresa }) => {

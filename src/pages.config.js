@@ -70,6 +70,7 @@ import PontoEletronico from './pages/PontoEletronico';
 import EquipamentoDetalhes from './pages/EquipamentoDetalhes';
 import AlterarSenha from './pages/AlterarSenha';
 import InitialChoice from './pages/InitialChoice';
+import Login from './pages/Login';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +98,7 @@ export const PAGES = {
     "EquipamentoDetalhes": EquipamentoDetalhes,
     "AlterarSenha": AlterarSenha,
     "InitialChoice": InitialChoice,
+    "Login": Login,
 }
 
 export const pagesConfig = {
