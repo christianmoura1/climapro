@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import Lenis from "lenis";
 import {
   Snowflake,
   ClipboardList,
@@ -34,13 +38,58 @@ const staggerContainer = {
   show: { transition: { staggerChildren: 0.08 } }
 };
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function LandingPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = React.useState(false);
+  const heroSectionRef = React.useRef(null);
+  const blob1Ref = React.useRef(null);
+  const blob2Ref = React.useRef(null);
+  const blob3Ref = React.useRef(null);
+  const mockupRef = React.useRef(null);
 
   React.useEffect(() => {
     window.__climapro_initialized = true;
   }, []);
+
+  // Smooth scroll (Lenis) apenas enquanto a landing page está montada
+  React.useEffect(() => {
+    const lenis = new Lenis({ duration: 1.2, smoothWheel: true });
+    const onRaf = (time) => {
+      lenis.raf(time);
+      ScrollTrigger.update();
+    };
+    gsap.ticker.add(onRaf);
+    gsap.ticker.lagSmoothing(0);
+    return () => {
+      gsap.ticker.remove(onRaf);
+      lenis.destroy();
+    };
+  }, []);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    tl.from(".gsap-hero-badge", { opacity: 0, y: 20, duration: 0.5 })
+      .from(".gsap-hero-title", { opacity: 0, y: 30, duration: 0.7 }, "-=0.3")
+      .from(".gsap-hero-desc", { opacity: 0, y: 20, duration: 0.6 }, "-=0.4")
+      .from(".gsap-hero-cta", { opacity: 0, y: 20, duration: 0.6 }, "-=0.4")
+      .from(".gsap-hero-trust", { opacity: 0, y: 10, duration: 0.5 }, "-=0.3")
+      .from(mockupRef.current, { opacity: 0, y: 50, scale: 0.96, duration: 0.8 }, "-=0.2");
+
+    [blob1Ref, blob2Ref, blob3Ref].forEach((ref, i) => {
+      gsap.to(ref.current, {
+        yPercent: i === 1 ? -18 : 15 + i * 10,
+        ease: "none",
+        scrollTrigger: {
+          trigger: heroSectionRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+    });
+  }, { scope: heroSectionRef });
 
   const handleComecarAgora = async () => {
     setIsLoading(true);
@@ -161,37 +210,32 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-20 pb-24 lg:pt-28 lg:pb-32">
+      <section ref={heroSectionRef} className="relative overflow-hidden pt-20 pb-24 lg:pt-28 lg:pb-32">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-blue-500/20 blur-3xl" />
-          <div className="absolute top-40 -right-32 w-[420px] h-[420px] rounded-full bg-purple-500/20 blur-3xl" />
-          <div className="absolute -bottom-20 -left-20 w-[380px] h-[380px] rounded-full bg-emerald-400/10 blur-3xl" />
+          <div ref={blob1Ref} className="absolute -top-32 left-1/2 -translate-x-1/2 w-[640px] h-[640px] rounded-full bg-blue-500/20 blur-3xl" />
+          <div ref={blob2Ref} className="absolute top-40 -right-32 w-[420px] h-[420px] rounded-full bg-purple-500/20 blur-3xl" />
+          <div ref={blob3Ref} className="absolute -bottom-20 -left-20 w-[380px] h-[380px] rounded-full bg-emerald-400/10 blur-3xl" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={staggerContainer}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <motion.div variants={fadeUp}>
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="gsap-hero-badge">
               <Badge className="mb-6 bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 text-sm font-medium">
                 <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                 Multi-empresa, com dados isolados de verdade
               </Badge>
-            </motion.div>
-            <motion.h2 variants={fadeUp} className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-6 leading-[1.05]">
+            </div>
+            <h2 className="gsap-hero-title text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground mb-6 leading-[1.05]">
               O CRM operacional para{" "}
               <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 bg-clip-text text-transparent">
                 refrigeração e climatização
               </span>
-            </motion.h2>
-            <motion.p variants={fadeUp} className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            </h2>
+            <p className="gsap-hero-desc text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
               Chamados, PMOC, técnicos, agenda, financeiro e notas fiscais em um só sistema.
               Profissional, seguro e fácil de usar desde o primeiro dia.
-            </motion.p>
-            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
+            </p>
+            <div className="gsap-hero-cta flex flex-col sm:flex-row gap-3 justify-center mb-10">
               <Button
                 onClick={handleComecarAgora}
                 size="lg"
@@ -210,21 +254,16 @@ export default function LandingPage() {
                 <PlayCircle className="w-5 h-5 mr-2" />
                 Ver Funcionalidades
               </Button>
-            </motion.div>
-            <motion.div variants={fadeUp} className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-muted-foreground">
+            </div>
+            <div className="gsap-hero-trust flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5"><Lock className="w-4 h-4 text-emerald-600" /> Dados isolados por empresa</span>
               <span className="flex items-center gap-1.5"><Zap className="w-4 h-4 text-blue-600" /> Setup em minutos</span>
               <span className="flex items-center gap-1.5"><CheckCircle className="w-4 h-4 text-purple-600" /> Sem cartão no plano grátis</span>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
           {/* Product preview mockup */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-16 max-w-5xl mx-auto"
-          >
+          <div ref={mockupRef} className="mt-16 max-w-5xl mx-auto">
             <div className="rounded-2xl border border-border bg-card shadow-2xl shadow-blue-900/10 overflow-hidden">
               <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/40">
                 <span className="w-3 h-3 rounded-full bg-red-400" />
@@ -251,7 +290,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
