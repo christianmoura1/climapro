@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
     const contadores = { chamado: 0, equipamento: 0, pmoc: 0, manutencao_pmoc: 0, agenda_evento: 0 };
     const erros = [];
     const unificados = [];
-    const novosEstabelecimentos = [];
+    const estabelecimentos = Array.isArray(principal.estabelecimentos) ? [...principal.estabelecimentos] : [];
 
     for (const id of ids_para_unificar) {
       if (id === cliente_principal_id) continue;
@@ -81,30 +81,17 @@ Deno.serve(async (req) => {
         if (clienteError) throw clienteError;
         if (!cliente) continue;
 
-        novosEstabelecimentos.push({
-          cliente_id: cliente_principal_id,
+        estabelecimentos.push({
           nome: cliente.nome || 'Estabelecimento',
           endereco: cliente.endereco || '',
           tipo: cliente.tipo_estabelecimento || 'comercial',
-          latitude: cliente.latitude,
-          longitude: cliente.longitude,
+          latitude: cliente.latitude ?? null,
+          longitude: cliente.longitude ?? null,
           observacoes: cliente.observacoes || '',
         });
 
-        const { data: estabelecimentosExistentes } = await supabaseAdmin
-          .from('cliente_estabelecimento')
-          .select('*')
-          .eq('cliente_id', id);
-        for (const est of estabelecimentosExistentes ?? []) {
-          novosEstabelecimentos.push({
-            cliente_id: cliente_principal_id,
-            nome: est.nome,
-            endereco: est.endereco,
-            latitude: est.latitude,
-            longitude: est.longitude,
-            tipo: est.tipo,
-            observacoes: est.observacoes,
-          });
+        if (Array.isArray(cliente.estabelecimentos)) {
+          estabelecimentos.push(...cliente.estabelecimentos);
         }
 
         for (const tabela of ['chamado', 'equipamento', 'pmoc', 'manutencao_pmoc', 'agenda_evento'] as const) {
@@ -127,16 +114,12 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (novosEstabelecimentos.length > 0) {
-      const { error: insertEstError } = await supabaseAdmin.from('cliente_estabelecimento').insert(novosEstabelecimentos);
-      if (insertEstError) throw insertEstError;
-    }
-
     const { error: updatePrincipalError } = await supabaseAdmin
       .from('cliente')
       .update({
         nome: nome_unificado || principal.nome,
-        endereco: novosEstabelecimentos[0]?.endereco || principal.endereco,
+        estabelecimentos,
+        endereco: estabelecimentos[0]?.endereco || principal.endereco,
       })
       .eq('id', cliente_principal_id);
     if (updatePrincipalError) throw updatePrincipalError;
@@ -145,7 +128,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         sucesso: true,
         nome_final: nome_unificado || principal.nome,
-        total_estabelecimentos_migrados: novosEstabelecimentos.length,
+        total_estabelecimentos: estabelecimentos.length,
         total_chamados_migrados: contadores.chamado,
         total_equipamentos_migrados: contadores.equipamento,
         total_pmocs_migrados: contadores.pmoc,
