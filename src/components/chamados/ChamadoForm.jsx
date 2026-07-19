@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2, Cpu, ChevronLeft, Clock } from "lucide-react";
+import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2, Cpu, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { format } from "date-fns";

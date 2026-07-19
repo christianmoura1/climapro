@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { 
-  ClipboardList, 
-  Users, 
-  Calendar, 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ClipboardList,
+  Users,
+  Calendar,
   DollarSign,
   AlertCircle,
   CheckCircle,
@@ -13,11 +14,13 @@ import {
   UserCog,
   Cpu,
   Bell,
-  Clock,
   X
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { format, subDays, startOfDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import StatsCard from "../components/dashboard/StatsCard";
 import RecentChamados from "../components/dashboard/RecentChamados";
@@ -178,6 +181,18 @@ export default function Dashboard() {
 
   const lucroMensal = receitaTotal - despesaTotal;
 
+  // Chamados abertos por dia, últimos 7 dias (para o gráfico de tendência)
+  const chamadosPorDia = Array.from({ length: 7 }).map((_, i) => {
+    const dia = startOfDay(subDays(new Date(), 6 - i));
+    const diaSeguinte = startOfDay(subDays(new Date(), 5 - i));
+    const total = chamados.filter(c => {
+      if (!c.data_abertura) return false;
+      const dataAbertura = new Date(c.data_abertura);
+      return dataAbertura >= dia && dataAbertura < diaSeguinte;
+    }).length;
+    return { dia: format(dia, "dd/MM", { locale: ptBR }), total };
+  });
+
   if (!user) {
     return (
       <PageLoading />
@@ -328,6 +343,40 @@ export default function Dashboard() {
             </Button>
           </Link>
         </div>
+
+        {/* Gráfico de tendência */}
+        <Card className="shadow-sm border-none rounded-xl mb-8">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-lg font-bold">Chamados abertos — últimos 7 dias</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={chamadosPorDia} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="corChamados" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(221 83% 53%)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="hsl(221 83% 53%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(214 32% 89%)" />
+                <XAxis dataKey="dia" tickLine={false} axisLine={false} fontSize={12} stroke="hsl(215 16% 47%)" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} stroke="hsl(215 16% 47%)" />
+                <Tooltip
+                  contentStyle={{ borderRadius: 8, border: "1px solid hsl(214 32% 89%)", fontSize: 13 }}
+                  labelStyle={{ fontWeight: 600 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  name="Chamados"
+                  stroke="hsl(221 83% 53%)"
+                  strokeWidth={2}
+                  fill="url(#corChamados)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8">

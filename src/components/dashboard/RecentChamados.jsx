@@ -2,9 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Clock, CheckCircle } from "lucide-react";
+import { AlertCircle, Clock, CheckCircle, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", icon: AlertCircle },
@@ -39,29 +40,31 @@ const formatarDataBrasil = (dataISO) => {
 
 export default function RecentChamados({ chamados }) {
   return (
-    <Card className="shadow-lg border-none">
+    <Card className="shadow-sm border-none rounded-xl">
       <CardHeader className="border-b">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-xl font-bold">Chamados Recentes</CardTitle>
+          <CardTitle className="text-lg font-bold">Chamados Recentes</CardTitle>
           <Link to={createPageUrl("Chamados")}>
-            <span className="text-sm text-blue-600 hover:underline">Ver todos</span>
+            <span className="text-sm text-primary font-medium hover:underline">Ver todos</span>
           </Link>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         {chamados.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            Nenhum chamado registrado ainda
-          </div>
+          <EmptyState
+            icon={ClipboardList}
+            title="Nenhum chamado ainda"
+            description="Assim que um chamado for aberto, ele aparece aqui."
+          />
         ) : (
           <div className="divide-y">
             {chamados.map((chamado) => {
               const StatusIcon = statusConfig[chamado.status]?.icon || AlertCircle;
               return (
-                <div key={chamado.id} className="p-4 hover:bg-muted transition-colors">
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-foreground">{chamado.titulo}</h4>
-                    <Badge className={statusConfig[chamado.status]?.color || ''}>
+                <div key={chamado.id} className="p-4 hover:bg-muted/60 transition-colors">
+                  <div className="flex justify-between items-start mb-2 gap-3">
+                    <h4 className="font-semibold text-foreground text-sm">{chamado.titulo}</h4>
+                    <Badge className={`${statusConfig[chamado.status]?.color || ''} shrink-0`}>
                       <StatusIcon className="w-3 h-3 mr-1" />
                       {chamado.status.replace('_', ' ')}
                     </Badge>
