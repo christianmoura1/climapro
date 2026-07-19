@@ -163,7 +163,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <header className="sticky top-0 z-50 bg-white border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -171,8 +171,8 @@ export default function LandingPage() {
                 <Snowflake className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">ClimaPro</h1>
-                <p className="text-xs text-gray-500">CRM Operacional</p>
+                <h1 className="text-2xl font-bold text-foreground">ClimaPro</h1>
+                <p className="text-xs text-muted-foreground">CRM Operacional</p>
               </div>
             </div>
             <Button
@@ -195,13 +195,13 @@ export default function LandingPage() {
               <Zap className="w-3 h-3 mr-1" />
               Sistema completo para sua empresa
             </Badge>
-            <h2 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
               O CRM Operacional completo para<br />
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 empresas de refrigeração e climatização
               </span>
             </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
               Gerencie chamados, PMOC, técnicos, agenda, financeiro e notas fiscais em um só sistema.
               Profissional, seguro e fácil de usar.
             </p>
@@ -232,10 +232,10 @@ export default function LandingPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Funcionalidades Completas
             </h3>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               Tudo que você precisa para gerenciar sua empresa de refrigeração
             </p>
           </div>
@@ -249,10 +249,10 @@ export default function LandingPage() {
                     <div className={"w-12 h-12 " + feature.color + " rounded-xl flex items-center justify-center mb-4"}>
                       <Icon className="w-6 h-6 text-white" />
                     </div>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h4 className="text-xl font-semibold text-foreground mb-2">
                       {feature.title}
                     </h4>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -270,8 +270,8 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-2xl font-bold text-gray-900 mb-3">100% Seguro</h4>
-              <p className="text-gray-600">
+              <h4 className="text-2xl font-bold text-foreground mb-3">100% Seguro</h4>
+              <p className="text-muted-foreground">
                 Seus dados protegidos com criptografia e isolamento total entre empresas
               </p>
             </div>
@@ -280,8 +280,8 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <TrendingUp className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-2xl font-bold text-gray-900 mb-3">Aumente a Produtividade</h4>
-              <p className="text-gray-600">
+              <h4 className="text-2xl font-bold text-foreground mb-3">Aumente a Produtividade</h4>
+              <p className="text-muted-foreground">
                 Automatize processos e economize até 10 horas por semana
               </p>
             </div>
@@ -290,8 +290,8 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-8 h-8 text-white" />
               </div>
-              <h4 className="text-2xl font-bold text-gray-900 mb-3">Fácil de Usar</h4>
-              <p className="text-gray-600">
+              <h4 className="text-2xl font-bold text-foreground mb-3">Fácil de Usar</h4>
+              <p className="text-muted-foreground">
                 Interface intuitiva e suporte dedicado para sua equipe
               </p>
             </div>
@@ -302,10 +302,10 @@ export default function LandingPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h3 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Planos e Preços
             </h3>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               Escolha o plano ideal para o tamanho da sua empresa
             </p>
           </div>
@@ -313,7 +313,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             {plans.map(function(plan, index) {
               return (
-                <Card key={index} className={(plan.highlighted ? 'border-2 border-blue-600 shadow-2xl' : plan.premium ? 'border-2 border-purple-900' : 'border-gray-200')}>
+                <Card key={index} className={(plan.highlighted ? 'border-2 border-blue-600 shadow-2xl' : plan.premium ? 'border-2 border-purple-900' : 'border-border')}>
                   <CardContent className="p-6">
                     {plan.highlighted && (
                       <Badge className="mb-4 bg-blue-600">Mais Popular</Badge>
@@ -321,12 +321,12 @@ export default function LandingPage() {
                     {plan.premium && (
                       <Badge className="mb-4 bg-purple-900">Premium</Badge>
                     )}
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">
+                    <h4 className="text-xl font-bold text-foreground mb-2">
                       {plan.name}
                     </h4>
-                    <p className="text-gray-600 mb-4 text-sm">{plan.description}</p>
+                    <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
                     <div className="mb-6">
-                      <span className="text-3xl font-bold text-gray-900">
+                      <span className="text-3xl font-bold text-foreground">
                         {plan.price}
                       </span>
                     </div>
@@ -335,7 +335,7 @@ export default function LandingPage() {
                         return (
                           <li key={i} className="flex items-start gap-2 text-sm">
                             <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-700">{feature}</span>
+                            <span className="text-foreground">{feature}</span>
                           </li>
                         );
                       })}
@@ -368,7 +368,7 @@ export default function LandingPage() {
             size="lg"
             onClick={handleComecarAgora}
             disabled={isLoading}
-            className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8"
+            className="bg-white text-blue-600 hover:bg-muted text-lg px-8"
           >
             {isLoading ? "Carregando..." : "Começar Gratuitamente"}
             <ArrowRight className="w-5 h-5 ml-2" />
@@ -384,14 +384,14 @@ export default function LandingPage() {
                 <Snowflake className="w-6 h-6" />
                 <span className="font-bold text-lg">ClimaPro</span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 O CRM completo para empresas de refrigeração e climatização
               </p>
             </div>
 
             <div>
               <h5 className="font-semibold mb-4">Produto</h5>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>Funcionalidades</li>
                 <li>Planos e Preços</li>
                 <li>Demonstração</li>
@@ -400,7 +400,7 @@ export default function LandingPage() {
 
             <div>
               <h5 className="font-semibold mb-4">Empresa</h5>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>Sobre Nós</li>
                 <li>Contato</li>
                 <li>Blog</li>
@@ -409,14 +409,14 @@ export default function LandingPage() {
 
             <div>
               <h5 className="font-semibold mb-4">Legal</h5>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>Política de Privacidade</li>
                 <li>Termos de Uso</li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-muted-foreground">
             <p>&copy; 2025 ClimaPro. Todos os direitos reservados.</p>
           </div>
         </div>

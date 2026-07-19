@@ -149,21 +149,21 @@ export default function VisualizarChamadoCliente({ chamado, tecnico, empresa, on
             <CardContent className="p-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Chamado</p>
+                  <p className="text-xs text-muted-foreground">Chamado</p>
                   <p className="font-semibold">#{chamado.numero_chamado}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Técnico</p>
+                  <p className="text-xs text-muted-foreground">Técnico</p>
                   <p className="font-semibold">{tecnico?.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data de Finalização</p>
+                  <p className="text-xs text-muted-foreground">Data de Finalização</p>
                   <p className="text-sm">
                     {format(new Date(chamado.data_finalizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Confirmado por</p>
+                  <p className="text-xs text-muted-foreground">Confirmado por</p>
                   <p className="font-semibold">{chamado.nome_cliente_confirmacao}</p>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export default function VisualizarChamadoCliente({ chamado, tecnico, empresa, on
               <CardTitle className="text-base">📋 Serviço Realizado</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-900">{chamado.descricao}</p>
+              <p className="text-foreground">{chamado.descricao}</p>
             </CardContent>
           </Card>
 
@@ -185,7 +185,7 @@ export default function VisualizarChamadoCliente({ chamado, tecnico, empresa, on
                 <CardTitle className="text-base">📝 Observações do Técnico</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-900 whitespace-pre-wrap">{chamado.observacoes_tecnico}</p>
+                <p className="text-foreground whitespace-pre-wrap">{chamado.observacoes_tecnico}</p>
               </CardContent>
             </Card>
           )}
@@ -202,7 +202,7 @@ export default function VisualizarChamadoCliente({ chamado, tecnico, empresa, on
                       <img
                         src={url}
                         alt={`Foto ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400"
+                        className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400"
                       />
                     </a>
                   ))}
@@ -238,7 +238,7 @@ export default function VisualizarChamadoCliente({ chamado, tecnico, empresa, on
                 <img
                   src={chamado.assinatura_cliente}
                   alt="Assinatura"
-                  className="max-w-md mx-auto border-2 border-gray-300 rounded-lg"
+                  className="max-w-md mx-auto border-2 border-border rounded-lg"
                 />
                 <p className="mt-3 font-medium">{chamado.nome_cliente_confirmacao}</p>
               </CardContent>

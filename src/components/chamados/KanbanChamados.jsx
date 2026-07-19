@@ -29,28 +29,28 @@ const colunas = [
     id: 'pendente',
     titulo: 'Pendente',
     corBorda: 'border-orange-500',
-    corBadge: 'bg-white text-gray-900',
+    corBadge: 'bg-white text-foreground',
     icon: AlertCircle
   },
   {
     id: 'em_andamento',
     titulo: 'Em Andamento',
     corBorda: 'border-blue-500',
-    corBadge: 'bg-white text-gray-900',
+    corBadge: 'bg-white text-foreground',
     icon: Clock
   },
   {
     id: 'aguardando_aprovacao_empresa',
     titulo: 'Aguardando Aprovação',
     corBorda: 'border-yellow-500',
-    corBadge: 'bg-white text-gray-900',
+    corBadge: 'bg-white text-foreground',
     icon: AlertTriangle
   },
   {
     id: 'finalizado',
     titulo: 'Concluído',
     corBorda: 'border-green-500',
-    corBadge: 'bg-white text-gray-900',
+    corBadge: 'bg-white text-foreground',
     icon: CheckCircle
   }
 ];
@@ -305,7 +305,7 @@ export default function KanbanChamados({
                 {(provided, snapshot) => (
                   <Card 
                     className={`shadow-lg border-t-4 ${coluna.corBorda} ${
-                      snapshot.isDraggingOver ? 'bg-gray-50' : ''
+                      snapshot.isDraggingOver ? 'bg-muted' : ''
                     }`}
                   >
                     <CardHeader className="pb-3">
@@ -325,7 +325,7 @@ export default function KanbanChamados({
                       className="space-y-3 min-h-[200px]"
                     >
                       {chamadosColuna.length === 0 ? (
-                        <div className="text-center text-gray-400 py-8 text-sm">
+                        <div className="text-center text-muted-foreground py-8 text-sm">
                           Nenhum chamado
                         </div>
                       ) : (
@@ -352,7 +352,7 @@ export default function KanbanChamados({
                                 >
                                   <CardContent className="p-4">
                                     <div className="flex items-start justify-between mb-2">
-                                      <h4 className="font-semibold text-gray-900 text-sm flex-1">
+                                      <h4 className="font-semibold text-foreground text-sm flex-1">
                                         {chamado.titulo}
                                       </h4>
                                       {chamado.prioridade === 'urgente' && (
@@ -362,26 +362,26 @@ export default function KanbanChamados({
                                       )}
                                     </div>
                                     
-                                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
                                       {chamado.descricao}
                                     </p>
 
                                     {mostrarCliente && cliente && (
-                                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                                         <User className="w-3 h-3" />
                                         <span className="truncate">{cliente.nome}</span>
                                       </div>
                                     )}
 
                                     {mostrarTecnico && tecnico && (
-                                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                                         <Wrench className="w-3 h-3" />
                                         <span className="truncate">{tecnico.nome}</span>
                                       </div>
                                     )}
 
                                     {chamado.local && (
-                                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
                                         <MapPin className="w-3 h-3" />
                                         <span className="truncate">{chamado.local}</span>
                                       </div>

@@ -26,7 +26,7 @@ const tipoConfig = {
   geladeira: { label: "Geladeira", color: "bg-green-100 text-green-800" },
   freezer: { label: "Freezer", color: "bg-purple-100 text-purple-800" },
   chiller: { label: "Chiller", color: "bg-indigo-100 text-indigo-800" },
-  outro: { label: "Outro", color: "bg-gray-100 text-gray-800" }
+  outro: { label: "Outro", color: "bg-muted text-foreground" }
 };
 
 export default function EquipamentosList({ equipamentos, clientes, isLoading, onEdit, onDelete, onView }) {
@@ -52,8 +52,8 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
           <Cpu className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg font-medium mb-2">Nenhum equipamento cadastrado ainda</p>
-          <p className="text-gray-500 text-sm">Clique em "Novo Equipamento" para começar</p>
+          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhum equipamento cadastrado ainda</p>
+          <p className="text-muted-foreground text-sm">Clique em "Novo Equipamento" para começar</p>
         </CardContent>
       </Card>
     );
@@ -90,7 +90,7 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                   <Badge className={`${tipo.color} mb-2`}>
                     {tipo.label}
                   </Badge>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-foreground">
                     {equipamento.numero_equipamento}
                   </h3>
                 </div>
@@ -99,23 +99,23 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
 
               <div className="space-y-2 mb-4">
                 <div className="text-sm">
-                  <span className="font-medium text-gray-700">Marca:</span>
-                  <span className="text-gray-600 ml-2">{equipamento.marca}</span>
+                  <span className="font-medium text-foreground">Marca:</span>
+                  <span className="text-muted-foreground ml-2">{equipamento.marca}</span>
                 </div>
                 <div className="text-sm">
-                  <span className="font-medium text-gray-700">Modelo:</span>
-                  <span className="text-gray-600 ml-2">{equipamento.modelo}</span>
+                  <span className="font-medium text-foreground">Modelo:</span>
+                  <span className="text-muted-foreground ml-2">{equipamento.modelo}</span>
                 </div>
                 {equipamento.capacidade && (
                   <div className="text-sm">
-                    <span className="font-medium text-gray-700">Capacidade:</span>
-                    <span className="text-gray-600 ml-2">{equipamento.capacidade}</span>
+                    <span className="font-medium text-foreground">Capacidade:</span>
+                    <span className="text-muted-foreground ml-2">{equipamento.capacidade}</span>
                   </div>
                 )}
               </div>
 
               {cliente && (
-                <div className="text-sm text-gray-600 mb-2 flex items-start gap-2">
+                <div className="text-sm text-muted-foreground mb-2 flex items-start gap-2">
                   <span className="font-medium">Cliente:</span>
                   <span>{cliente.nome}</span>
                 </div>
@@ -129,15 +129,15 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
               )}
 
               {equipamento.localizacao && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                  <MapPin className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
                   <span>{equipamento.localizacao}</span>
                 </div>
               )}
 
               {equipamento.data_instalacao && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4 text-gray-400" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span>Instalado em {format(new Date(equipamento.data_instalacao), "dd/MM/yyyy")}</span>
                 </div>
               )}

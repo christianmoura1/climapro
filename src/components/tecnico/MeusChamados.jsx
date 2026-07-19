@@ -186,7 +186,7 @@ ClimaPro - Sistema de Gestão`
         </CardHeader>
         <CardContent className="p-6">
           {chamados.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-muted-foreground">
               <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p>Nenhum chamado atribuído no momento</p>
             </div>
@@ -212,11 +212,11 @@ ClimaPro - Sistema de Gestão`
                 const podeFechar = chamado.status === 'em_andamento' || chamado.status === 'pendente';
                 
                 return (
-                  <div key={chamado.id} className="p-4 hover:bg-gray-50">
+                  <div key={chamado.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-gray-900">{chamado.titulo}</h4>
+                          <h4 className="font-semibold text-foreground">{chamado.titulo}</h4>
                           <Badge className={statusConfig[chamado.status]?.color}>
                             {statusConfig[chamado.status]?.label}
                           </Badge>
@@ -224,12 +224,12 @@ ClimaPro - Sistema de Gestão`
                         
                         {cliente && (
                           <div className="space-y-1 mb-2">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <User className="w-4 h-4" />
                               <span className="font-medium">{cliente.nome}</span>
                             </div>
                             {cliente.telefone && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Phone className="w-4 h-4" />
                                 <a href={`tel:${cliente.telefone}`} className="hover:text-blue-600">
                                   {cliente.telefone}
@@ -239,16 +239,16 @@ ClimaPro - Sistema de Gestão`
                           </div>
                         )}
                         
-                        <p className="text-sm text-gray-600 mb-2">{chamado.descricao}</p>
+                        <p className="text-sm text-muted-foreground mb-2">{chamado.descricao}</p>
                         
                         {chamado.local && (
-                          <div className="flex items-start gap-2 text-sm text-gray-600 mb-2">
+                          <div className="flex items-start gap-2 text-sm text-muted-foreground mb-2">
                             <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
                             <span className="flex-1">{chamado.local}</span>
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           <span>
                             Aberto: {formatarDataBrasil(chamado.created_date)}

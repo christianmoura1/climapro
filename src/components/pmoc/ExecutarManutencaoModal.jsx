@@ -105,7 +105,7 @@ function SignatureCanvas({ canvasRef, width = 600, height = 200 }) {
         draw(e);
       }}
       onTouchEnd={stopDrawing}
-      className="border-2 border-gray-300 rounded-lg bg-white cursor-crosshair"
+      className="border-2 border-border rounded-lg bg-white cursor-crosshair"
       style={{ touchAction: 'none' }} // Disable default touch actions like pan and zoom
     />
   );
@@ -591,7 +591,7 @@ ClimaPro`
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Carregando...</p>
+            <p className="text-muted-foreground">Carregando...</p>
           </CardContent>
         </Card>
       </div>
@@ -610,7 +610,7 @@ ClimaPro`
           <div className="flex justify-between items-center">
             <div>
               <CardTitle className="text-2xl">🔧 Executar Manutenção PMOC</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{cliente.nome}</p>
+              <p className="text-sm text-muted-foreground mt-1">{cliente.nome}</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -634,11 +634,11 @@ ClimaPro`
             <CardContent className="p-4">
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Cliente</p>
+                  <p className="text-xs text-muted-foreground">Cliente</p>
                   <p className="font-semibold">{cliente.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Endereço</p>
+                  <p className="text-xs text-muted-foreground">Endereço</p>
                   <div className="flex items-center gap-2">
                     <p className="text-sm flex-1">
                       <MapPin className="w-3 h-3 inline mr-1" />
@@ -655,22 +655,22 @@ ClimaPro`
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Técnico</p>
+                  <p className="text-xs text-muted-foreground">Técnico</p>
                   <p className="font-semibold">{tecnico.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Periodicidade</p>
+                  <p className="text-xs text-muted-foreground">Periodicidade</p>
                   <Badge className="bg-purple-600 text-white capitalize">{pmoc.periodicidade}</Badge>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data</p>
+                  <p className="text-xs text-muted-foreground">Data</p>
                   <p className="text-sm flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {format(new Date(), "dd/MM/yyyy", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Equipamentos</p>
+                  <p className="text-xs text-muted-foreground">Equipamentos</p>
                   <p className="font-semibold">{equipamentos.length}</p>
                 </div>
               </div>
@@ -686,7 +686,7 @@ ClimaPro`
 
             {equipamentos.length === 0 ? (
               <Card className="border-2 border-dashed">
-                <CardContent className="p-8 text-center text-gray-500">
+                <CardContent className="p-8 text-center text-muted-foreground">
                   <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>Nenhum equipamento vinculado a este PMOC</p>
                 </CardContent>
@@ -706,7 +706,7 @@ ClimaPro`
                       className={`border-2 ${
                         percentualConclusao === 100 ? 'border-green-300 bg-green-50' : 
                         percentualConclusao > 0 ? 'border-yellow-300 bg-yellow-50' : 
-                        'border-gray-200'
+                        'border-border'
                       }`}
                     >
                       <CardContent className="p-4">
@@ -724,7 +724,7 @@ ClimaPro`
                                 <CheckCircle className="w-5 h-5 text-green-600" />
                               )}
                             </div>
-                            <div className="grid md:grid-cols-3 gap-2 text-sm text-gray-600">
+                            <div className="grid md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                               <p>📍 {equipamento.localizacao || 'Localização não informada'}</p>
                               <p>⚙️ {equipamento.capacidade || 'N/A'}</p>
                               <p>✅ {itensConcluidos}/{totalItens} itens</p>
@@ -759,13 +759,13 @@ ClimaPro`
                                         className={`mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center ${
                                           item.concluido 
                                             ? 'bg-green-500 border-green-500 text-white' 
-                                            : 'border-gray-300'
+                                            : 'border-border'
                                         }`}
                                       >
                                         {item.concluido && <Check className="w-4 h-4" />}
                                       </button>
                                       <div className="flex-1">
-                                        <p className={item.concluido ? 'line-through text-gray-500' : ''}>
+                                        <p className={item.concluido ? 'line-through text-muted-foreground' : ''}>
                                           {item.descricao}
                                         </p>
                                         <Input
@@ -790,7 +790,7 @@ ClimaPro`
                                     <img 
                                       src={url} 
                                       alt={`Foto ${fotoIndex + 1}`}
-                                      className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                                      className="w-full h-32 object-cover rounded-lg border-2 border-border"
                                     />
                                     <button
                                       onClick={() => removerFoto(equipamento.id, fotoIndex)}

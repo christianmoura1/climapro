@@ -153,7 +153,7 @@ ClimaPro`
           <div className="flex justify-between items-center">
             <div>
               <CardTitle className="text-2xl">🔍 Revisar e Aprovar Chamado</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{cliente?.nome}</p>
+              <p className="text-sm text-muted-foreground mt-1">{cliente?.nome}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="w-4 h-4" />
@@ -167,7 +167,7 @@ ClimaPro`
             <CardContent className="p-4">
               <div className="grid md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Cliente</p>
+                  <p className="text-xs text-muted-foreground">Cliente</p>
                   {editandoCliente ? (
                     <div className="flex items-center gap-1 mt-1">
                       <Input
@@ -180,25 +180,25 @@ ClimaPro`
                   ) : (
                     <div className="flex items-center gap-1">
                       <p className="font-semibold">{nomeCliente}</p>
-                      <button onClick={() => setEditandoCliente(true)} className="text-gray-400 hover:text-blue-600">
+                      <button onClick={() => setEditandoCliente(true)} className="text-muted-foreground hover:text-blue-600">
                         <Edit className="w-3 h-3" />
                       </button>
                     </div>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Técnico</p>
+                  <p className="text-xs text-muted-foreground">Técnico</p>
                   <p className="font-semibold">{tecnico?.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data de Finalização</p>
+                  <p className="text-xs text-muted-foreground">Data de Finalização</p>
                   <p className="text-sm flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {format(new Date(chamado.data_finalizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Confirmado por</p>
+                  <p className="text-xs text-muted-foreground">Confirmado por</p>
                   <p className="font-semibold">{chamado.nome_cliente_confirmacao}</p>
                 </div>
               </div>
@@ -206,12 +206,12 @@ ClimaPro`
           </Card>
 
           {/* Descrição */}
-          <Card className="border-2 border-gray-200">
+          <Card className="border-2 border-border">
             <CardHeader>
               <CardTitle className="text-base">📋 Descrição do Serviço</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-900 whitespace-pre-wrap">{chamado.descricao}</p>
+              <p className="text-foreground whitespace-pre-wrap">{chamado.descricao}</p>
             </CardContent>
           </Card>
 
@@ -248,7 +248,7 @@ ClimaPro`
                   </p>
                 </>
               ) : (
-                <p className="text-gray-900 whitespace-pre-wrap bg-white p-4 rounded-lg">
+                <p className="text-foreground whitespace-pre-wrap bg-white p-4 rounded-lg">
                   {observacoesTecnico || "Nenhuma observação registrada"}
                 </p>
               )}
@@ -277,7 +277,7 @@ ClimaPro`
                       <img
                         src={url}
                         alt={`Foto ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                        className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400 transition-colors"
                       />
                     </a>
                   ))}
@@ -316,12 +316,12 @@ ClimaPro`
                   <img
                     src={chamado.assinatura_cliente}
                     alt="Assinatura"
-                    className="max-w-md mx-auto border-2 border-gray-300 rounded-lg"
+                    className="max-w-md mx-auto border-2 border-border rounded-lg"
                   />
-                  <p className="mt-3 font-medium text-gray-900">
+                  <p className="mt-3 font-medium text-foreground">
                     {chamado.nome_cliente_confirmacao}
                   </p>
-                  <p className="text-sm text-gray-500">Confirmação do serviço</p>
+                  <p className="text-sm text-muted-foreground">Confirmação do serviço</p>
                 </div>
               </CardContent>
             </Card>
@@ -367,7 +367,7 @@ ClimaPro`
               </Label>
               <div className="flex gap-3 mt-2 flex-wrap">
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">Data</Label>
+                  <Label className="text-xs text-muted-foreground">Data</Label>
                   <Input
                     type="date"
                     value={dataLembrete}
@@ -377,7 +377,7 @@ ClimaPro`
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs text-gray-600 flex items-center gap-1">
+                  <Label className="text-xs text-muted-foreground flex items-center gap-1">
                     <Clock className="w-3 h-3" /> Hora
                   </Label>
                   <Input

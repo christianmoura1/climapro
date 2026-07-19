@@ -429,8 +429,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gerenciar Técnicos</h1>
-              <p className="text-gray-600 mt-1">Cadastre e gerencie técnicos da equipe</p>
+              <h1 className="text-3xl font-bold text-foreground">Gerenciar Técnicos</h1>
+              <p className="text-muted-foreground mt-1">Cadastre e gerencie técnicos da equipe</p>
             </div>
           </div>
           <Button
@@ -511,7 +511,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                     <Label htmlFor="especialidade">Especialidade</Label>
                     <select
                       id="especialidade"
-                      className="w-full rounded-md border border-gray-300 p-2 text-sm h-10 bg-background"
+                      className="w-full rounded-md border border-border p-2 text-sm h-10 bg-background"
                       value={formData.especialidade}
                       onChange={(e) => setFormData({...formData, especialidade: e.target.value})}
                     >
@@ -540,7 +540,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                         >
                           O técnico vai ter acesso ao sistema?
                         </label>
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           O técnico poderá fazer login com o email cadastrado acima para acessar seus chamados, PMOCs e registrar gastos.
                         </p>
                       </div>
@@ -584,21 +584,21 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           </CardHeader>
           <CardContent className="p-0">
             {tecnicos.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 Nenhum técnico cadastrado ainda
               </div>
             ) : (
               <div className="divide-y">
                 {tecnicos.map((tecnico) => (
-                  <div key={tecnico.id} className="p-4 hover:bg-gray-50">
+                  <div key={tecnico.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{tecnico.nome}</h4>
-                        <p className="text-sm text-gray-600">{tecnico.email}</p>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h4 className="font-semibold text-foreground">{tecnico.nome}</h4>
+                        <p className="text-sm text-muted-foreground">{tecnico.email}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
                           {tecnico.telefone} • {tecnico.especialidade}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {tecnico.total_atendimentos} atendimentos realizados
                         </p>
                       </div>
@@ -667,7 +667,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           <DialogHeader>
             <DialogTitle>💰 Adicionar Saldo para Técnico</DialogTitle>
             {tecnicoSelecionado && (
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Enviando crédito para: <strong>{tecnicoSelecionado.nome}</strong>
               </p>
             )}

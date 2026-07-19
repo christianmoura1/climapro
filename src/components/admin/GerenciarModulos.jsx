@@ -54,8 +54,8 @@ export default function GerenciarModulos({ empresa, onUpdateModulos }) {
 
   return (
     <Card className="mt-4">
-      <CardHeader className="pb-3 bg-gray-50">
-        <CardTitle className="text-sm font-semibold text-gray-700 flex items-center justify-between">
+      <CardHeader className="pb-3 bg-muted">
+        <CardTitle className="text-sm font-semibold text-foreground flex items-center justify-between">
           <span>Módulos Ativos ({modulosAtivos}/{modulosDisponiveis.length})</span>
           <Badge variant="outline" className="text-xs">
             Configurável
@@ -75,12 +75,12 @@ export default function GerenciarModulos({ empresa, onUpdateModulos }) {
                   flex items-center justify-between p-3 rounded-lg border-2 transition-all
                   ${isAtivo 
                     ? 'border-green-200 bg-green-50' 
-                    : 'border-gray-200 bg-gray-50 opacity-60'
+                    : 'border-border bg-muted opacity-60'
                   }
                 `}
               >
                 <div className="flex items-center gap-2">
-                  <Icon className={`w-5 h-5 ${isAtivo ? modulo.color : 'text-gray-400'}`} />
+                  <Icon className={`w-5 h-5 ${isAtivo ? modulo.color : 'text-muted-foreground'}`} />
                   <Label 
                     htmlFor={`modulo-${modulo.id}-${empresa.id}`}
                     className="text-sm font-medium cursor-pointer"

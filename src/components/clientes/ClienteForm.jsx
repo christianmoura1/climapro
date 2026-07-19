@@ -79,7 +79,7 @@ function EnderecoForm({ dados, onChange, label }) {
           placeholder="Ex: Rua das Flores, 123 - Centro, São Paulo - SP"
           rows={2}
         />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           💡 <strong>Formato recomendado:</strong> Rua [Nome], [Número] - [Bairro], [Cidade] - [UF], [CEP]
         </p>
       </div>
@@ -147,7 +147,7 @@ const STATUS_CONFIG = {
   aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguardando Peças" },
   aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguardando Aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-  cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" },
+  cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
 
 function HistoricoChamadosEstabelecimento({ clienteId, estabelecimentos, abaAtiva }) {
@@ -179,9 +179,9 @@ function HistoricoChamadosEstabelecimento({ clienteId, estabelecimentos, abaAtiv
 
   return (
     <div className="border rounded-lg overflow-hidden">
-      <div className="bg-gray-50 border-b px-4 py-3 flex items-center gap-2">
-        <ClipboardList className="w-4 h-4 text-gray-600" />
-        <span className="font-semibold text-sm text-gray-700">
+      <div className="bg-muted border-b px-4 py-3 flex items-center gap-2">
+        <ClipboardList className="w-4 h-4 text-muted-foreground" />
+        <span className="font-semibold text-sm text-foreground">
           Histórico de Chamados — {estAtual?.nome || "Estabelecimento"}
         </span>
         {!loading && (
@@ -192,13 +192,13 @@ function HistoricoChamadosEstabelecimento({ clienteId, estabelecimentos, abaAtiv
       </div>
       <div className="p-4">
         {loading ? (
-          <p className="text-sm text-gray-500 text-center py-3">Carregando...</p>
+          <p className="text-sm text-muted-foreground text-center py-3">Carregando...</p>
         ) : !temEnderecoConfigurado ? (
-          <p className="text-sm text-gray-500 text-center py-3">
+          <p className="text-sm text-muted-foreground text-center py-3">
             Configure o endereço deste estabelecimento para ver os chamados relacionados.
           </p>
         ) : chamadosFiltrados.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-3">
+          <p className="text-sm text-muted-foreground text-center py-3">
             Nenhum chamado encontrado para <strong>{estAtual?.nome}</strong>.
           </p>
         ) : (
@@ -208,10 +208,10 @@ function HistoricoChamadosEstabelecimento({ clienteId, estabelecimentos, abaAtiv
               return (
                 <div key={chamado.id} className="py-3 flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {chamado.numero_chamado} — {chamado.titulo}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                       <Clock className="w-3 h-3" />
                       {chamado.created_date
                         ? format(new Date(chamado.created_date), "dd/MM/yyyy", { locale: ptBR })
@@ -323,7 +323,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
           <h3 className="text-lg font-bold mb-1">Nome do Estabelecimento</h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Tipo: <strong>{modalNome.opcao.label}</strong> — dê um nome personalizado (ex: Loja 01, Loja Colchões, Casa Matriz...)
           </p>
           <input
@@ -385,7 +385,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 placeholder="contato@cliente.com"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 💡 Opcional. Necessário caso o cliente deva receber lembretes automáticos de manutenção ou acesso ao portal.
               </p>
             </div>
@@ -402,7 +402,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
 
           {/* Seção de Estabelecimentos */}
           <div className="border rounded-lg overflow-hidden">
-            <div className="bg-gray-50 border-b px-4 py-3">
+            <div className="bg-muted border-b px-4 py-3">
               <div className="flex items-center justify-between mb-3">
                 <Label className="font-semibold flex items-center gap-2">
                   <Building2 className="w-4 h-4" />
@@ -446,14 +446,14 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                       title="Clique para selecionar. Duplo clique para renomear."
                       className={`px-3 py-1.5 rounded-t text-sm font-medium transition-colors flex items-center gap-1 ${
                         abaAtiva === idx
-                          ? 'bg-white border border-b-white text-blue-700 border-gray-200'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-white border border-b-white text-blue-700 border-border'
+                          : 'bg-muted text-muted-foreground hover:bg-gray-200'
                       }`}
                     >
                       {est.nome}
                       <span
                         onClick={(e) => { e.stopPropagation(); removerEstabelecimento(idx); }}
-                        className="ml-1 text-gray-400 hover:text-red-500 cursor-pointer"
+                        className="ml-1 text-muted-foreground hover:text-red-500 cursor-pointer"
                       >
                         ×
                       </span>
@@ -465,7 +465,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
 
             <div className="p-4">
               {estabelecimentos.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">
+                <p className="text-sm text-muted-foreground text-center py-4">
                   Clique em um dos botões acima para adicionar um endereço para este cliente.
                 </p>
               ) : (
@@ -513,7 +513,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                 >
                   O cliente vai ter acesso ao portal?
                 </label>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   O cliente poderá fazer login com o email cadastrado acima para acessar chamados e PMOCs.
                 </p>
               </div>

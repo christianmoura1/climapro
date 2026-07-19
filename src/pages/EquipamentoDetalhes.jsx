@@ -18,7 +18,7 @@ const tipoConfig = {
   geladeira: { label: "Geladeira", color: "bg-green-100 text-green-800" },
   freezer: { label: "Freezer", color: "bg-purple-100 text-purple-800" },
   chiller: { label: "Chiller", color: "bg-indigo-100 text-indigo-800" },
-  outro: { label: "Outro", color: "bg-gray-100 text-gray-800" }
+  outro: { label: "Outro", color: "bg-muted text-foreground" }
 };
 
 export default function EquipamentoDetalhesPage() {
@@ -54,10 +54,10 @@ export default function EquipamentoDetalhesPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -69,7 +69,7 @@ export default function EquipamentoDetalhesPage() {
         <div className="max-w-4xl mx-auto">
           <Card className="shadow-lg border-none">
             <CardContent className="p-12 text-center">
-              <p className="text-gray-600 mb-4">Equipamento não encontrado</p>
+              <p className="text-muted-foreground mb-4">Equipamento não encontrado</p>
               <Link to={createPageUrl("Equipamentos")}>
                 <Button>Voltar para Equipamentos</Button>
               </Link>
@@ -93,10 +93,10 @@ export default function EquipamentoDetalhesPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-foreground">
                 {equipamento.numero_equipamento}
               </h1>
-              <p className="text-gray-600 mt-1">Detalhes do Equipamento</p>
+              <p className="text-muted-foreground mt-1">Detalhes do Equipamento</p>
             </div>
           </div>
           <Link to={createPageUrl("Equipamentos")}>
@@ -126,52 +126,52 @@ export default function EquipamentoDetalhesPage() {
                   <img
                     src={equipamento.foto_url}
                     alt={equipamento.numero_equipamento}
-                    className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
+                    className="w-full h-64 object-cover rounded-lg border-2 border-border"
                   />
                 </div>
               )}
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Marca</h3>
-                  <p className="text-gray-900 font-medium">{equipamento.marca}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Marca</h3>
+                  <p className="text-foreground font-medium">{equipamento.marca}</p>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Modelo</h3>
-                  <p className="text-gray-900 font-medium">{equipamento.modelo}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Modelo</h3>
+                  <p className="text-foreground font-medium">{equipamento.modelo}</p>
                 </div>
 
                 {equipamento.capacidade && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Capacidade</h3>
-                    <p className="text-gray-900 font-medium">{equipamento.capacidade}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Capacidade</h3>
+                    <p className="text-foreground font-medium">{equipamento.capacidade}</p>
                   </div>
                 )}
 
                 {equipamento.numero_serie && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Número de Série</h3>
-                    <p className="text-gray-900 font-medium">{equipamento.numero_serie}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Número de Série</h3>
+                    <p className="text-foreground font-medium">{equipamento.numero_serie}</p>
                   </div>
                 )}
 
                 {equipamento.localizacao && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Localização</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Localização</h3>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
-                      <p className="text-gray-900">{equipamento.localizacao}</p>
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-foreground">{equipamento.localizacao}</p>
                     </div>
                   </div>
                 )}
 
                 {equipamento.data_instalacao && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Data de Instalação</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Data de Instalação</h3>
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <p className="text-gray-900">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-foreground">
                         {format(new Date(equipamento.data_instalacao), "dd/MM/yyyy", { locale: ptBR })}
                       </p>
                     </div>
@@ -181,8 +181,8 @@ export default function EquipamentoDetalhesPage() {
 
               {equipamento.observacoes && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Observações</h3>
-                  <p className="text-gray-900 bg-gray-50 p-4 rounded-lg">{equipamento.observacoes}</p>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Observações</h3>
+                  <p className="text-foreground bg-muted p-4 rounded-lg">{equipamento.observacoes}</p>
                 </div>
               )}
             </CardContent>
@@ -197,13 +197,13 @@ export default function EquipamentoDetalhesPage() {
               {cliente ? (
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Nome</h3>
-                    <p className="text-gray-900 font-medium">{cliente.nome}</p>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Nome</h3>
+                    <p className="text-foreground font-medium">{cliente.nome}</p>
                   </div>
 
                   {cliente.telefone && (
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Telefone</h3>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Telefone</h3>
                       <a href={`tel:${cliente.telefone}`} className="text-blue-600 hover:underline">
                         {cliente.telefone}
                       </a>
@@ -212,8 +212,8 @@ export default function EquipamentoDetalhesPage() {
 
                   {cliente.endereco && (
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500 mb-1">Endereço</h3>
-                      <p className="text-gray-900">{cliente.endereco}</p>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Endereço</h3>
+                      <p className="text-foreground">{cliente.endereco}</p>
                     </div>
                   )}
 
@@ -224,7 +224,7 @@ export default function EquipamentoDetalhesPage() {
                   </Link>
                 </div>
               ) : (
-                <p className="text-gray-500">Cliente não encontrado</p>
+                <p className="text-muted-foreground">Cliente não encontrado</p>
               )}
             </CardContent>
           </Card>

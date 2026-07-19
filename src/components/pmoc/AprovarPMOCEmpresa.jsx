@@ -187,7 +187,7 @@ Equipe ClimaPro`
           <div className="flex justify-between items-center">
             <div>
               <CardTitle className="text-2xl">🔍 Revisar e Aprovar PMOC</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">{cliente.nome}</p>
+              <p className="text-sm text-muted-foreground mt-1">{cliente.nome}</p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="w-4 h-4" />
@@ -201,22 +201,22 @@ Equipe ClimaPro`
             <CardContent className="p-4">
               <div className="grid md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-gray-600">Cliente</p>
+                  <p className="text-xs text-muted-foreground">Cliente</p>
                   <p className="font-semibold">{cliente.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Técnico</p>
+                  <p className="text-xs text-muted-foreground">Técnico</p>
                   <p className="font-semibold">{tecnico?.nome}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Data de Execução</p>
+                  <p className="text-xs text-muted-foreground">Data de Execução</p>
                   <p className="text-sm flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Equipamentos</p>
+                  <p className="text-xs text-muted-foreground">Equipamentos</p>
                   <p className="font-semibold">{equipamentos?.length || 0}</p>
                 </div>
               </div>
@@ -240,7 +240,7 @@ Equipe ClimaPro`
                           <h4 className="font-semibold">
                             Equipamento {index + 1}: {equipamento.tipo} {equipamento.marca} {equipamento.modelo}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             📍 {equipamento.localizacao} • {equipamento.capacidade}
                           </p>
                         </div>
@@ -260,11 +260,11 @@ Equipe ClimaPro`
                               <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                             )}
                             <div className="flex-1">
-                              <p className={item.concluido ? '' : 'text-gray-500'}>
+                              <p className={item.concluido ? '' : 'text-muted-foreground'}>
                                 {item.descricao}
                               </p>
                               {item.observacao && (
-                                <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded">
                                   💬 {item.observacao}
                                 </p>
                               )}
@@ -277,8 +277,8 @@ Equipe ClimaPro`
                       {fotos.length > 0 && (
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <ImageIcon className="w-4 h-4 text-gray-500" />
-                            <p className="text-sm font-medium text-gray-700">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            <p className="text-sm font-medium text-foreground">
                               Fotos ({fotos.length})
                             </p>
                           </div>
@@ -294,7 +294,7 @@ Equipe ClimaPro`
                                 <img
                                   src={url}
                                   alt={`Foto ${fotoIndex + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                                  className="w-full h-32 object-cover rounded-lg border-2 border-border hover:border-blue-400 transition-colors"
                                 />
                               </a>
                             ))}
@@ -345,12 +345,12 @@ Equipe ClimaPro`
                   <img
                     src={manutencao.assinatura_tecnico}
                     alt="Assinatura"
-                    className="max-w-md mx-auto border-2 border-gray-300 rounded-lg"
+                    className="max-w-md mx-auto border-2 border-border rounded-lg"
                   />
-                  <p className="mt-3 font-medium text-gray-900">
+                  <p className="mt-3 font-medium text-foreground">
                     {manutencao.nome_responsavel_local}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Responsável pelo local
                   </p>
                 </div>
@@ -368,7 +368,7 @@ Equipe ClimaPro`
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-muted-foreground mb-3">
                   📍 {manutencao.endereco || cliente.endereco}
                 </p>
                 <div className="border-2 border-purple-300 rounded-lg overflow-hidden">

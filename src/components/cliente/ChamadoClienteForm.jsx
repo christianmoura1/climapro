@@ -112,7 +112,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
       {/* Seleção de Estabelecimento + Equipamento */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-gray-500" />
+          <Cpu className="w-4 h-4 text-muted-foreground" />
           <Label>Equipamento com Problema *</Label>
         </div>
         {equipamentos.length === 0 ? (
@@ -129,7 +129,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
             {/* Seleção de Estabelecimento */}
             {temEstabelecimentos && (
               <div className="space-y-1">
-                <Label className="text-xs text-gray-500">1. Selecione o Estabelecimento</Label>
+                <Label className="text-xs text-muted-foreground">1. Selecione o Estabelecimento</Label>
                 <div className="flex flex-wrap gap-2">
                   {estabelecimentos.map((nome) => (
                     <button
@@ -152,7 +152,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
             {/* Seleção de Equipamento */}
             {(!temEstabelecimentos || estabelecimentoSelecionado) && (
               <div className="space-y-1">
-                {temEstabelecimentos && <Label className="text-xs text-gray-500">2. Selecione o Equipamento</Label>}
+                {temEstabelecimentos && <Label className="text-xs text-muted-foreground">2. Selecione o Equipamento</Label>}
                 <select
                   value={formData.equipamento_id}
                   onChange={(e) => handleEquipamentoChange(e.target.value)}
@@ -170,7 +170,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
             )}
 
             {temEstabelecimentos && !estabelecimentoSelecionado && (
-              <p className="text-xs text-gray-400 italic">👆 Selecione um estabelecimento para ver os equipamentos disponíveis.</p>
+              <p className="text-xs text-muted-foreground italic">👆 Selecione um estabelecimento para ver os equipamentos disponíveis.</p>
             )}
 
             {/* Mostrar detalhes do equipamento selecionado */}
@@ -208,9 +208,9 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
           value={formData.local}
           onChange={(e) => setFormData({...formData, local: e.target.value})}
           placeholder="Preencha automaticamente ao selecionar equipamento"
-          className="bg-gray-50"
+          className="bg-muted"
         />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           💡 Preenchido automaticamente ao selecionar o equipamento
         </p>
       </div>
@@ -254,7 +254,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
 
       <div className="space-y-2">
         <Label>Fotos do Problema (Opcional)</Label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+        <div className="border-2 border-dashed border-border rounded-lg p-4">
           <input
             type="file"
             accept="image/*"
@@ -267,8 +267,8 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
             htmlFor="photo-upload-cliente"
             className="flex flex-col items-center justify-center cursor-pointer"
           >
-            <Upload className="w-6 h-6 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600">
+            <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+            <span className="text-sm text-muted-foreground">
               {uploadingPhoto ? 'Fazendo upload...' : 'Clique para adicionar fotos'}
             </span>
           </label>
@@ -281,7 +281,7 @@ export default function ChamadoClienteForm({ equipamentos = [], onSubmit, onCanc
                 <img
                   src={url}
                   alt={`Foto ${index + 1}`}
-                  className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                  className="w-full h-24 object-cover rounded-lg border-2 border-border"
                 />
                 <button
                   type="button"

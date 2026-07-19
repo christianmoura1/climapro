@@ -81,10 +81,10 @@ export default function NotasFiscaisPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -102,18 +102,18 @@ export default function NotasFiscaisPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notas Fiscais</h1>
-              <p className="text-gray-600 mt-1">Emissão e gerenciamento de NFS-e</p>
+              <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
+              <p className="text-muted-foreground mt-1">Emissão e gerenciamento de NFS-e</p>
             </div>
           </div>
 
           <Card className="shadow-2xl border-2 border-indigo-200">
             <CardContent className="p-12 text-center">
               <FileText className="w-20 h-20 text-indigo-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Recurso disponível apenas no Plano Avançado
               </h2>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 O módulo de Emissão de Notas Fiscais Eletrônicas (NFS-e) está disponível 
                 apenas para assinantes do plano Avançado.
               </p>
@@ -141,18 +141,18 @@ export default function NotasFiscaisPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notas Fiscais</h1>
-              <p className="text-gray-600 mt-1">Configure seus dados fiscais primeiro</p>
+              <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
+              <p className="text-muted-foreground mt-1">Configure seus dados fiscais primeiro</p>
             </div>
           </div>
 
           <Card className="shadow-lg border-none">
             <CardContent className="p-12 text-center">
               <Settings className="w-16 h-16 text-indigo-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl font-bold text-foreground mb-4">
                 Configure seus Dados Fiscais
               </h2>
-              <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 Antes de emitir notas fiscais, você precisa configurar os dados fiscais 
                 da sua empresa (CNPJ, Inscrição Municipal, Token API, etc.).
               </p>
@@ -192,8 +192,8 @@ export default function NotasFiscaisPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notas Fiscais</h1>
-              <p className="text-gray-600 mt-1">Emissão e gerenciamento de NFS-e</p>
+              <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
+              <p className="text-muted-foreground mt-1">Emissão e gerenciamento de NFS-e</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -218,11 +218,11 @@ export default function NotasFiscaisPage() {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Emitidas</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Emitidas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{totalEmitidas}</p>
+                <p className="text-3xl font-bold text-foreground">{totalEmitidas}</p>
                 <FileText className="w-8 h-8 text-green-500" />
               </div>
             </CardContent>
@@ -230,11 +230,11 @@ export default function NotasFiscaisPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Canceladas</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Canceladas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-gray-900">{totalCanceladas}</p>
+                <p className="text-3xl font-bold text-foreground">{totalCanceladas}</p>
                 <XCircle className="w-8 h-8 text-red-500" />
               </div>
             </CardContent>
@@ -242,7 +242,7 @@ export default function NotasFiscaisPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Receita Bruta</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Receita Bruta</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -256,7 +256,7 @@ export default function NotasFiscaisPage() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Receita Líquida</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Receita Líquida</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">

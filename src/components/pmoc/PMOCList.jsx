@@ -13,7 +13,7 @@ const statusConfig = {
   aguardando_validacao_cliente: { color: "bg-yellow-100 text-yellow-800", icon: AlertTriangle, label: "Aguardando Cliente" },
   reaberto: { color: "bg-red-100 text-red-800", icon: AlertIcon, label: "Reaberto" },
   pausado: { color: "bg-yellow-100 text-yellow-800", icon: Pause, label: "Pausado" },
-  concluido: { color: "bg-gray-100 text-gray-800", icon: CheckCircle, label: "Concluído" }
+  concluido: { color: "bg-muted text-foreground", icon: CheckCircle, label: "Concluído" }
 };
 
 const periodicidadeConfig = {
@@ -44,9 +44,9 @@ export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView,
     return (
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
-          <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg font-medium mb-2">Nenhum PMOC cadastrado ainda</p>
-          <p className="text-gray-500 text-sm">Clique em "Novo PMOC" para começar</p>
+          <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhum PMOC cadastrado ainda</p>
+          <p className="text-muted-foreground text-sm">Clique em "Novo PMOC" para começar</p>
         </CardContent>
       </Card>
     );
@@ -79,20 +79,20 @@ export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView,
                 </Badge>
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {cliente?.nome || 'Cliente não identificado'}
               </h3>
 
               <div className="space-y-2 mb-4">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <span className="font-medium">Local:</span> {cliente?.endereco || 'N/A'}
                 </div>
                 {tecnico && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <span className="font-medium">Técnico:</span> {tecnico.nome}
                   </div>
                 )}
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   <span className="font-medium">Atividades:</span> {pmoc.atividades?.length || 0} itens
                 </div>
               </div>
@@ -118,12 +118,12 @@ export default function PMOCList({ pmocs, clientes, tecnicos, isLoading, onView,
                   <div className="flex items-center gap-2">
                     <AlertTriangle className={`w-4 h-4 ${diasRestantes <= 7 ? 'text-red-500' : 'text-orange-500'}`} />
                     <div>
-                      <p className="text-xs text-gray-600">Próxima manutenção</p>
-                      <p className="font-semibold text-gray-900">
+                      <p className="text-xs text-muted-foreground">Próxima manutenção</p>
+                      <p className="font-semibold text-foreground">
                         {format(proximaManutencao, "dd/MM/yyyy", { locale: ptBR })}
                       </p>
                       {diasRestantes !== null && (
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {diasRestantes > 0 ? `em ${diasRestantes} dias` : 'ATRASADO'}
                         </p>
                       )}

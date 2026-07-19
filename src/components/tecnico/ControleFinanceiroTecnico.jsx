@@ -143,7 +143,7 @@ ClimaPro`
       <div className="grid md:grid-cols-4 gap-6">
         <Card className="shadow-lg border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Orçamento Total</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Orçamento Total</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ ClimaPro`
 
         <Card className="shadow-lg border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total de Entradas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Entradas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -171,7 +171,7 @@ ClimaPro`
 
         <Card className="shadow-lg border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total de Despesas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Despesas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ ClimaPro`
 
         <Card className="shadow-lg border-none">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Saldo Disponível</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Disponível</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -253,7 +253,7 @@ ClimaPro`
         <Card className="shadow-lg border-none">
           <CardHeader>
             <CardTitle>Registrar Movimentação</CardTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               ℹ️ Esta movimentação será enviada para aprovação da empresa antes de ser processada.
             </p>
           </CardHeader>
@@ -334,7 +334,7 @@ ClimaPro`
 
               <div className="space-y-2">
                 <Label>Comprovante</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <div className="border-2 border-dashed border-border rounded-lg p-4">
                   <input
                     type="file"
                     accept="image/*,application/pdf"
@@ -347,8 +347,8 @@ ClimaPro`
                     htmlFor="comprovante-upload"
                     className="flex flex-col items-center justify-center cursor-pointer"
                   >
-                    <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-600">
+                    <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">
                       {uploadingFile ? 'Fazendo upload...' : 
                        formData.comprovante_url ? 'Comprovante anexado ✓' : 
                        'Clique para anexar comprovante'}
@@ -377,27 +377,27 @@ ClimaPro`
         </CardHeader>
         <CardContent className="p-0">
           {movimentacoes.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-muted-foreground">
               Nenhuma movimentação registrada ainda
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b">
+                <thead className="bg-muted border-b">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Valor</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Comprovante</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Data</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tipo</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Categoria</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Descrição</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Valor</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Status</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-muted-foreground uppercase">Comprovante</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {movimentacoes.map((mov) => (
-                    <tr key={mov.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <tr key={mov.id} className="hover:bg-muted">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                         {mov.data_movimentacao 
                           ? format(new Date(mov.data_movimentacao), "dd/MM/yyyy", { locale: ptBR })
                           : '-'}
@@ -407,10 +407,10 @@ ClimaPro`
                           {mov.tipo === 'entrada' ? 'Entrada' : 'Despesa'}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 capitalize">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground capitalize">
                         {mov.categoria}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                      <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
                         {mov.descricao || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">
@@ -437,7 +437,7 @@ ClimaPro`
                             Ver
                           </a>
                         ) : (
-                          <span className="text-gray-400 text-sm">-</span>
+                          <span className="text-muted-foreground text-sm">-</span>
                         )}
                       </td>
                     </tr>

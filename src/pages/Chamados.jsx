@@ -460,15 +460,15 @@ ClimaPro - Sistema de Gestão`
   // Tratamento de erro de query
   if (chamadosError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center max-w-md p-6">
           <div className="text-red-600 mb-4">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Erro ao Carregar Chamados</h3>
-          <p className="text-gray-600 mb-4">{chamadosError.message}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao Carregar Chamados</h3>
+          <p className="text-muted-foreground mb-4">{chamadosError.message}</p>
           <Button onClick={() => setForceRender(prev => prev + 1)} className="bg-blue-600 hover:bg-blue-700">
             Tentar Novamente
           </Button>
@@ -479,10 +479,10 @@ ClimaPro - Sistema de Gestão`
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -514,8 +514,8 @@ ClimaPro - Sistema de Gestão`
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Chamados</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-3xl font-bold text-foreground">Chamados</h1>
+              <p className="text-muted-foreground mt-1">
                 {chamados.length} chamado{chamados.length !== 1 ? 's' : ''} encontrado{chamados.length !== 1 ? 's' : ''} · {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -551,7 +551,7 @@ ClimaPro - Sistema de Gestão`
         {/* Barra de Pesquisa e Filtros */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder="Buscar por cliente, técnico, título ou número..."
               value={searchTerm}
@@ -559,7 +559,7 @@ ClimaPro - Sistema de Gestão`
               className="pl-10 pr-10"
             />
             {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -578,7 +578,7 @@ ClimaPro - Sistema de Gestão`
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   filtroStatus === key
                     ? "bg-blue-600 text-white"
-                    : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+                    : "bg-white border border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {label}
@@ -622,14 +622,14 @@ ClimaPro - Sistema de Gestão`
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="font-semibold text-foreground">
                               {chamado.titulo}
                             </h3>
                             <Badge className="bg-blue-100 text-blue-800">
                               #{chamado.numero_chamado}
                             </Badge>
                           </div>
-                          <div className="text-sm text-gray-600 space-y-1">
+                          <div className="text-sm text-muted-foreground space-y-1">
                             <p>👤 Cliente: {cliente?.nome || 'N/A'}</p>
                             <p>🔧 Técnico: {tecnico?.nome || 'N/A'}</p>
                             {chamado.data_finalizacao && (

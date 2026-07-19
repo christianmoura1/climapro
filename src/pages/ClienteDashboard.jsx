@@ -254,10 +254,10 @@ ${mensagem}
 
   if (!user || !cliente) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -295,7 +295,7 @@ ${mensagem}
     pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
     em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
     finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
-    cancelado: { color: "bg-gray-100 text-gray-800", label: "Cancelado" }
+    cancelado: { color: "bg-muted text-foreground", label: "Cancelado" }
   };
 
   return (
@@ -309,10 +309,10 @@ ${mensagem}
                 <Snowflake className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   Olá, {cliente.nome}! 👋
                 </h1>
-                <p className="text-sm text-gray-600 mt-1">Portal do Cliente</p>
+                <p className="text-sm text-muted-foreground mt-1">Portal do Cliente</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -337,7 +337,7 @@ ${mensagem}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Chamados Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Chamados Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -349,7 +349,7 @@ ${mensagem}
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Chamados Finalizados</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Chamados Finalizados</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -361,7 +361,7 @@ ${mensagem}
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">PMOCs Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">PMOCs Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -423,7 +423,7 @@ ${mensagem}
           </CardHeader>
           <CardContent className="p-6">
             {meusChamados.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 Nenhum chamado aberto ainda
               </div>
             ) : visualizacao === 'kanban' ? (
@@ -442,12 +442,12 @@ ${mensagem}
             ) : (
               <div className="divide-y">
                 {meusChamados.map((chamado) => (
-                  <div key={chamado.id} className="p-4 hover:bg-gray-50">
+                  <div key={chamado.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-1">{chamado.titulo}</h4>
-                        <p className="text-sm text-gray-600 mb-2">{chamado.descricao}</p>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                        <h4 className="font-semibold text-foreground mb-1">{chamado.titulo}</h4>
+                        <p className="text-sm text-muted-foreground mb-2">{chamado.descricao}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
                           <span>
                             {chamado.created_date
@@ -502,7 +502,7 @@ ${mensagem}
               </CardHeader>
               <CardContent className="p-0">
                 {todoEstabelecimentos.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">Nenhum estabelecimento cadastrado</div>
+                  <div className="p-8 text-center text-muted-foreground">Nenhum estabelecimento cadastrado</div>
                 ) : (
                   <div className="divide-y">
                     {todoEstabelecimentos.map((est, idx) => {
@@ -523,7 +523,7 @@ ${mensagem}
                         <div key={idx}>
                           <button
                             type="button"
-                            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                            className="w-full flex items-center justify-between p-4 hover:bg-muted text-left"
                             onClick={() => setEstabelecimentoAberto(isOpen ? null : est.nome)}
                           >
                             <div className="flex items-center gap-3">
@@ -531,20 +531,20 @@ ${mensagem}
                                 <MapPin className="w-5 h-5 text-blue-600" />
                               </div>
                               <div>
-                                <p className="font-semibold text-gray-900">{est.nome}</p>
-                                {est.endereco && <p className="text-sm text-gray-500">{est.endereco}</p>}
-                                <p className="text-xs text-gray-400">{equipsEst.length} equipamento(s) · {chamadosEst.length} chamado(s)</p>
+                                <p className="font-semibold text-foreground">{est.nome}</p>
+                                {est.endereco && <p className="text-sm text-muted-foreground">{est.endereco}</p>}
+                                <p className="text-xs text-muted-foreground">{equipsEst.length} equipamento(s) · {chamadosEst.length} chamado(s)</p>
                               </div>
                             </div>
-                            {isOpen ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                            {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
                           </button>
 
                           {isOpen && (
-                            <div className="bg-gray-50 px-4 pb-4">
+                            <div className="bg-muted px-4 pb-4">
                               {/* Equipamentos do estabelecimento */}
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-3 mb-2">Equipamentos</p>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-3 mb-2">Equipamentos</p>
                               {equipsEst.length === 0 ? (
-                                <p className="text-sm text-gray-400 italic mb-3">Nenhum equipamento vinculado a este estabelecimento.</p>
+                                <p className="text-sm text-muted-foreground italic mb-3">Nenhum equipamento vinculado a este estabelecimento.</p>
                               ) : (
                                 <div className="grid sm:grid-cols-2 gap-3 mb-4">
                                   {equipsEst.map((equip) => (
@@ -561,7 +561,7 @@ ${mensagem}
                                         </div>
                                       )}
                                       <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-sm text-gray-900 truncate">{equip.marca} {equip.modelo}</p>
+                                        <p className="font-medium text-sm text-foreground truncate">{equip.marca} {equip.modelo}</p>
                                         <div className="flex gap-1 mt-1 flex-wrap">
                                           <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
                                           {equip.capacidade && <Badge variant="outline" className="text-xs">{equip.capacidade}</Badge>}
@@ -573,9 +573,9 @@ ${mensagem}
                               )}
 
                               {/* Chamados do estabelecimento */}
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Histórico de Chamados</p>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Histórico de Chamados</p>
                               {chamadosEst.length === 0 ? (
-                                <p className="text-sm text-gray-400 italic">Nenhum chamado registrado para este estabelecimento.</p>
+                                <p className="text-sm text-muted-foreground italic">Nenhum chamado registrado para este estabelecimento.</p>
                               ) : (
                                 <div className="space-y-2">
                                   {chamadosEst.slice(0, 5).map((c) => {
@@ -583,7 +583,7 @@ ${mensagem}
                                       pendente: "bg-orange-100 text-orange-800",
                                       em_andamento: "bg-blue-100 text-blue-800",
                                       finalizado: "bg-green-100 text-green-800",
-                                      cancelado: "bg-gray-100 text-gray-800"
+                                      cancelado: "bg-muted text-foreground"
                                     };
                                     const isFinalizado = c.status === 'finalizado';
                                     return (
@@ -593,20 +593,20 @@ ${mensagem}
                                         onClick={() => isFinalizado && handleVisualizarChamado(c)}
                                       >
                                         <div>
-                                          <p className="font-medium text-gray-800">{c.numero_chamado} — {c.titulo}</p>
-                                          <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                                          <p className="font-medium text-foreground">{c.numero_chamado} — {c.titulo}</p>
+                                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                             <Clock className="w-3 h-3" />
                                             {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
                                           </p>
                                         </div>
-                                        <Badge className={statusCfg[c.status] || "bg-gray-100 text-gray-800"}>
+                                        <Badge className={statusCfg[c.status] || "bg-muted text-foreground"}>
                                           {c.status?.replace('_', ' ')}
                                         </Badge>
                                       </div>
                                     );
                                   })}
                                   {chamadosEst.length > 5 && (
-                                    <p className="text-xs text-gray-400 text-center">+{chamadosEst.length - 5} chamado(s) mais antigos</p>
+                                    <p className="text-xs text-muted-foreground text-center">+{chamadosEst.length - 5} chamado(s) mais antigos</p>
                                   )}
                                 </div>
                               )}
@@ -621,22 +621,22 @@ ${mensagem}
                       <div>
                         <button
                           type="button"
-                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                          className="w-full flex items-center justify-between p-4 hover:bg-muted text-left"
                           onClick={() => setEstabelecimentoAberto(estabelecimentoAberto === '__sem_local__' ? null : '__sem_local__')}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <Cpu className="w-5 h-5 text-gray-500" />
+                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                              <Cpu className="w-5 h-5 text-muted-foreground" />
                             </div>
                             <div>
-                              <p className="font-semibold text-gray-700">Sem local definido</p>
-                              <p className="text-xs text-gray-400">{equipSemEstabelecimento.length} equipamento(s)</p>
+                              <p className="font-semibold text-foreground">Sem local definido</p>
+                              <p className="text-xs text-muted-foreground">{equipSemEstabelecimento.length} equipamento(s)</p>
                             </div>
                           </div>
-                          {estabelecimentoAberto === '__sem_local__' ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                          {estabelecimentoAberto === '__sem_local__' ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
                         </button>
                         {estabelecimentoAberto === '__sem_local__' && (
-                          <div className="bg-gray-50 px-4 pb-4 grid sm:grid-cols-2 gap-3 pt-2">
+                          <div className="bg-muted px-4 pb-4 grid sm:grid-cols-2 gap-3 pt-2">
                             {equipSemEstabelecimento.map((equip) => (
                               <div
                                 key={equip.id}
@@ -647,7 +647,7 @@ ${mensagem}
                                   <Cpu className="w-6 h-6 text-blue-600" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm text-gray-900 truncate">{equip.marca} {equip.modelo}</p>
+                                  <p className="font-medium text-sm text-foreground truncate">{equip.marca} {equip.modelo}</p>
                                   <div className="flex gap-1 mt-1">
                                     <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
                                   </div>
@@ -672,19 +672,19 @@ ${mensagem}
           </CardHeader>
           <CardContent className="p-0">
             {meusPMOCs.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
+              <div className="p-8 text-center text-muted-foreground">
                 Nenhum PMOC programado
               </div>
             ) : (
               <div className="divide-y">
                 {meusPMOCs.map((pmoc) => (
-                  <div key={pmoc.id} className="p-4 hover:bg-gray-50">
+                  <div key={pmoc.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-semibold text-gray-900">PMOC {pmoc.periodicidade}</p>
+                        <p className="font-semibold text-foreground">PMOC {pmoc.periodicidade}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
                             Próxima manutenção: {pmoc.proxima_manutencao
                               ? format(new Date(pmoc.proxima_manutencao), "dd/MM/yyyy", { locale: ptBR })
                               : 'N/A'}

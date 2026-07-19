@@ -32,11 +32,11 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
       <div className="p-6 min-w-[800px]">
         {/* Header com dias */}
         <div className="grid grid-cols-8 gap-2 mb-4">
-          <div className="font-semibold text-gray-600"></div>
+          <div className="font-semibold text-muted-foreground"></div>
           {diasSemana.map((dia) => {
             const isHoje = isSameDay(dia, hoje);
             return (
-              <div key={dia.toString()} className={`text-center ${isHoje ? 'text-indigo-600' : 'text-gray-900'}`}>
+              <div key={dia.toString()} className={`text-center ${isHoje ? 'text-indigo-600' : 'text-foreground'}`}>
                 <div className="font-semibold">{format(dia, 'EEE', { locale: ptBR })}</div>
                 <div className={`text-2xl ${isHoje ? 'font-bold' : ''}`}>{format(dia, 'd')}</div>
               </div>
@@ -48,7 +48,7 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
         <div className="space-y-1">
           {horas.map((hora) => (
             <div key={hora} className="grid grid-cols-8 gap-2">
-              <div className="text-sm font-medium text-gray-600 py-2">
+              <div className="text-sm font-medium text-muted-foreground py-2">
                 {hora}:00
               </div>
               {diasSemana.map((dia) => {
@@ -56,7 +56,7 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
                 return (
                   <div
                     key={`${dia}-${hora}`}
-                    className="border border-gray-200 rounded p-1 min-h-[60px] bg-white hover:bg-gray-50 transition-colors"
+                    className="border border-border rounded p-1 min-h-[60px] bg-white hover:bg-muted transition-colors"
                   >
                     {eventosNoHorario.map((evento) => {
                       // Definir cor: verde para concluído, vermelho para pendente, cor original para outros
@@ -80,7 +80,7 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
                           }}
                         >
                           <div className="font-semibold">{tipoIcons[evento.tipo]} {evento.titulo}</div>
-                          <div className="text-gray-600">{format(new Date(evento.data_inicio), 'HH:mm')}</div>
+                          <div className="text-muted-foreground">{format(new Date(evento.data_inicio), 'HH:mm')}</div>
                         </div>
                       );
                     })}

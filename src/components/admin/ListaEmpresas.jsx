@@ -51,7 +51,7 @@ const statusConfig = {
     label: "Suspensa"
   },
   inativa: {
-    color: "bg-gray-100 text-gray-800 border-gray-200",
+    color: "bg-muted text-foreground border-border",
     icon: Ban,
     label: "Inativa"
   }
@@ -73,7 +73,7 @@ const statusPagamentoConfig = {
 };
 
 const planoConfig = {
-  free: { color: "bg-gray-100 text-gray-800", label: "Free", preco: "Gratuito" },
+  free: { color: "bg-muted text-foreground", label: "Free", preco: "Gratuito" },
   intermediario: { color: "bg-blue-100 text-blue-800", label: "Intermediário", preco: "R$ 59,90/mês" },
   avancado: { color: "bg-purple-100 text-purple-800", label: "Avançado", preco: "R$ 99,90/mês" }
 };
@@ -91,7 +91,7 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
 
   if (empresas.length === 0) {
     return (
-      <div className="p-12 text-center text-gray-500">
+      <div className="p-12 text-center text-muted-foreground">
         <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <p className="text-lg font-medium mb-2">Nenhuma empresa cadastrada</p>
         <p className="text-sm">Clique em "Nova Empresa" para começar</p>
@@ -119,7 +119,7 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
             open={isExpanded}
             onOpenChange={() => setExpandedEmpresa(isExpanded ? null : empresa.id)}
           >
-            <div className="p-6 hover:bg-gray-50 transition-colors">
+            <div className="p-6 hover:bg-muted transition-colors">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
@@ -127,10 +127,10 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
                       <Building2 className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{empresa.nome}</h3>
+                      <h3 className="text-xl font-bold text-foreground">{empresa.nome}</h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <Tag className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm text-gray-600 font-mono">
+                        <Tag className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground font-mono">
                           ID: {empresa.slug_empresa}
                         </span>
                       </div>
@@ -139,26 +139,26 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
 
                   <div className="grid md:grid-cols-3 gap-4 mb-4">
                     <div>
-                      <p className="text-sm text-gray-500">CNPJ</p>
-                      <p className="font-medium text-gray-900">{empresa.cnpj}</p>
+                      <p className="text-sm text-muted-foreground">CNPJ</p>
+                      <p className="font-medium text-foreground">{empresa.cnpj}</p>
                     </div>
                     {empresa.telefone && (
                       <div>
-                        <p className="text-sm text-gray-500">Telefone</p>
-                        <p className="font-medium text-gray-900">{empresa.telefone}</p>
+                        <p className="text-sm text-muted-foreground">Telefone</p>
+                        <p className="font-medium text-foreground">{empresa.telefone}</p>
                       </div>
                     )}
                     {empresa.email_contato && (
                       <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium text-gray-900">{empresa.email_contato}</p>
+                        <p className="text-sm text-muted-foreground">Email</p>
+                        <p className="font-medium text-foreground">{empresa.email_contato}</p>
                       </div>
                     )}
                     <div>
-                      <p className="text-sm text-gray-500">Cadastrado em</p>
+                      <p className="text-sm text-muted-foreground">Cadastrado em</p>
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <p className="font-medium text-gray-900">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <p className="font-medium text-foreground">
                           {empresa.created_date 
                             ? format(new Date(empresa.created_date), "dd/MM/yyyy", { locale: ptBR })
                             : 'N/A'}
@@ -168,10 +168,10 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
                     
                     {empresa.data_vencimento_plano && empresa.plano !== 'free' && (
                       <div>
-                        <p className="text-sm text-gray-500">Vencimento do Plano</p>
+                        <p className="text-sm text-muted-foreground">Vencimento do Plano</p>
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <p className="font-medium text-gray-900">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <p className="font-medium text-foreground">
                             {format(new Date(empresa.data_vencimento_plano), "dd/MM/yyyy", { locale: ptBR })}
                           </p>
                         </div>
@@ -179,15 +179,15 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
                     )}
 
                     <div>
-                      <p className="text-sm text-gray-500">Técnicos / Clientes</p>
+                      <p className="text-sm text-muted-foreground">Técnicos / Clientes</p>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
                           <UserCog className="w-4 h-4 text-teal-500" />
-                          <span className="font-medium text-gray-900">{tecnicosDaEmpresa}</span>
+                          <span className="font-medium text-foreground">{tecnicosDaEmpresa}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Users className="w-4 h-4 text-green-500" />
-                          <span className="font-medium text-gray-900">{clientesDaEmpresa}</span>
+                          <span className="font-medium text-foreground">{clientesDaEmpresa}</span>
                         </div>
                       </div>
                     </div>
@@ -243,7 +243,7 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
                         Suspender
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onUpdateStatus(empresa.id, 'inativa')}>
-                        <Ban className="w-4 h-4 mr-2 text-gray-500" />
+                        <Ban className="w-4 h-4 mr-2 text-muted-foreground" />
                         Desativar
                       </DropdownMenuItem>
                     </DropdownMenuContent>

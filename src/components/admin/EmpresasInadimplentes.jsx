@@ -29,7 +29,7 @@ export default function EmpresasInadimplentes({ empresas, onEnviarLembrete, onCo
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-bold text-gray-900">{empresa.nome}</h4>
+                    <h4 className="font-bold text-foreground">{empresa.nome}</h4>
                     <Badge className={
                       empresa.status_pagamento === 'bloqueado' 
                         ? 'bg-red-100 text-red-800' 
@@ -41,15 +41,15 @@ export default function EmpresasInadimplentes({ empresas, onEnviarLembrete, onCo
 
                   <div className="grid md:grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-gray-500">Plano:</span>
+                      <span className="text-muted-foreground">Plano:</span>
                       <span className="ml-2 font-medium">{empresa.plano}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Valor:</span>
+                      <span className="text-muted-foreground">Valor:</span>
                       <span className="ml-2 font-medium text-red-600">R$ {precos[empresa.plano]}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Vencimento:</span>
+                      <span className="text-muted-foreground">Vencimento:</span>
                       <span className="ml-2 font-medium">
                         {empresa.data_vencimento_plano 
                           ? format(new Date(empresa.data_vencimento_plano), "dd/MM/yyyy", { locale: ptBR })
@@ -57,7 +57,7 @@ export default function EmpresasInadimplentes({ empresas, onEnviarLembrete, onCo
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Contato:</span>
+                      <span className="text-muted-foreground">Contato:</span>
                       <span className="ml-2 font-medium">{empresa.telefone || empresa.email_contato}</span>
                     </div>
                   </div>

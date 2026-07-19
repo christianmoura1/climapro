@@ -103,10 +103,10 @@ export default function CompanySettings() {
 
   if (!user || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -122,8 +122,8 @@ export default function CompanySettings() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configurações da Empresa</h1>
-            <p className="text-gray-600 mt-1">Gerencie os dados da sua empresa</p>
+            <h1 className="text-3xl font-bold text-foreground">Configurações da Empresa</h1>
+            <p className="text-muted-foreground mt-1">Gerencie os dados da sua empresa</p>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ export default function CompanySettings() {
                 <Label>Logo da Empresa (para documentos e relatórios)</Label>
                 <div className="flex flex-col gap-4">
                   {formData.logo_url && (
-                    <div className="relative w-48 h-32 border-2 border-gray-200 rounded-lg flex items-center justify-center bg-white overflow-hidden">
+                    <div className="relative w-48 h-32 border-2 border-border rounded-lg flex items-center justify-center bg-white overflow-hidden">
                       <img
                         src={formData.logo_url}
                         alt="Logo da empresa"
@@ -186,7 +186,7 @@ export default function CompanySettings() {
                     </label>
                   </div>
                   
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     📌 PNG, JPG até 2MB. Recomendado: proporção larga (ex: 200x80px)
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export default function CompanySettings() {
                     required
                     disabled={uploadingLogo}
                   />
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     📱 Este número receberá notificações via WhatsApp quando clientes abrirem chamados
                   </p>
                 </div>

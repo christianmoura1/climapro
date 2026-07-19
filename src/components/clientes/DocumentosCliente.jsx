@@ -76,9 +76,9 @@ export default function DocumentosCliente({ cliente }) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Upload */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+        <div className="border-2 border-dashed border-border rounded-lg p-6">
           <div className="flex flex-col items-center gap-4">
-            <Upload className="w-12 h-12 text-gray-400" />
+            <Upload className="w-12 h-12 text-muted-foreground" />
             <div className="w-full max-w-xs">
               <select
                 value={tipoDoc}
@@ -107,7 +107,7 @@ export default function DocumentosCliente({ cliente }) {
               <Upload className="w-4 h-4" />
               {uploading ? 'Enviando...' : 'Selecionar Arquivo'}
             </label>
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               PDF, Imagens, Excel ou Word - Máximo 10MB
             </p>
           </div>
@@ -115,23 +115,23 @@ export default function DocumentosCliente({ cliente }) {
 
         {/* Lista de Documentos */}
         {documentos.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
             <p>Nenhum documento cadastrado ainda</p>
           </div>
         ) : (
           <div className="space-y-3">
             {documentos.map((doc, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+              <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted">
                 <div className="flex items-center gap-3 flex-1">
                   <FileText className="w-5 h-5 text-blue-600" />
                   <div>
-                    <p className="font-medium text-gray-900">{doc.nome}</p>
+                    <p className="font-medium text-foreground">{doc.nome}</p>
                     <div className="flex gap-2 mt-1">
                       <Badge variant="outline" className="text-xs">
                         {doc.tipo}
                       </Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {format(new Date(doc.data_upload), "dd/MM/yyyy")}
                       </span>
                     </div>

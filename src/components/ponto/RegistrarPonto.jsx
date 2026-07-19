@@ -217,8 +217,8 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   <div>
-                    <p className="font-semibold text-gray-900">Último registro:</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-semibold text-foreground">Último registro:</p>
+                    <p className="text-sm text-muted-foreground">
                       {tiposLabel[ultimoPonto.tipo_registro] || ultimoPonto.tipo_registro} - {' '}
                       {new Date(ultimoPonto.data_hora).toLocaleTimeString('pt-BR')}
                     </p>
@@ -239,13 +239,13 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
             <CardContent>
               {localizacao ? (
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-700">{endereco}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-foreground">{endereco}</p>
+                  <p className="text-xs text-muted-foreground">
                     Lat: {localizacao.latitude.toFixed(6)}, Lon: {localizacao.longitude.toFixed(6)}
                   </p>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-gray-500">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                   <p className="text-sm">Obtendo localização...</p>
                 </div>
@@ -255,7 +255,7 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
 
           {/* Observações */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-foreground">
               Observações (opcional)
             </label>
             <Textarea
@@ -296,7 +296,7 @@ export default function RegistrarPonto({ isOpen, onClose, user, tecnico, ultimoP
             </div>
           )}
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-muted-foreground text-center">
             O registro de ponto captura sua localização para garantir autenticidade
           </p>
         </div>

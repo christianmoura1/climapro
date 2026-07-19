@@ -129,7 +129,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                   required={!formData.cliente_id}
                 />
                 {showSugestoes && clientesFiltrados.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {clientesFiltrados.map((cliente) => (
                       <div
                         key={cliente.id}
@@ -142,7 +142,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                   </div>
                 )}
                 {showSugestoes && buscaCliente.trim().length > 0 && clientesFiltrados.length === 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg px-3 py-2 text-sm text-gray-500">
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg px-3 py-2 text-sm text-muted-foreground">
                     Nenhum cliente encontrado
                   </div>
                 )}
@@ -180,7 +180,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                   ))}
                 </select>
               ) : (
-                <p className="text-sm text-gray-400 italic">Este cliente não possui estabelecimentos cadastrados. Cadastre na aba Clientes.</p>
+                <p className="text-sm text-muted-foreground italic">Este cliente não possui estabelecimentos cadastrados. Cadastre na aba Clientes.</p>
               )}
               {formData.estabelecimento_nome && (
                 <p className="text-xs text-indigo-600 font-medium">
@@ -282,7 +282,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
               />
               <label
                 htmlFor="foto-upload"
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50"
+                className="flex items-center gap-2 px-4 py-2 border border-border rounded-md cursor-pointer hover:bg-muted"
               >
                 <Upload className="w-4 h-4" />
                 {uploadingPhoto ? 'Enviando...' : 'Selecionar Foto'}
@@ -291,7 +291,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                 <img
                   src={formData.foto_url}
                   alt="Preview"
-                  className="w-20 h-20 object-cover rounded border-2 border-gray-200"
+                  className="w-20 h-20 object-cover rounded border-2 border-border"
                 />
               )}
             </div>

@@ -83,15 +83,15 @@ ClimaPro - Sistema de Gestão`
             <div key={orcamento.id} className="p-4 bg-white">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 text-lg mb-2">
+                  <h3 className="font-semibold text-foreground text-lg mb-2">
                     💰 Novo Orçamento Mensal Recebido
                   </h3>
-                  <div className="space-y-1 text-sm text-gray-600">
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p><strong>Valor:</strong> R$ {orcamento.valor_orcamento.toFixed(2)}</p>
                     <p><strong>Mês de Referência:</strong> {format(new Date(orcamento.mes_referencia), "MMMM/yyyy", { locale: ptBR })}</p>
                     <p><strong>Enviado em:</strong> {format(new Date(orcamento.data_envio), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                     {orcamento.observacoes && (
-                      <p className="mt-2 p-2 bg-gray-50 rounded"><strong>Observações:</strong> {orcamento.observacoes}</p>
+                      <p className="mt-2 p-2 bg-muted rounded"><strong>Observações:</strong> {orcamento.observacoes}</p>
                     )}
                   </div>
                 </div>

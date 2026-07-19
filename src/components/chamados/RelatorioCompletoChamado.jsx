@@ -410,27 +410,27 @@ ${empresa?.email_contato || ''}`
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Número do Chamado</p>
-                <p className="font-semibold text-gray-900">#{chamado.numero_chamado}</p>
+                <p className="text-sm text-muted-foreground">Número do Chamado</p>
+                <p className="font-semibold text-foreground">#{chamado.numero_chamado}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
                 <Badge className="bg-green-100 text-green-800">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   Finalizado
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Data de Abertura</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
+                <p className="text-sm text-muted-foreground">Data de Abertura</p>
+                <p className="font-semibold text-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
                   {formatarDataBrasil(chamado.created_date)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Data de Finalização</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
+                <p className="text-sm text-muted-foreground">Data de Finalização</p>
+                <p className="font-semibold text-foreground flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
                   {formatarDataBrasil(chamado.data_finalizacao)}
                 </p>
               </div>
@@ -445,20 +445,20 @@ ${empresa?.email_contato || ''}`
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Nome/Razão Social</p>
-                <p className="font-semibold text-gray-900">{cliente?.nome || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">Nome/Razão Social</p>
+                <p className="font-semibold text-foreground">{cliente?.nome || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Telefone</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400" />
+                <p className="text-sm text-muted-foreground">Telefone</p>
+                <p className="font-semibold text-foreground flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
                   {cliente?.telefone || 'N/A'}
                 </p>
               </div>
               <div className="md:col-span-2">
-                <p className="text-sm text-gray-500">Endereço</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-gray-400" />
+                <p className="text-sm text-muted-foreground">Endereço</p>
+                <p className="font-semibold text-foreground flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
                   {chamado.local || cliente?.endereco || 'N/A'}
                 </p>
               </div>
@@ -473,12 +473,12 @@ ${empresa?.email_contato || ''}`
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-500">Nome</p>
-                <p className="font-semibold text-gray-900">{tecnico?.nome || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">Nome</p>
+                <p className="font-semibold text-foreground">{tecnico?.nome || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Especialidade</p>
-                <p className="font-semibold text-gray-900 capitalize">{tecnico?.especialidade || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground">Especialidade</p>
+                <p className="font-semibold text-foreground capitalize">{tecnico?.especialidade || 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -488,26 +488,26 @@ ${empresa?.email_contato || ''}`
             <h3 className="text-lg font-semibold text-orange-900 mb-4">🛠️ Detalhes do Serviço</h3>
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-500 mb-2">Descrição do Problema</p>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-900">{chamado.descricao || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground mb-2">Descrição do Problema</p>
+                <div className="bg-muted p-4 rounded-lg">
+                  <p className="text-foreground">{chamado.descricao || 'N/A'}</p>
                 </div>
               </div>
 
               {chamado.observacoes_tecnico && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Observações do Técnico</p>
+                  <p className="text-sm text-muted-foreground mb-2">Observações do Técnico</p>
                   <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                    <p className="text-gray-900">{chamado.observacoes_tecnico}</p>
+                    <p className="text-foreground">{chamado.observacoes_tecnico}</p>
                   </div>
                 </div>
               )}
 
               {chamado.nome_cliente_confirmacao && (
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Atendimento acompanhado por</p>
-                  <p className="font-semibold text-gray-900 flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-400" />
+                  <p className="text-sm text-muted-foreground mb-2">Atendimento acompanhado por</p>
+                  <p className="font-semibold text-foreground flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
                     {chamado.nome_cliente_confirmacao}
                   </p>
                 </div>
@@ -528,10 +528,10 @@ ${empresa?.email_contato || ''}`
                     <img
                       src={url}
                       alt={`Foto ${index + 1}`}
-                      className="w-full h-auto rounded-lg border-2 border-gray-200 shadow-md cursor-pointer hover:scale-105 transition-transform"
+                      className="w-full h-auto rounded-lg border-2 border-border shadow-md cursor-pointer hover:scale-105 transition-transform"
                       onClick={() => window.open(url, '_blank')}
                     />
-                    <p className="text-xs text-gray-600 mt-1">Foto {index + 1}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Foto {index + 1}</p>
                   </div>
                 ))}
               </div>
@@ -673,15 +673,15 @@ ${empresa?.email_contato || ''}`
 
           {/* Assinatura */}
           {chamado.assinatura_cliente && (
-            <div className="bg-white border-2 border-gray-100 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">✍️ Assinatura do Cliente</h3>
+            <div className="bg-white border-2 border-border rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">✍️ Assinatura do Cliente</h3>
               <div className="text-center">
                 <img
                   src={chamado.assinatura_cliente}
                   alt="Assinatura do Cliente"
-                  className="max-w-sm mx-auto border-2 border-gray-300 rounded-lg p-4 bg-white"
+                  className="max-w-sm mx-auto border-2 border-border rounded-lg p-4 bg-white"
                 />
-                <p className="text-sm text-gray-600 mt-4">
+                <p className="text-sm text-muted-foreground mt-4">
                   Confirmo a realização do serviço conforme descrito acima.
                 </p>
               </div>

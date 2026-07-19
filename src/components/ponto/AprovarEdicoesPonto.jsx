@@ -109,11 +109,11 @@ export default function AprovarEdicoesPonto({ pontosPendentes, onFechar }) {
                         </Badge>
                       </div>
                       <div className="text-sm space-y-1">
-                        <p className="text-gray-600">
+                        <p className="text-muted-foreground">
                           <span className="font-semibold">Horário Atual:</span>{' '}
                           {format(new Date(ponto.data_hora), "HH:mm:ss", { locale: ptBR })}
                         </p>
-                        <p className="text-gray-600">
+                        <p className="text-muted-foreground">
                           <span className="font-semibold">Editado por:</span> {ponto.editado_por || 'Empresa'}
                         </p>
                       </div>

@@ -174,7 +174,7 @@ ClimaPro`
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-gray-700">
+            <p className="text-foreground">
               Evento criado com sucesso! Gostaria de abrir um chamado para esse compromisso?
             </p>
             <div className="flex gap-3 justify-end">

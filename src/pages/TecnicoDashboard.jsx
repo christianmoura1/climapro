@@ -214,10 +214,10 @@ export default function TecnicoDashboard() {
 
   if (!user || !tecnico) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -237,10 +237,10 @@ export default function TecnicoDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-foreground">
                 Olá, {tecnico.nome}! 👋
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {tecnico.especialidade} • Painel do Técnico
               </p>
             </div>
@@ -319,7 +319,7 @@ export default function TecnicoDashboard() {
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Chamados Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Chamados Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -331,7 +331,7 @@ export default function TecnicoDashboard() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Chamados Finalizados</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Chamados Finalizados</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -343,7 +343,7 @@ export default function TecnicoDashboard() {
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">PMOCs Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">PMOCs Ativos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -356,21 +356,21 @@ export default function TecnicoDashboard() {
           {/* New Ponto Eletrônico Status Card */}
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Status do Ponto</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Status do Ponto</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className={`text-3xl font-bold ${isClockedIn ? 'text-green-600' : 'text-gray-500'}`}>
+                <p className={`text-3xl font-bold ${isClockedIn ? 'text-green-600' : 'text-muted-foreground'}`}>
                   {isClockedIn ? 'Online' : 'Offline'}
                 </p>
                 {isClockedIn ? (
                   <TrendingUp className="w-8 h-8 text-green-500" />
                 ) : (
-                  <TrendingDown className="w-8 h-8 text-gray-400" />
+                  <TrendingDown className="w-8 h-8 text-muted-foreground" />
                 )}
               </div>
               {ultimoPonto && (
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   {isClockedIn 
                     ? `Entrada: ${new Date(ultimoPonto.data_hora).toLocaleTimeString()}`
                     : `Última Saída: ${new Date(ultimoPonto.data_hora_saida).toLocaleTimeString()}`
@@ -378,7 +378,7 @@ export default function TecnicoDashboard() {
                 </p>
               )}
               {!ultimoPonto && (
-                <p className="text-xs text-gray-500 mt-1">Nenhum ponto registrado hoje.</p>
+                <p className="text-xs text-muted-foreground mt-1">Nenhum ponto registrado hoje.</p>
               )}
             </CardContent>
           </Card>
@@ -386,7 +386,7 @@ export default function TecnicoDashboard() {
           {/* Original Saldo Card, adjusted for grid layout */}
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Saldo Disponível</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Disponível</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
@@ -401,14 +401,14 @@ export default function TecnicoDashboard() {
 
         {/* Tabs de navegação */}
         <div className="mb-6">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-border">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setAbaSelecionada('chamados')}
                 className={`${
                   abaSelecionada === 'chamados'
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
               >
                 <ClipboardList className="w-4 h-4" />
@@ -419,7 +419,7 @@ export default function TecnicoDashboard() {
                 className={`${
                   abaSelecionada === 'pmocs'
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
               >
                 <Calendar className="w-4 h-4" />
@@ -430,7 +430,7 @@ export default function TecnicoDashboard() {
                 className={`${
                   abaSelecionada === 'financeiro'
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
               >
                 <DollarSign className="w-4 h-4" />

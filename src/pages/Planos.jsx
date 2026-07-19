@@ -28,7 +28,7 @@ const planosDisponiveis = [
     preco: "Gratuito",
     valor: 0,
     cor: "bg-gray-500",
-    corClara: "bg-gray-100",
+    corClara: "bg-muted",
     icone: Zap,
     limites: {
       tecnicos: 1,
@@ -248,8 +248,8 @@ export default function PlanosPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Planos e Assinaturas</h1>
-            <p className="text-gray-600 mt-1">Escolha o melhor plano para sua empresa</p>
+            <h1 className="text-3xl font-bold text-foreground">Planos e Assinaturas</h1>
+            <p className="text-muted-foreground mt-1">Escolha o melhor plano para sua empresa</p>
           </div>
         </div>
 
@@ -262,10 +262,10 @@ export default function PlanosPage() {
                   <AlertTriangle className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  <h3 className="text-lg font-bold text-foreground mb-2">
                     ⚠️ Limite do Plano Atingido!
                   </h3>
-                  <p className="text-gray-700 mb-4">
+                  <p className="text-foreground mb-4">
                     {atingiuLimiteChamados && `Você atingiu o limite de ${limitesChamados} chamados/mês. `}
                     {atingiuLimiteTecnicos && `Você atingiu o limite de ${limitesTecnicos} técnicos. `}
                     <strong>Faça upgrade para continuar utilizando o ClimaPro!</strong>
@@ -300,20 +300,20 @@ export default function PlanosPage() {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Plano</p>
+                  <p className="text-sm text-muted-foreground mb-1">Plano</p>
                   <Badge className={`${planoAtual.cor} text-white text-lg px-4 py-1`}>
                     {planoAtual.nome}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Chamados este mês</p>
-                  <p className={`text-2xl font-bold ${atingiuLimiteChamados ? 'text-red-600' : 'text-gray-900'}`}>
+                  <p className="text-sm text-muted-foreground mb-1">Chamados este mês</p>
+                  <p className={`text-2xl font-bold ${atingiuLimiteChamados ? 'text-red-600' : 'text-foreground'}`}>
                     {chamadosUsados} / {limitesChamados === 999999 ? '∞' : limitesChamados}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-1">Técnicos</p>
-                  <p className={`text-2xl font-bold ${atingiuLimiteTecnicos ? 'text-red-600' : 'text-gray-900'}`}>
+                  <p className="text-sm text-muted-foreground mb-1">Técnicos</p>
+                  <p className={`text-2xl font-bold ${atingiuLimiteTecnicos ? 'text-red-600' : 'text-foreground'}`}>
                     {tecnicosUsados} / {limitesTecnicos === 999999 ? '∞' : limitesTecnicos}
                   </p>
                 </div>
@@ -360,29 +360,29 @@ export default function PlanosPage() {
                     )}
                   </div>
                   <CardTitle className="text-2xl mt-4">{plano.nome}</CardTitle>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">
+                  <p className="text-3xl font-bold text-foreground mt-2">
                     {plano.preco}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                   {/* Limites */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-sm text-gray-700 mb-3">Limites</h4>
+                  <div className="bg-muted rounded-lg p-4">
+                    <h4 className="font-semibold text-sm text-foreground mb-3">Limites</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Técnicos:</span>
+                        <span className="text-muted-foreground">Técnicos:</span>
                         <span className="font-semibold">{plano.limites.tecnicos}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Clientes:</span>
+                        <span className="text-muted-foreground">Clientes:</span>
                         <span className="font-semibold">{plano.limites.clientes}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Empresas:</span>
+                        <span className="text-muted-foreground">Empresas:</span>
                         <span className="font-semibold">{plano.limites.empresas}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Chamados:</span>
+                        <span className="text-muted-foreground">Chamados:</span>
                         <span className="font-semibold">{plano.limites.chamados}</span>
                       </div>
                     </div>
@@ -393,14 +393,14 @@ export default function PlanosPage() {
                     {plano.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2">
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{feature}</span>
+                        <span className="text-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
                   {/* Módulos */}
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-2">Módulos Inclusos:</h4>
+                    <h4 className="font-semibold text-sm text-foreground mb-2">Módulos Inclusos:</h4>
                     <div className="flex flex-wrap gap-2">
                       {plano.modulos.map((modulo, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
@@ -427,7 +427,7 @@ export default function PlanosPage() {
                         <Zap className="w-4 h-4 mr-2" />
                         {isSugerido ? 'Fazer Upgrade Agora' : 'Solicitar Upgrade'}
                       </Button>
-                      <p className="text-xs text-center text-gray-500">
+                      <p className="text-xs text-center text-muted-foreground">
                         Entraremos em contato para finalizar
                       </p>
                     </div>
@@ -445,25 +445,25 @@ export default function PlanosPage() {
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                 <MessageCircle className="w-8 h-8 text-green-500" />
                 <div>
                   <p className="font-semibold">WhatsApp</p>
-                  <p className="text-sm text-gray-600">Contato direto com admin</p>
+                  <p className="text-sm text-muted-foreground">Contato direto com admin</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                 <CreditCard className="w-8 h-8 text-blue-500" />
                 <div>
                   <p className="font-semibold">PIX</p>
-                  <p className="text-sm text-gray-600">Pagamento instantâneo</p>
+                  <p className="text-sm text-muted-foreground">Pagamento instantâneo</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
                 <CreditCard className="w-8 h-8 text-purple-500" />
                 <div>
                   <p className="font-semibold">Cartão de Crédito</p>
-                  <p className="text-sm text-gray-600">Recorrência mensal</p>
+                  <p className="text-sm text-muted-foreground">Recorrência mensal</p>
                 </div>
               </div>
             </div>

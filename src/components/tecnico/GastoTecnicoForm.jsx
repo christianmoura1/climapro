@@ -116,7 +116,7 @@ export default function GastoTecnicoForm({ user, tecnico, chamados, onSubmit, on
 
       <div className="space-y-2">
         <Label>Comprovante (Foto/PDF)</Label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+        <div className="border-2 border-dashed border-border rounded-lg p-4">
           <input
             type="file"
             accept="image/*,application/pdf"
@@ -129,8 +129,8 @@ export default function GastoTecnicoForm({ user, tecnico, chamados, onSubmit, on
             htmlFor="comprovante-upload"
             className="flex flex-col items-center justify-center cursor-pointer"
           >
-            <Upload className="w-6 h-6 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600">
+            <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+            <span className="text-sm text-muted-foreground">
               {uploadingComprovante ? 'Fazendo upload...' : 
                formData.comprovante_url ? 'Comprovante anexado ✓' : 
                'Clique para anexar comprovante'}
