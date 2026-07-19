@@ -208,7 +208,7 @@ export default function SetupInicial() {
         <CardContent className="pt-8 pb-6">
           {/* Progress Steps */}
           <div className="flex justify-between mb-8 relative">
-            <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 -z-10">
+            <div className="absolute top-5 left-0 right-0 h-1 bg-muted -z-10">
               <div
                 className="h-full bg-blue-600 transition-all duration-300"
                 style={{ width: `${((step - 1) / 2) * 100}%` }}
@@ -218,7 +218,7 @@ export default function SetupInicial() {
             {[1, 2, 3].map((num) => (
               <div key={num} className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                  step >= num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-muted-foreground'
+                  step >= num ? 'bg-blue-600 text-white' : 'bg-muted text-muted-foreground'
                 }`}>
                   {step > num ? <CheckCircle className="w-6 h-6" /> : num}
                 </div>

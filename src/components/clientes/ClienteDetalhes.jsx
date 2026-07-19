@@ -284,7 +284,7 @@ export default function ClienteDetalhes({
               </CardHeader>
               <CardContent className="p-6">
                 {equipamentos.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground"><Cpu className="w-12 h-12 text-gray-300 mx-auto mb-4" /><p>Nenhum equipamento cadastrado</p></div>
+                  <div className="text-center py-8 text-muted-foreground"><Cpu className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" /><p>Nenhum equipamento cadastrado</p></div>
                 ) : (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {equipamentos.map((equipamento) => (

@@ -203,15 +203,15 @@ export default function MeusPMOCs({ pmocs, clientes }) {
         <CardContent className="p-0">
           {pmocsFiltrados.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <AlertCircle className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
               <p>Nenhum PMOC encontrado com os filtros selecionados</p>
             </div>
           ) : (
             <div className="divide-y">
               {pmocsFiltrados.map((pmoc) => {
                 const cliente = clientes.find(c => c.id === pmoc.cliente_id);
-                const podeExecutar = pmoc.status === 'ativo' || pmoc.status === 'aguardando_execucao' || pmoc.status === 'reaberto';
-                
+                const podeExecutar = pmoc.status === 'aguardando_execucao' || pmoc.status === 'reaberto';
+
                 return (
                   <div key={pmoc.id} className="p-4 hover:bg-muted">
                     <div className="flex justify-between items-start">
@@ -219,19 +219,27 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                         <div className="flex items-center gap-2 mb-2">
                           <p className="font-semibold text-foreground">PMOC {pmoc.periodicidade}</p>
                           <Badge className={
-                            pmoc.status === 'ativo' || pmoc.status === 'aguardando_execucao' ? 'bg-green-100 text-green-800' :
+                            pmoc.status === 'aguardando_execucao' ? 'bg-blue-100 text-blue-800' :
+                            pmoc.status === 'em_execucao' ? 'bg-amber-100 text-amber-800' :
                             pmoc.status === 'aguardando_aprovacao_empresa' ? 'bg-orange-100 text-orange-800' :
+                            pmoc.status === 'aguardando_validacao_cliente' ? 'bg-yellow-100 text-yellow-800' :
                             pmoc.status === 'reaberto' ? 'bg-red-100 text-red-800' :
-                            pmoc.status === 'pausado' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-muted text-foreground'
+                            pmoc.status === 'pausado' ? 'bg-muted text-foreground' :
+                            pmoc.status === 'concluido' ? 'bg-emerald-100 text-emerald-800' :
+                            'bg-muted text-muted-foreground'
                           }>
                             {pmoc.status === 'aguardando_execucao' ? 'Aguardando Execução' :
+                             pmoc.status === 'em_execucao' ? 'Em Execução' :
                              pmoc.status === 'aguardando_aprovacao_empresa' ? 'Aguardando Aprovação' :
+                             pmoc.status === 'aguardando_validacao_cliente' ? 'Aguardando Cliente' :
                              pmoc.status === 'reaberto' ? 'Reaberto - Necessita Correção' :
+                             pmoc.status === 'concluido' ? 'Concluído' :
+                             pmoc.status === 'cancelado' ? 'Cancelado' :
+                             pmoc.status === 'pausado' ? 'Pausado' :
                              pmoc.status}
                           </Badge>
                         </div>
-                        
+
                         {cliente && (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                             <User className="w-4 h-4" />

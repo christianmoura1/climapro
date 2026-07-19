@@ -447,7 +447,7 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                       className={`px-3 py-1.5 rounded-t text-sm font-medium transition-colors flex items-center gap-1 ${
                         abaAtiva === idx
                           ? 'bg-white border border-b-white text-blue-700 border-border'
-                          : 'bg-muted text-muted-foreground hover:bg-gray-200'
+                          : 'bg-muted text-muted-foreground hover:bg-muted'
                       }`}
                     >
                       {est.nome}

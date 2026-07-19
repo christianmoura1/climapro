@@ -18,7 +18,7 @@ export default function ListaNotasFiscais({ notas, clientes }) {
     return (
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
-          <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <FileText className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
           <p className="text-muted-foreground text-lg font-medium mb-2">Nenhuma nota fiscal emitida ainda</p>
           <p className="text-muted-foreground text-sm">Clique em "Emitir Nota" para começar</p>
         </CardContent>

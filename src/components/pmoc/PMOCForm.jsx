@@ -393,7 +393,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
               ))}
               {formData.atividades.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />
                   <p>Nenhuma atividade no checklist</p>
                   <p className="text-sm mt-1">Clique em "Adicionar Atividade" para começar</p>
                 </div>

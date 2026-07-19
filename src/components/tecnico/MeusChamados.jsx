@@ -187,7 +187,7 @@ ClimaPro - Sistema de Gestão`
         <CardContent className="p-6">
           {chamados.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <AlertCircle className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
               <p>Nenhum chamado atribuído no momento</p>
             </div>
           ) : visualizacao === 'kanban' ? (

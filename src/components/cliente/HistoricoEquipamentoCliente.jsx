@@ -247,7 +247,7 @@ export default function HistoricoEquipamentoCliente({
             {chamados.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <Calendar className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
                   <p>Nenhum serviço registrado para este equipamento ainda</p>
                 </div>
               </div>

@@ -116,7 +116,7 @@ export default function DocumentosCliente({ cliente }) {
         {/* Lista de Documentos */}
         {documentos.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <FileText className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <FileText className="w-12 h-12 mx-auto mb-2 text-muted-foreground/40" />
             <p>Nenhum documento cadastrado ainda</p>
           </div>
         ) : (
