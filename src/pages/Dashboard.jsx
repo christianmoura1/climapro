@@ -231,7 +231,7 @@ export default function Dashboard() {
           />
           <StatsCard
             title="PMOCs Ativos"
-            value={pmocs.filter(p => p.status === 'ativo').length}
+            value={pmocs.filter(p => !['concluido', 'cancelado'].includes(p.status)).length}
             icon={Calendar}
             bgColor="bg-blue-500"
             trend={`${pmocs.length} total`}
