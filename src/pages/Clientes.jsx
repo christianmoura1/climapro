@@ -15,6 +15,7 @@ import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoCh
 import ChamadoForm from "../components/chamados/ChamadoForm";
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
 import { PageLoading } from "@/components/ui/page-loading";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -515,16 +516,16 @@ ${mensagemParaEnviar}`);
             <p className="text-muted-foreground mt-4">Carregando clientes...</p>
           </div>
         ) : filteredClientes.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-muted-foreground">Nenhum cliente cadastrado ainda.</p>
-            <Button 
-              onClick={() => setShowForm(true)}
-              className="mt-4 bg-green-600 hover:bg-green-700"
-            >
-              Cadastrar Primeiro Cliente
-            </Button>
-          </div>
+          <EmptyState
+            icon={Building2}
+            title="Nenhum cliente cadastrado"
+            description="Cadastre o primeiro cliente para começar a abrir chamados e PMOCs para ele."
+            action={
+              <Button onClick={() => setShowForm(true)} className="bg-green-600 hover:bg-green-700">
+                Cadastrar Primeiro Cliente
+              </Button>
+            }
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClientes.map((cliente) => {

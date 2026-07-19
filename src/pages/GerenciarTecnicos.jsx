@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowLeft, Plus, Ban, CheckCircle, UserCog, DollarSign } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -584,9 +585,11 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           </CardHeader>
           <CardContent className="p-0">
             {tecnicos.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                Nenhum técnico cadastrado ainda
-              </div>
+              <EmptyState
+                icon={UserCog}
+                title="Nenhum técnico cadastrado"
+                description="Cadastre sua equipe técnica para começar a atribuir chamados e PMOCs."
+              />
             ) : (
               <div className="divide-y">
                 {tecnicos.map((tecnico) => (
