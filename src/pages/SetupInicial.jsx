@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,55 +82,21 @@ export default function SetupInicial() {
       console.log("Iniciando setup com dados:", { empresaData, tecnicoData, clienteData });
 
       try {
-        // 1. Criar empresa
-        const empresaSlug = empresaData.nome
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
+        // 1. Criar empresa + vincular o usuário atual como admin_empresa,
+        // atomicamente, via função de banco (evita a referência circular de
+        // RLS: o usuário só teria permissão de ler/gravar depois de já ter
+        // uma empresa vinculada ao perfil).
+        console.log("Criando empresa:", empresaData.nome);
 
-        console.log("Criando empresa com slug:", empresaSlug);
-
-        const empresa = await base44.entities.Empresa.create({
-          nome: empresaData.nome,
-          slug_empresa: empresaSlug,
-          cnpj: empresaData.cnpj,
-          telefone: empresaData.telefone,
-          endereco: empresaData.endereco,
-          plano: "free",
-          limite_chamados_mes: 5,
-          limite_tecnicos: 1,
-          limite_clientes: 1, // This limit should be on the company, not for creation here
-          limite_empresas: 1, // This limit should be on the company, not for creation here
-          status: "ativa",
-          status_pagamento: "ativo",
-          modulos_ativos: {
-            chamados: true,
-            clientes: true,
-            equipamentos: true,
-            tecnicos: true,
-            agenda: true, // This is the change: adding agenda module
-            pmoc: true,
-            financeiro: false,
-            notas_fiscais: false
-          }
+        const { data: empresa, error: empresaError } = await supabase.rpc("criar_empresa_inicial", {
+          p_nome: empresaData.nome,
+          p_cnpj: empresaData.cnpj,
+          p_telefone: empresaData.telefone,
+          p_endereco: empresaData.endereco,
         });
+        if (empresaError) throw empresaError;
 
         console.log("Empresa criada:", empresa);
-
-        // Aguardar 1 segundo antes de continuar
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // 2. Atualizar usuário atual com empresa_id
-        console.log("Atualizando usuário com empresa_id:", empresa.id);
-        await base44.auth.updateMe({
-          empresa_id: empresa.id,
-          tipo_usuario: 'admin_empresa'
-        });
-
-        // Aguardar mais 1 segundo
-        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // 3. Criar técnico
         console.log("Criando técnico");

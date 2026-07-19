@@ -71,7 +71,7 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
     equipamentos_ids: [],
     periodicidade: "mensal",
     data_inicio: new Date().toISOString().split('T')[0],
-    status: "ativo",
+    status: "aguardando_execucao",
     atividades: CHECKLISTS_PADRAO.mensal,
     observacoes: ""
   });
@@ -328,9 +328,11 @@ export default function PMOCForm({ pmoc, clientes, tecnicos, equipamentos, onSub
                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <option value="ativo">Ativo</option>
+                <option value="aguardando_execucao">Aguardando execução</option>
+                <option value="em_execucao">Em execução</option>
                 <option value="pausado">Pausado</option>
-                <option value="concluido">Concluido</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
               </select>
             </div>
           </div>
