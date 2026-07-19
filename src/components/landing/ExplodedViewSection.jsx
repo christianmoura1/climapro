@@ -1,6 +1,6 @@
 import React from "react";
 import * as THREE from "three";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, useGLTF } from "@react-three/drei";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -347,6 +347,19 @@ function PartModel({ partKey }) {
   );
 }
 
+// Expõe o invalidate() do R3F para o ScrollTrigger (que vive fora do Canvas):
+// com frameloop="demand", só renderizamos quando o scroll de fato muda.
+function InvalidateBridge({ apiRef }) {
+  const invalidate = useThree((state) => state.invalidate);
+  React.useEffect(() => {
+    apiRef.current = invalidate;
+    return () => {
+      apiRef.current = null;
+    };
+  }, [apiRef, invalidate]);
+  return null;
+}
+
 function AcUnitScene({ progressRef }) {
   const partRefs = React.useRef({});
   const assemblyRef = React.useRef(null);
@@ -390,36 +403,41 @@ function AcUnitScene({ progressRef }) {
 export default function ExplodedViewSection() {
   const sectionRef = React.useRef(null);
   const progressRef = React.useRef({ raw: 0 });
+  const invalidateRef = React.useRef(null);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const activeIndexRef = React.useRef(0);
 
   useGSAP(() => {
-    const trigger = ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top top",
-      end: () => `+=${window.innerHeight * 6}`,
-      pin: true,
-      invalidateOnRefresh: true,
-      scrub: 1,
-      onUpdate: (self) => {
-        progressRef.current.raw = self.progress;
-        const explodedT = explodeGlobal(self.progress);
-        const newIndex = Math.min(PARTS.length - 1, Math.floor(explodedT * PARTS.length));
-        if (newIndex !== activeIndexRef.current) {
-          activeIndexRef.current = newIndex;
-          setActiveIndex(newIndex);
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top top",
+        end: () => `+=${window.innerHeight * 4}`,
+        pin: true,
+        invalidateOnRefresh: true,
+        scrub: 1,
+        onUpdate: (self) => {
+          progressRef.current.raw = self.progress;
+          invalidateRef.current?.();
+          const explodedT = explodeGlobal(self.progress);
+          const newIndex = Math.min(PARTS.length - 1, Math.floor(explodedT * PARTS.length));
+          if (newIndex !== activeIndexRef.current) {
+            activeIndexRef.current = newIndex;
+            setActiveIndex(newIndex);
+          }
         }
-      }
+      });
     });
-    return () => trigger.kill();
+    return () => mm.revert();
   }, { scope: sectionRef });
 
   return (
     <section ref={sectionRef} className="relative h-screen w-full overflow-hidden bg-gradient-to-b from-background to-muted/40">
-      <div className="absolute inset-0 grid lg:grid-cols-[minmax(0,420px)_1fr] items-center">
-        <div className="relative z-10 px-6 sm:px-10 lg:pl-16 lg:pr-8 pointer-events-none">
+      <div className="absolute inset-0 grid grid-rows-[auto_1fr] lg:grid-rows-1 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-center">
+        <div className="relative z-10 px-6 pt-20 sm:px-10 lg:pt-0 lg:pl-16 lg:pr-8 pointer-events-none">
           <p className="text-sm font-semibold text-blue-600 mb-3 tracking-wide uppercase">Como funciona por dentro</p>
-          <div className="relative h-[240px]">
+          <div className="relative h-[200px] lg:h-[240px]">
             {PARTS.map((part, i) => (
               <div
                 key={part.key}
@@ -447,7 +465,13 @@ export default function ExplodedViewSection() {
         </div>
 
         <div className="relative h-full w-full">
-          <Canvas camera={{ position: [0, 0.3, 7.5], fov: 32 }} dpr={[1, 2]} gl={{ antialias: true }}>
+          <Canvas
+            camera={{ position: [0, 0.3, 7.5], fov: 32 }}
+            dpr={[1, 1.5]}
+            frameloop="demand"
+            gl={{ antialias: false, powerPreference: "high-performance" }}
+          >
+            <InvalidateBridge apiRef={invalidateRef} />
             <ambientLight intensity={0.6} />
             <directionalLight position={[4, 5, 6]} intensity={1.1} />
             <directionalLight position={[-4, -2, -4]} intensity={0.35} color="#818cf8" />

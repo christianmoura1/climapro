@@ -47,58 +47,39 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import React from 'react';
 import LandingPage from './pages/LandingPage';
-import Dashboard from './pages/Dashboard';
-import Chamados from './pages/Chamados';
-import Clientes from './pages/Clientes';
-import PMOC from './pages/PMOC';
-import Financeiro from './pages/Financeiro';
-import Welcome from './pages/Welcome';
-import AdminPanel from './pages/AdminPanel';
-import SetupInicial from './pages/SetupInicial';
-import Planos from './pages/Planos';
-import Equipamentos from './pages/Equipamentos';
-import TecnicoDashboard from './pages/TecnicoDashboard';
-import GerenciarTecnicos from './pages/GerenciarTecnicos';
-import ClienteDashboard from './pages/ClienteDashboard';
-import CompanySettings from './pages/CompanySettings';
-import NotasFiscais from './pages/NotasFiscais';
-import LegacyFallback from './pages/LegacyFallback';
-import ValorTecnicos from './pages/ValorTecnicos';
-import Agenda from './pages/Agenda';
-import PontoEletronico from './pages/PontoEletronico';
-import EquipamentoDetalhes from './pages/EquipamentoDetalhes';
-import AlterarSenha from './pages/AlterarSenha';
-import InitialChoice from './pages/InitialChoice';
-import Login from './pages/Login';
 import __Layout from './Layout.jsx';
 
-
+// Code-splitting por página: cada rota vira um chunk próprio, então o
+// visitante só baixa o código da página que está abrindo. A LandingPage
+// (porta de entrada) permanece no bundle inicial para pintar instantâneo.
+// O <React.Suspense> que cobre essas páginas está em App.jsx.
 export const PAGES = {
     "LandingPage": LandingPage,
-    "Dashboard": Dashboard,
-    "Chamados": Chamados,
-    "Clientes": Clientes,
-    "PMOC": PMOC,
-    "Financeiro": Financeiro,
-    "Welcome": Welcome,
-    "AdminPanel": AdminPanel,
-    "SetupInicial": SetupInicial,
-    "Planos": Planos,
-    "Equipamentos": Equipamentos,
-    "TecnicoDashboard": TecnicoDashboard,
-    "GerenciarTecnicos": GerenciarTecnicos,
-    "ClienteDashboard": ClienteDashboard,
-    "CompanySettings": CompanySettings,
-    "NotasFiscais": NotasFiscais,
-    "LegacyFallback": LegacyFallback,
-    "ValorTecnicos": ValorTecnicos,
-    "Agenda": Agenda,
-    "PontoEletronico": PontoEletronico,
-    "EquipamentoDetalhes": EquipamentoDetalhes,
-    "AlterarSenha": AlterarSenha,
-    "InitialChoice": InitialChoice,
-    "Login": Login,
+    "Dashboard": React.lazy(() => import('./pages/Dashboard')),
+    "Chamados": React.lazy(() => import('./pages/Chamados')),
+    "Clientes": React.lazy(() => import('./pages/Clientes')),
+    "PMOC": React.lazy(() => import('./pages/PMOC')),
+    "Financeiro": React.lazy(() => import('./pages/Financeiro')),
+    "Welcome": React.lazy(() => import('./pages/Welcome')),
+    "AdminPanel": React.lazy(() => import('./pages/AdminPanel')),
+    "SetupInicial": React.lazy(() => import('./pages/SetupInicial')),
+    "Planos": React.lazy(() => import('./pages/Planos')),
+    "Equipamentos": React.lazy(() => import('./pages/Equipamentos')),
+    "TecnicoDashboard": React.lazy(() => import('./pages/TecnicoDashboard')),
+    "GerenciarTecnicos": React.lazy(() => import('./pages/GerenciarTecnicos')),
+    "ClienteDashboard": React.lazy(() => import('./pages/ClienteDashboard')),
+    "CompanySettings": React.lazy(() => import('./pages/CompanySettings')),
+    "NotasFiscais": React.lazy(() => import('./pages/NotasFiscais')),
+    "LegacyFallback": React.lazy(() => import('./pages/LegacyFallback')),
+    "ValorTecnicos": React.lazy(() => import('./pages/ValorTecnicos')),
+    "Agenda": React.lazy(() => import('./pages/Agenda')),
+    "PontoEletronico": React.lazy(() => import('./pages/PontoEletronico')),
+    "EquipamentoDetalhes": React.lazy(() => import('./pages/EquipamentoDetalhes')),
+    "AlterarSenha": React.lazy(() => import('./pages/AlterarSenha')),
+    "InitialChoice": React.lazy(() => import('./pages/InitialChoice')),
+    "Login": React.lazy(() => import('./pages/Login')),
 }
 
 export const pagesConfig = {
