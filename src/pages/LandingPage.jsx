@@ -384,14 +384,14 @@ export default function LandingPage() {
                 <Snowflake className="w-6 h-6" />
                 <span className="font-bold text-lg">ClimaPro</span>
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-gray-400 text-sm">
                 O CRM completo para empresas de refrigeração e climatização
               </p>
             </div>
 
             <div>
               <h5 className="font-semibold mb-4">Produto</h5>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-sm text-gray-400">
                 <li>Funcionalidades</li>
                 <li>Planos e Preços</li>
                 <li>Demonstração</li>
@@ -400,7 +400,7 @@ export default function LandingPage() {
 
             <div>
               <h5 className="font-semibold mb-4">Empresa</h5>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-sm text-gray-400">
                 <li>Sobre Nós</li>
                 <li>Contato</li>
                 <li>Blog</li>
@@ -409,15 +409,15 @@ export default function LandingPage() {
 
             <div>
               <h5 className="font-semibold mb-4">Legal</h5>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <ul className="space-y-2 text-sm text-gray-400">
                 <li>Política de Privacidade</li>
                 <li>Termos de Uso</li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2025 ClimaPro. Todos os direitos reservados.</p>
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; {new Date().getFullYear()} ClimaPro. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
