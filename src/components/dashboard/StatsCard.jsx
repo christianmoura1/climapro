@@ -4,21 +4,21 @@ import { TrendingUp } from "lucide-react";
 
 export default function StatsCard({ title, value, icon: Icon, bgColor, trend }) {
   return (
-    <Card className="relative overflow-hidden border-none shadow-lg">
+    <Card className="relative overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow">
       <CardHeader className="p-6">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+            <p className="text-3xl font-bold text-foreground tracking-tight">{value}</p>
           </div>
-          <div>
-            <Icon className={`w-6 h-6 ${bgColor.replace('bg-', 'text-')}`} />
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${bgColor}/10`}>
+            <Icon className={`w-5 h-5 ${bgColor.replace('bg-', 'text-')}`} />
           </div>
         </div>
         {trend && (
           <div className="flex items-center mt-3 text-sm">
-            <TrendingUp className="w-4 h-4 mr-1 text-green-500" />
-            <span className="text-gray-600">{trend}</span>
+            <TrendingUp className="w-4 h-4 mr-1 text-emerald-500" />
+            <span className="text-muted-foreground">{trend}</span>
           </div>
         )}
       </CardHeader>
