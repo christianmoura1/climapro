@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { invokeEdgeFunction } from "@/lib/edgeFunctions";
+import { invokeEdgeFunction, BUILD_TAG } from "@/lib/edgeFunctions";
 import { toast } from "@/components/ui/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -525,6 +525,9 @@ export default function PlanosPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Carimbo de versão — para diagnosticar qual build está em produção */}
+        <p className="text-center text-xs text-muted-foreground mt-6">build {BUILD_TAG}</p>
       </div>
     </div>
   );

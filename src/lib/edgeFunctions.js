@@ -1,7 +1,7 @@
 import { supabase } from "@/api/supabaseClient";
 
 // Versão do helper — aparece nos erros para sabermos qual build está rodando.
-const BUILD_TAG = "EF2";
+export const BUILD_TAG = "EF3";
 
 // Headers HTTP só aceitam ISO-8859-1; um único caractere invisível fora disso
 // (espaço não separável, zero-width space vindo de copy/paste de chave) faz o
@@ -25,9 +25,14 @@ function limparHeader(nome, valor, sujos) {
 // supabase.functions.invoke() — a lógica de headers do SDK para o novo
 // formato de chave (sb_publishable_...) dispara o erro de ByteString acima.
 export async function invokeEdgeFunction(name, body) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // getSession pode disparar refresh de token (rede) — dentro do try para
+  // que interceptadores de fetch (antivírus etc.) também sejam tagueados.
+  let session = null;
+  try {
+    ({ data: { session } } = await supabase.auth.getSession());
+  } catch (sessionError) {
+    throw new Error(`[${BUILD_TAG}] Falha ao obter a sessão: ${sessionError.message}`);
+  }
   const baseUrl = (import.meta.env.VITE_SUPABASE_URL || "").trim();
   const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
