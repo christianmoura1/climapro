@@ -105,6 +105,11 @@ export default function EquipamentosPage() {
     onSuccess: () => {
       queryClient.invalidateQueries(['equipamentos']);
       setShowForm(false);
+      toast({ description: "✅ Equipamento cadastrado com sucesso!", variant: "success" });
+    },
+    onError: (error) => {
+      console.error("Erro ao cadastrar equipamento:", error);
+      toast({ description: `❌ Erro ao salvar: ${error.message || 'tente novamente.'}`, variant: "destructive" });
     }
   });
 
@@ -114,6 +119,11 @@ export default function EquipamentosPage() {
       queryClient.invalidateQueries(['equipamentos']);
       setShowForm(false);
       setEditingEquipamento(null);
+      toast({ description: "✅ Equipamento atualizado com sucesso!", variant: "success" });
+    },
+    onError: (error) => {
+      console.error("Erro ao atualizar equipamento:", error);
+      toast({ description: `❌ Erro ao salvar: ${error.message || 'tente novamente.'}`, variant: "destructive" });
     }
   });
 
