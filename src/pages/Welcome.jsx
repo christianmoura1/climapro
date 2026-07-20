@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from "react";
+import { LogoMark } from "@/components/ui/logo";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Snowflake } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Welcome() {
@@ -169,18 +169,7 @@ export default function Welcome() {
         background: 'linear-gradient(135deg, #EBF4FF 0%, #E9D5FF 100%)'
       }}>
         <div style={{ textAlign: 'center', padding: '20px' }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Snowflake style={{ width: '32px', height: '32px', color: 'white' }} />
-          </div>
+          <LogoMark className="w-16 h-16 mx-auto mb-4" />
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
             ClimaPro
           </h2>
@@ -200,18 +189,7 @@ export default function Welcome() {
         background: 'linear-gradient(135deg, #EBF4FF 0%, #E9D5FF 100%)'
       }}>
         <div style={{ textAlign: 'center', padding: '20px' }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Snowflake style={{ width: '32px', height: '32px', color: 'white' }} />
-          </div>
+          <LogoMark className="w-16 h-16 mx-auto mb-4" />
           <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
             ClimaPro
           </h2>

@@ -1,4 +1,5 @@
 import React from "react";
+import { LogoMark } from "@/components/ui/logo";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -9,8 +10,7 @@ import {
   CalendarCheck,
   DollarSign,
   FileText,
-  CheckCircle,
-  Snowflake
+  CheckCircle
 } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -312,7 +312,7 @@ export default function HowItWorksSection() {
               <span className="w-3 h-3 rounded-full bg-amber-400" />
               <span className="w-3 h-3 rounded-full bg-emerald-400" />
               <span className="ml-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <Snowflake className="w-3 h-3 text-blue-600" /> ClimaPro
+                <LogoMark className="w-3.5 h-3.5" /> ClimaPro
               </span>
             </div>
             <div className="relative min-h-[330px] sm:min-h-[350px]">
