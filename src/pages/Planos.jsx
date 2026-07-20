@@ -198,6 +198,21 @@ export default function PlanosPage() {
 
   const [processandoPlano, setProcessandoPlano] = useState(null);
 
+  // supabase-js não expõe a mensagem de erro real da Edge Function em
+  // error.message (só "Edge Function returned a non-2xx status code") — o
+  // corpo JSON com o motivo real fica em error.context (a Response crua).
+  const extrairErroDaFunction = async (error) => {
+    if (error?.context?.json) {
+      try {
+        const body = await error.context.json();
+        if (body?.error) return body.error;
+      } catch {
+        // corpo não era JSON — segue com a mensagem genérica
+      }
+    }
+    return error?.message || 'tente novamente.';
+  };
+
   // Assinatura via Stripe Checkout. Se a empresa já tem assinatura ativa,
   // upgrades/downgrades/cancelamento passam pelo Portal de Cobrança (evita
   // criar uma segunda assinatura e cobrar em dobro).
@@ -224,8 +239,9 @@ export default function PlanosPage() {
       if (error) throw error;
       window.location.href = data.url;
     } catch (error) {
-      console.error('Erro ao iniciar pagamento:', error);
-      toast({ description: `Erro ao iniciar o pagamento: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+      const detalhe = await extrairErroDaFunction(error);
+      console.error('Erro ao iniciar pagamento:', detalhe, error);
+      toast({ description: `Erro ao iniciar o pagamento: ${detalhe}`, variant: 'destructive' });
     } finally {
       setProcessandoPlano(null);
     }
@@ -238,7 +254,9 @@ export default function PlanosPage() {
       if (error) throw error;
       window.location.href = data.url;
     } catch (error) {
-      toast({ description: `Erro ao abrir o portal: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+      const detalhe = await extrairErroDaFunction(error);
+      console.error('Erro ao abrir portal:', detalhe, error);
+      toast({ description: `Erro ao abrir o portal: ${detalhe}`, variant: 'destructive' });
       setProcessandoPlano(null);
     }
   };
