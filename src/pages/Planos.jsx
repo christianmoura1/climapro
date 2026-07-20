@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { supabase } from "@/api/supabaseClient";
+import { invokeEdgeFunction } from "@/lib/edgeFunctions";
 import { toast } from "@/components/ui/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -198,21 +198,6 @@ export default function PlanosPage() {
 
   const [processandoPlano, setProcessandoPlano] = useState(null);
 
-  // supabase-js não expõe a mensagem de erro real da Edge Function em
-  // error.message (só "Edge Function returned a non-2xx status code") — o
-  // corpo JSON com o motivo real fica em error.context (a Response crua).
-  const extrairErroDaFunction = async (error) => {
-    if (error?.context?.json) {
-      try {
-        const body = await error.context.json();
-        if (body?.error) return body.error;
-      } catch {
-        // corpo não era JSON — segue com a mensagem genérica
-      }
-    }
-    return error?.message || 'tente novamente.';
-  };
-
   // Assinatura via Stripe Checkout. Se a empresa já tem assinatura ativa,
   // upgrades/downgrades/cancelamento passam pelo Portal de Cobrança (evita
   // criar uma segunda assinatura e cobrar em dobro).
@@ -226,8 +211,7 @@ export default function PlanosPage() {
     setProcessandoPlano(plano.id);
     try {
       if (empresa?.stripe_subscription_id) {
-        const { data, error } = await supabase.functions.invoke('portal-cobranca', { body: {} });
-        if (error) throw error;
+        const data = await invokeEdgeFunction('portal-cobranca', {});
         window.location.href = data.url;
         return;
       }
@@ -235,13 +219,11 @@ export default function PlanosPage() {
         toast({ description: 'Você já pode usar o plano Free — nenhum pagamento é necessário.' });
         return;
       }
-      const { data, error } = await supabase.functions.invoke('criar-checkout', { body: { plano: plano.id } });
-      if (error) throw error;
+      const data = await invokeEdgeFunction('criar-checkout', { plano: plano.id });
       window.location.href = data.url;
     } catch (error) {
-      const detalhe = await extrairErroDaFunction(error);
-      console.error('Erro ao iniciar pagamento:', detalhe, error);
-      toast({ description: `Erro ao iniciar o pagamento: ${detalhe}`, variant: 'destructive' });
+      console.error('Erro ao iniciar pagamento:', error);
+      toast({ description: `Erro ao iniciar o pagamento: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
     } finally {
       setProcessandoPlano(null);
     }
@@ -250,13 +232,11 @@ export default function PlanosPage() {
   const handleGerenciarAssinatura = async () => {
     setProcessandoPlano('portal');
     try {
-      const { data, error } = await supabase.functions.invoke('portal-cobranca', { body: {} });
-      if (error) throw error;
+      const data = await invokeEdgeFunction('portal-cobranca', {});
       window.location.href = data.url;
     } catch (error) {
-      const detalhe = await extrairErroDaFunction(error);
-      console.error('Erro ao abrir portal:', detalhe, error);
-      toast({ description: `Erro ao abrir o portal: ${detalhe}`, variant: 'destructive' });
+      console.error('Erro ao abrir portal:', error);
+      toast({ description: `Erro ao abrir o portal: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
       setProcessandoPlano(null);
     }
   };

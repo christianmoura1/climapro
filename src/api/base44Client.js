@@ -3,6 +3,7 @@
 // as ~270 chamadas espalhadas pelas páginas/componentes. Ver supabase/migrations
 // para o schema real por trás de cada entidade.
 import { supabase } from '@/api/supabaseClient';
+import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
 const ENTITY_TABLE_MAP = {
   AgendaEvento: 'agenda_evento',
@@ -183,11 +184,7 @@ async function updatePassword({ newPassword }) {
 }
 
 async function SendEmail({ to, subject, body }) {
-  const { data, error } = await supabase.functions.invoke('send-email', {
-    body: { to, subject, body },
-  });
-  if (error) throw error;
-  return data;
+  return invokeEdgeFunction('send-email', { to, subject, body });
 }
 
 async function UploadFile({ file }) {
@@ -203,11 +200,7 @@ async function UploadFile({ file }) {
 }
 
 async function InvokeLLM({ prompt, response_json_schema }) {
-  const { data, error } = await supabase.functions.invoke('invoke-llm', {
-    body: { prompt, response_json_schema },
-  });
-  if (error) throw error;
-  return data;
+  return invokeEdgeFunction('invoke-llm', { prompt, response_json_schema });
 }
 
 export const base44 = {
