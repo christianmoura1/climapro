@@ -20,6 +20,7 @@ import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
 import PainelPMOCCliente from "../components/pmoc/PainelPMOCCliente";
 import ExecutarManutencaoModal from "../components/pmoc/ExecutarManutencaoModal";
 import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
+import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
 import { toast } from "@/components/ui/use-toast";
 
 export default function PMOCPage() {
@@ -32,6 +33,7 @@ export default function PMOCPage() {
   const [clientePainelId, setClientePainelId] = useState("");
   const [executandoRodada, setExecutandoRodada] = useState(null);
   const [gerandoCadernoCliente, setGerandoCadernoCliente] = useState(null);
+  const [vendoPlanoAnualCliente, setVendoPlanoAnualCliente] = useState(null);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -423,6 +425,25 @@ ClimaPro`
     );
   }
 
+  if (vendoPlanoAnualCliente) {
+    const equipamentosPlano = equipamentos.filter(
+      (eq) => eq.cliente_id === vendoPlanoAnualCliente.id && eq.pmoc_ativo
+    );
+    const pmocDoCliente = pmocs.find((p) => p.cliente_id === vendoPlanoAnualCliente.id);
+    return (
+      <PlanoAnualPMOC
+        cliente={vendoPlanoAnualCliente}
+        equipamentos={equipamentosPlano}
+        empresaId={user?.empresa_id}
+        pmocId={pmocDoCliente?.id}
+        onClose={() => {
+          setVendoPlanoAnualCliente(null);
+          queryClient.invalidateQueries(['agenda-eventos']);
+        }}
+      />
+    );
+  }
+
   if (aprovandoManutencao) {
     return (
       <AprovarPMOCEmpresa
@@ -516,6 +537,7 @@ ClimaPro`
             equipamentos={equipamentosDoPainel}
             onExecutarRodada={handleExecutarRodada}
             onGerarCaderno={setGerandoCadernoCliente}
+            onVerPlanoAnual={setVendoPlanoAnualCliente}
           />
         )}
 

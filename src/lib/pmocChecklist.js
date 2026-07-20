@@ -103,6 +103,60 @@ export const STATUS_MANUTENCAO_CONFIG = {
   nunca_executado: { label: 'Nunca executado', cor: 'bg-muted text-muted-foreground border-border' },
 };
 
+const INTERVALO_MESES_PMOC = { mensal: 1, bimestral: 2, trimestral: 3, semestral: 6, anual: 12 };
+
+function mod(a, b) {
+  return ((a % b) + b) % b;
+}
+
+// Âncora do ciclo profundo daquele equipamento: usa a próxima manutenção já
+// calculada quando existe (ela é sempre congruente, módulo a periodicidade,
+// com todas as datas futuras corretas do ciclo — não importa se já ficou no
+// passado em relação ao ano exibido), senão cai para última manutenção /
+// instalação / hoje.
+function dataReferenciaCiclo(equipamento) {
+  if (equipamento?.proxima_manutencao) return new Date(equipamento.proxima_manutencao);
+  if (equipamento?.ultima_manutencao) return new Date(equipamento.ultima_manutencao);
+  if (equipamento?.data_instalacao) return new Date(equipamento.data_instalacao);
+  return new Date();
+}
+
+// O Plano Anual de Manutenção que a Portaria GM 3.523 / NBR 16401 exigem: os
+// 12 meses do ano-calendário informado, marcando em quais este equipamento
+// tem, além da checagem mensal obrigatória (todo mês, todo equipamento
+// ativo), o ciclo profundo próprio dele (troca de gás, teste elétrico
+// completo, etc.) previsto.
+export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()) {
+  const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
+  const intervaloMeses = INTERVALO_MESES_PMOC[periodicidade] || 1;
+  const referencia = dataReferenciaCiclo(equipamento);
+  const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
+
+  return Array.from({ length: 12 }, (_, i) => {
+    const mesesAtual = ano * 12 + i;
+    const cicloProfundo = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
+    return { mes: i + 1, data: new Date(ano, i, 1), cicloProfundo };
+  });
+}
+
+// Próximas `quantidade` visitas mensais a partir do mês de `apartirDe`, em
+// janela corrida (não presa ao ano-calendário) — usado para popular a Agenda
+// com antecedência real, independente de quando o equipamento entrou no PMOC.
+export function gerarProximasVisitas(equipamento, quantidade = 12, apartirDe = new Date()) {
+  const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
+  const intervaloMeses = INTERVALO_MESES_PMOC[periodicidade] || 1;
+  const referencia = dataReferenciaCiclo(equipamento);
+  const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
+  const inicio = new Date(apartirDe.getFullYear(), apartirDe.getMonth(), 1);
+
+  return Array.from({ length: quantidade }, (_, i) => {
+    const data = new Date(inicio.getFullYear(), inicio.getMonth() + i, 1);
+    const mesesAtual = data.getFullYear() * 12 + data.getMonth();
+    const cicloProfundo = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
+    return { data, cicloProfundo };
+  });
+}
+
 // Monta o checklist completo de uma visita para um equipamento: sempre a base
 // mensal + os itens do ciclo profundo quando ele está vencendo/vencido.
 export function checklistParaEquipamento(equipamento, hoje = new Date()) {

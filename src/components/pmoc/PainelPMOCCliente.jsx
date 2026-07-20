@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { PlayCircle, BookOpen, Cpu } from "lucide-react";
+import { PlayCircle, BookOpen, Cpu, CalendarRange } from "lucide-react";
 import {
   LABEL_PERIODICIDADE,
   statusManutencao,
@@ -15,7 +15,7 @@ import {
 // (podem ser 1 ou 50), cada um com sua própria periodicidade, agrupados por
 // estabelecimento — é aqui que se enxerga o plano inteiro de uma vez, sem
 // precisar recriar registros de PMOC quando o parque de equipamentos muda.
-export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRodada, onGerarCaderno }) {
+export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRodada, onGerarCaderno, onVerPlanoAnual }) {
   if (!cliente) return null;
 
   const grupos = equipamentos.reduce((acc, eq) => {
@@ -48,6 +48,10 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onVerPlanoAnual(cliente)} disabled={equipamentos.length === 0}>
+              <CalendarRange className="w-4 h-4 mr-2" />
+              Plano Anual
+            </Button>
             <Button variant="outline" onClick={() => onGerarCaderno(cliente)} disabled={equipamentos.length === 0}>
               <BookOpen className="w-4 h-4 mr-2" />
               Gerar Caderno de Manutenção
