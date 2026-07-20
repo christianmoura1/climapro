@@ -1,5 +1,6 @@
 
 import React from "react";
+import { LogoMark } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +9,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import {
-  Snowflake,
   ClipboardList,
   Calendar,
   Users,
@@ -175,9 +175,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
-                <Snowflake className="w-6 h-6 text-white" />
-              </div>
+              <LogoMark className="w-10 h-10 shadow-sm rounded-xl" />
               <div>
                 <h1 className="text-xl font-bold text-foreground tracking-tight">ClimaPro</h1>
                 <p className="text-xs text-muted-foreground -mt-0.5">CRM Operacional</p>
@@ -470,7 +468,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Snowflake className="w-6 h-6" />
+                <LogoMark className="w-6 h-6" />
                 <span className="font-bold text-lg">ClimaPro</span>
               </div>
               <p className="text-gray-400 text-sm">

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { LogoMark } from "@/components/ui/logo";
 import { supabase } from "@/api/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Snowflake, Mail, CheckCircle2 } from "lucide-react";
+import { Mail, CheckCircle2 } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -79,9 +80,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
       <Card className="max-w-md w-full shadow-2xl border-none">
         <CardHeader className="text-center pb-2">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Snowflake className="w-8 h-8 text-white" />
-          </div>
+          <LogoMark className="w-16 h-16 mx-auto mb-4 drop-shadow-lg" />
           <CardTitle className="text-2xl">{mode === "login" ? "Entrar no ClimaPro" : "Criar sua conta"}</CardTitle>
         </CardHeader>
         <CardContent>

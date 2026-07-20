@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { LogoMark } from "@/components/ui/logo";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { Snowflake, LogIn, Building2, ArrowRight } from "lucide-react";
+import { LogIn, Building2, ArrowRight } from "lucide-react";
 
 export default function InitialChoice() {
   const navigate = useNavigate();
@@ -58,9 +59,7 @@ export default function InitialChoice() {
         <CardContent className="p-12">
           {/* Logo e Header */}
           <div className="text-center mb-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <Snowflake className="w-10 h-10 text-white" />
-            </div>
+            <LogoMark className="w-20 h-20 mx-auto mb-6 drop-shadow-lg" />
             <h1 className="text-4xl font-bold text-foreground mb-3">
               Bem-vindo ao ClimaPro! 🌬️
             </h1>

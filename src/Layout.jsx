@@ -1,5 +1,6 @@
 
 import React from "react";
+import { LogoMark } from "@/components/ui/logo";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
@@ -10,7 +11,6 @@ import {
   Calendar,
   DollarSign,
   FileText,
-  Snowflake,
   LogOut,
   Menu,
   Cpu,
@@ -373,9 +373,7 @@ export default function Layout({ children, currentPageName }) {
               <Sidebar className="border-r border-gray-200 bg-white">
                 <SidebarHeader className="border-b border-gray-200 p-4">
                   <Link to={createPageUrl("Dashboard")} className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                      <Snowflake className="w-6 h-6 text-white" />
-                    </div>
+                    <LogoMark className="w-10 h-10" />
                     <div>
                       <h2 className="font-bold text-gray-900 text-lg">ClimaPro</h2>
                       <p className="text-xs text-gray-500">CRM Operacional</p>
