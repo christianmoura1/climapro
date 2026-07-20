@@ -2,9 +2,9 @@
 // IMPORTANTE: no dashboard do Supabase, desative "Enforce JWT" para esta
 // function — o Stripe chama sem token; a segurança vem da assinatura HMAC.
 import { supabaseAdmin } from '../_shared/clients.ts';
-import { stripeGet, planoDoPrice, LIMITES_POR_PLANO, verificarAssinaturaWebhook } from '../_shared/stripe.ts';
+import { stripeGet, planoDoPrice, LIMITES_POR_PLANO, verificarAssinaturaWebhook, limparSecret } from '../_shared/stripe.ts';
 
-const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+const WEBHOOK_SECRET = limparSecret(Deno.env.get('STRIPE_WEBHOOK_SECRET'));
 
 async function empresaPorSubscription(subscriptionId: string, customerId?: string) {
   let { data } = await supabaseAdmin.from('empresa').select('*').eq('stripe_subscription_id', subscriptionId).maybeSingle();
