@@ -15,6 +15,7 @@ const STATUS_CHAMADO = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
   em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
   aguardando_pecas: { color: "bg-yellow-100 text-yellow-800", label: "Aguard. Peças" },
+  aguardando_aprovacao_empresa: { color: "bg-purple-100 text-purple-800", label: "Aguard. Aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
   cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
