@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { supabase } from "@/api/supabaseClient";
+import { toast } from "@/components/ui/use-toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -194,23 +196,65 @@ export default function PlanosPage() {
     enabled: !!empresa
   });
 
-  const handleSolicitarPlano = async (plano) => {
+  const [processandoPlano, setProcessandoPlano] = useState(null);
+
+  // Assinatura via Stripe Checkout. Se a empresa já tem assinatura ativa,
+  // upgrades/downgrades/cancelamento passam pelo Portal de Cobrança (evita
+  // criar uma segunda assinatura e cobrar em dobro).
+  const handleAssinarPlano = async (plano) => {
     if (plano.id === 'enterprise') {
-      // Redirecionar para WhatsApp do admin
       const mensagem = `Olá! Gostaria de saber mais sobre o plano Enterprise para minha empresa: ${empresa?.nome}`;
       window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`, '_blank');
       return;
     }
 
-    // Enviar solicitação para o admin
-    await base44.integrations.Core.SendEmail({
-      to: "christianmoura2014@gmail.com",
-      subject: `Solicitação de Upgrade - ${empresa?.nome}`,
-      body: `Empresa: ${empresa?.nome}\nPlano solicitado: ${plano.nome} (${plano.preco})\nPlano atual: ${empresa?.plano}\nContato: ${user?.email}\n\nPor favor, entre em contato para finalizar a contratação.`
-    });
-
-    alert(`✅ Solicitação enviada!\n\nEm breve entraremos em contato pelo WhatsApp ou e-mail para finalizar a contratação do plano ${plano.nome}.`);
+    setProcessandoPlano(plano.id);
+    try {
+      if (empresa?.stripe_subscription_id) {
+        const { data, error } = await supabase.functions.invoke('portal-cobranca', { body: {} });
+        if (error) throw error;
+        window.location.href = data.url;
+        return;
+      }
+      if (plano.id === 'free') {
+        toast({ description: 'Você já pode usar o plano Free — nenhum pagamento é necessário.' });
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('criar-checkout', { body: { plano: plano.id } });
+      if (error) throw error;
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Erro ao iniciar pagamento:', error);
+      toast({ description: `Erro ao iniciar o pagamento: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+    } finally {
+      setProcessandoPlano(null);
+    }
   };
+
+  const handleGerenciarAssinatura = async () => {
+    setProcessandoPlano('portal');
+    try {
+      const { data, error } = await supabase.functions.invoke('portal-cobranca', { body: {} });
+      if (error) throw error;
+      window.location.href = data.url;
+    } catch (error) {
+      toast({ description: `Erro ao abrir o portal: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+      setProcessandoPlano(null);
+    }
+  };
+
+  // Feedback de retorno do checkout (?checkout=sucesso|cancelado)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const checkout = params.get('checkout');
+    if (checkout === 'sucesso') {
+      toast({ description: '🎉 Pagamento confirmado! Seu plano será ativado em instantes.', variant: 'success' });
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (checkout === 'cancelado') {
+      toast({ description: 'Pagamento cancelado. Você pode tentar novamente quando quiser.' });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const planoAtual = planosDisponiveis.find(p => p.id === empresa?.plano) || planosDisponiveis[0];
   
@@ -412,23 +456,37 @@ export default function PlanosPage() {
 
                   {/* Botão */}
                   {isPlanoAtual ? (
-                    <Button className="w-full bg-gray-500" disabled>
-                      <Crown className="w-4 h-4 mr-2" />
-                      Plano Atual
-                    </Button>
+                    empresa?.stripe_subscription_id ? (
+                      <Button className="w-full" variant="outline" onClick={handleGerenciarAssinatura} disabled={processandoPlano !== null}>
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        {processandoPlano === 'portal' ? 'Abrindo portal...' : 'Gerenciar Assinatura'}
+                      </Button>
+                    ) : (
+                      <Button className="w-full bg-gray-500" disabled>
+                        <Crown className="w-4 h-4 mr-2" />
+                        Plano Atual
+                      </Button>
+                    )
                   ) : (
                     <div className="space-y-2">
                       <Button
                         className={`w-full ${plano.cor} text-white hover:opacity-90 ${
                           isSugerido ? 'ring-2 ring-orange-400' : ''
                         }`}
-                        onClick={() => handleSolicitarPlano(plano)}
+                        onClick={() => handleAssinarPlano(plano)}
+                        disabled={processandoPlano !== null}
                       >
-                        <Zap className="w-4 h-4 mr-2" />
-                        {isSugerido ? 'Fazer Upgrade Agora' : 'Solicitar Upgrade'}
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        {processandoPlano === plano.id
+                          ? 'Abrindo pagamento...'
+                          : plano.id === 'enterprise'
+                          ? 'Falar com Vendas'
+                          : empresa?.stripe_subscription_id
+                          ? 'Trocar para este plano'
+                          : 'Assinar Agora'}
                       </Button>
                       <p className="text-xs text-center text-muted-foreground">
-                        Entraremos em contato para finalizar
+                        {plano.id === 'enterprise' ? 'Atendimento personalizado' : 'Pagamento seguro via Stripe'}
                       </p>
                     </div>
                   )}
