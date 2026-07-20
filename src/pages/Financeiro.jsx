@@ -200,10 +200,13 @@ export default function FinanceiroPage() {
       });
 
       if (aprovar) {
+        // financeiro.categoria não aceita 'pedagio'/'estacionamento' (CHECK);
+        // esses tipos de gasto entram como 'outro'.
+        const CATEGORIAS_FINANCEIRO = ['servico', 'pecas', 'combustivel', 'alimentacao', 'salario', 'aluguel', 'equipamento', 'outro'];
         await base44.entities.Financeiro.create({
           empresa_id: user.empresa_id,
           tipo: 'saida',
-          categoria: gasto.tipo_gasto,
+          categoria: CATEGORIAS_FINANCEIRO.includes(gasto.tipo_gasto) ? gasto.tipo_gasto : 'outro',
           descricao: gasto.descricao || `Gasto de ${gasto.tipo_gasto}`,
           valor: gasto.valor,
           data_lancamento: gasto.data_gasto,

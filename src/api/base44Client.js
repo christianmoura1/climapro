@@ -58,6 +58,20 @@ function unwrap({ data, error }) {
   return data;
 }
 
+// O Base44 (schemaless) tolerava "" em campos de data/UUID; o Postgres não
+// ("invalid input syntax for type date/uuid"). Formulários inicializam campos
+// opcionais com "" — aqui, centralmente, "" vira null em toda escrita.
+function sanitizeWrite(payload) {
+  if (Array.isArray(payload)) return payload.map(sanitizeWrite);
+  if (!payload || typeof payload !== 'object') return payload;
+  const clean = {};
+  for (const [key, value] of Object.entries(payload)) {
+    if (value === undefined) continue;
+    clean[key] = value === '' ? null : value;
+  }
+  return clean;
+}
+
 function makeEntityClient(entityName) {
   const table = tableFor(entityName);
 
@@ -84,15 +98,15 @@ function makeEntityClient(entityName) {
     },
 
     async create(payload) {
-      return unwrap(await supabase.from(table).insert(payload).select().single());
+      return unwrap(await supabase.from(table).insert(sanitizeWrite(payload)).select().single());
     },
 
     async bulkCreate(payloads) {
-      return unwrap(await supabase.from(table).insert(payloads).select());
+      return unwrap(await supabase.from(table).insert(sanitizeWrite(payloads)).select());
     },
 
     async update(id, payload) {
-      return unwrap(await supabase.from(table).update(payload).eq('id', id).select().single());
+      return unwrap(await supabase.from(table).update(sanitizeWrite(payload)).eq('id', id).select().single());
     },
 
     async delete(id) {
