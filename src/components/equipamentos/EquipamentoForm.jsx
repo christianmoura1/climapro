@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Save, X, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC } from "@/lib/pmocChecklist";
 
 export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState(equipamento || {
@@ -21,7 +22,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     data_instalacao: "",
     numero_serie: "",
     foto_url: "",
-    observacoes: ""
+    observacoes: "",
+    periodicidade_pmoc: "",
+    pmoc_ativo: false
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -268,6 +271,28 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                 placeholder="Ex: ABC123XYZ"
               />
             </div>
+          </div>
+
+          <div className="space-y-2 bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <Label>Periodicidade do PMOC</Label>
+            <select
+              value={formData.periodicidade_pmoc || ""}
+              onChange={(e) => {
+                const periodicidade = e.target.value;
+                setFormData({ ...formData, periodicidade_pmoc: periodicidade, pmoc_ativo: !!periodicidade });
+              }}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">— Não incluir no PMOC —</option>
+              {PERIODICIDADES_PMOC.map((p) => (
+                <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Todo equipamento no PMOC recebe checagem mensal básica (filtros, inspeção, drenos).
+              A periodicidade escolhida aqui define quando entra o ciclo profundo (troca de gás,
+              teste elétrico completo, etc.) — nenhum equipamento precisa ter a mesma cadência.
+            </p>
           </div>
 
           <div className="space-y-2">

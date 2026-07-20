@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { statusManutencao, STATUS_MANUTENCAO_CONFIG, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
 
 // This is a placeholder for `createPageUrl`. In a real application,
 // this function would typically be imported from a routing utility
@@ -91,12 +92,24 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
 
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <Badge className={`${tipo.color} mb-2`}>
-                    {tipo.label}
-                  </Badge>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <Badge className={tipo.color}>
+                      {tipo.label}
+                    </Badge>
+                    {equipamento.pmoc_ativo && (
+                      <Badge variant="outline" className={STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao)].cor}>
+                        {STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao)].label}
+                      </Badge>
+                    )}
+                  </div>
                   <h3 className="text-lg font-semibold text-foreground">
                     {equipamento.numero_equipamento}
                   </h3>
+                  {equipamento.pmoc_ativo && equipamento.periodicidade_pmoc && (
+                    <p className="text-xs text-purple-600 font-medium mt-0.5">
+                      PMOC {LABEL_PERIODICIDADE[equipamento.periodicidade_pmoc]}
+                    </p>
+                  )}
                 </div>
                 {/* Original Edit/Delete buttons are removed from here */}
               </div>

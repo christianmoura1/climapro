@@ -23,6 +23,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { checklistParaEquipamento, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
 
 // Componente de Canvas de Assinatura Nativo
 function SignatureCanvas({ canvasRef, width = 600, height = 200 }) {
@@ -140,16 +141,20 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     loadUser();
   }, []);
 
-  // Buscar equipamentos do PMOC
+  // Busca TODOS os equipamentos ativos no PMOC daquele cliente — não mais um
+  // lote fixo escolhido manualmente (pmoc.equipamentos_ids); cada equipamento
+  // tem sua própria periodicidade, então a lista sempre reflete o cadastro
+  // atual (inclusão/remoção de equipamento não exige recriar o PMOC).
   const { data: equipamentos = [] } = useQuery({
-    queryKey: ['equipamentos-pmoc', pmoc.equipamentos_ids],
-    queryFn: async () => {
-      if (!pmoc.equipamentos_ids || pmoc.equipamentos_ids.length === 0) return [];
-      const allEquipamentos = await base44.entities.Equipamento.list();
-      return allEquipamentos.filter(e => pmoc.equipamentos_ids.includes(e.id));
-    },
-    enabled: !!pmoc.equipamentos_ids
+    queryKey: ['equipamentos-pmoc-ativos', cliente?.id],
+    queryFn: () => base44.entities.Equipamento.filter({ cliente_id: cliente.id, pmoc_ativo: true }),
+    enabled: !!cliente?.id
   });
+
+  // Quais equipamentos têm o ciclo profundo vencendo nesta rodada (calculado
+  // uma vez, na carga) — usado para montar o checklist e, na aprovação, para
+  // saber de quais equipamentos avançar a próxima_manutencao.
+  const [cicloProfundoDevido, setCicloProfundoDevido] = useState({});
 
   // Inicializar checklists quando equipamentos carregarem
   useEffect(() => {
@@ -157,22 +162,25 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       const checklistsIniciais = {};
       const fotosIniciais = {};
       const observacoesIniciais = {};
-      
+      const devidoIniciais = {};
+
       equipamentos.forEach(eq => {
-        checklistsIniciais[eq.id] = pmoc.atividades?.map(a => ({
-          descricao: a.descricao,
-          concluido: false,
-          observacao: ""
-        })) || [];
+        const { itensMensal, itensCicloProfundo, cicloProfundoDevido: devido } = checklistParaEquipamento(eq);
+        checklistsIniciais[eq.id] = [
+          ...itensMensal.map((item) => ({ ...item, tier: 'mensal' })),
+          ...itensCicloProfundo.map((item) => ({ ...item, tier: 'profundo' })),
+        ];
+        devidoIniciais[eq.id] = devido;
         fotosIniciais[eq.id] = [];
         observacoesIniciais[eq.id] = "";
       });
-      
+
       setChecklists(checklistsIniciais);
+      setCicloProfundoDevido(devidoIniciais);
       setFotos(fotosIniciais);
       setObservacoesPorEquipamento(observacoesIniciais);
     }
-  }, [equipamentos, pmoc.atividades, checklists]); // Added checklists to dependency array for stricter linting, though check is for Object.keys(checklists).length === 0
+  }, [equipamentos, checklists]);
 
   const toggleChecklistItem = (equipamentoId, index) => {
     setChecklists(prev => ({
@@ -381,8 +389,9 @@ ClimaPro`
       empresa_id: user.empresa_id,
       pmoc_id: pmoc.id,
       cliente_id: cliente.id,
-      tecnico_id: tecnico.id,
-      equipamentos_ids: pmoc.equipamentos_ids,
+      tecnico_id: tecnico?.id || null,
+      equipamentos_ids: equipamentos.map((eq) => eq.id),
+      equipamentos_ciclo_profundo: equipamentos.filter((eq) => cicloProfundoDevido[eq.id]).map((eq) => eq.id),
       data_programada: pmoc.data_execucao_programada,
       data_execucao: new Date().toISOString(),
       checklists_por_equipamento: checklists,
@@ -586,7 +595,10 @@ ClimaPro`
     }
   };
 
-  if (!user || !tecnico) {
+  // Só exige um registro de Técnico se o usuário logado for um técnico; um
+  // admin_empresa pode executar a rodada diretamente (ex.: cobrindo a falta
+  // de um técnico), e nesse caso os relatórios usam o nome do próprio admin.
+  if (!user) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <Card className="w-full max-w-md">
@@ -657,11 +669,13 @@ ClimaPro`
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Técnico</p>
-                  <p className="font-semibold">{tecnico.nome}</p>
+                  <p className="font-semibold">{tecnico?.nome || user?.full_name || 'Administrador'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Periodicidade</p>
-                  <Badge className="bg-purple-600 text-white capitalize">{pmoc.periodicidade}</Badge>
+                  <p className="text-xs text-muted-foreground">Ciclo profundo nesta rodada</p>
+                  <Badge className="bg-purple-600 text-white">
+                    {equipamentos.filter((eq) => cicloProfundoDevido[eq.id]).length} de {equipamentos.length} equipamento(s)
+                  </Badge>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Data</p>
@@ -716,11 +730,20 @@ ClimaPro`
                           onClick={() => setEquipamentoExpandido(isExpanded ? null : equipamento.id)}
                         >
                           <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
                               <Badge variant="outline">Equipamento {index + 1}</Badge>
                               <h4 className="font-semibold">
                                 {equipamento.tipo} {equipamento.marca} {equipamento.modelo}
                               </h4>
+                              {cicloProfundoDevido[equipamento.id] ? (
+                                <Badge className="bg-purple-600 text-white">
+                                  🔧 Manutenção Completa ({LABEL_PERIODICIDADE[equipamento.periodicidade_pmoc]})
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  🧹 Checagem Mensal
+                                </Badge>
+                              )}
                               {percentualConclusao === 100 && (
                                 <CheckCircle className="w-5 h-5 text-green-600" />
                               )}
@@ -753,7 +776,13 @@ ClimaPro`
                               <h5 className="font-semibold mb-3">✅ Checklist de Manutenção</h5>
                               <div className="space-y-3">
                                 {checklist.map((item, itemIndex) => (
-                                  <div key={itemIndex} className="bg-white p-4 rounded-lg border">
+                                  <React.Fragment key={itemIndex}>
+                                    {item.tier === 'profundo' && (itemIndex === 0 || checklist[itemIndex - 1].tier !== 'profundo') && (
+                                      <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide pt-2">
+                                        Itens do ciclo {LABEL_PERIODICIDADE[equipamento.periodicidade_pmoc]?.toLowerCase()}
+                                      </p>
+                                    )}
+                                    <div className="bg-white p-4 rounded-lg border">
                                     <div className="flex items-start gap-3">
                                       <button
                                         onClick={() => toggleChecklistItem(equipamento.id, itemIndex)}
@@ -778,6 +807,7 @@ ClimaPro`
                                       </div>
                                     </div>
                                   </div>
+                                  </React.Fragment>
                                 ))}
                               </div>
                             </div>
