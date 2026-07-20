@@ -2,7 +2,7 @@
 // IMPORTANTE: no dashboard do Supabase, desative "Enforce JWT" para esta
 // function — o Stripe chama sem token; a segurança vem da assinatura HMAC.
 
-const WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+const WEBHOOK_SECRET = limparSecret(Deno.env.get('STRIPE_WEBHOOK_SECRET'));
 
 async function empresaPorSubscription(subscriptionId: string, customerId?: string) {
   let { data } = await supabaseAdmin.from('empresa').select('*').eq('stripe_subscription_id', subscriptionId).maybeSingle();
@@ -56,13 +56,18 @@ const corsHeaders = {
 };
 
 // Helpers do Stripe via REST puro (sem SDK — leve e suficiente para Deno).
-const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+
+function limparSecret(valor: string | undefined): string {
+  return (valor ?? '').replace(/[^\x20-\x7e]/g, '').trim();
+}
+
+const STRIPE_SECRET_KEY = limparSecret(Deno.env.get('STRIPE_SECRET_KEY'));
 
 // Preços (IDs price_...) configurados nos secrets — um por plano pago.
 const PRECOS_POR_PLANO: Record<string, string | undefined> = {
-  essencial: Deno.env.get('STRIPE_PRICE_ESSENCIAL'),
-  profissional: Deno.env.get('STRIPE_PRICE_PROFISSIONAL'),
-  corporativo: Deno.env.get('STRIPE_PRICE_CORPORATIVO'),
+  essencial: limparSecret(Deno.env.get('STRIPE_PRICE_ESSENCIAL')),
+  profissional: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')),
+  corporativo: limparSecret(Deno.env.get('STRIPE_PRICE_CORPORATIVO')),
 };
 
 function planoDoPrice(priceId: string): string | null {
