@@ -17,6 +17,9 @@ import PMOCList from "../components/pmoc/PMOCList";
 import PMOCDetail from "../components/pmoc/PMOCDetail";
 import AprovarPMOCEmpresa from "../components/pmoc/AprovarPMOCEmpresa";
 import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
+import PainelPMOCCliente from "../components/pmoc/PainelPMOCCliente";
+import ExecutarManutencaoModal from "../components/pmoc/ExecutarManutencaoModal";
+import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import { toast } from "@/components/ui/use-toast";
 
 export default function PMOCPage() {
@@ -26,6 +29,9 @@ export default function PMOCPage() {
   const [aprovandoManutencao, setAprovandoManutencao] = useState(null);
   const [visualizandoManutencao, setVisualizandoManutencao] = useState(null);
   const [filtroCliente, setFiltroCliente] = useState("");
+  const [clientePainelId, setClientePainelId] = useState("");
+  const [executandoRodada, setExecutandoRodada] = useState(null);
+  const [gerandoCadernoCliente, setGerandoCadernoCliente] = useState(null);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -158,9 +164,12 @@ export default function PMOCPage() {
       queryClient.invalidateQueries(['pmocs']);
       setShowForm(false);
       
-      // Enviar notificação por e-mail
+      // Enviar notificação por e-mail (só quando o PMOC já nasce com uma
+      // próxima manutenção definida — o "cabeçalho" criado automaticamente
+      // pela rodada mensal não tem periodicidade/data única, cada
+      // equipamento tem a sua)
       const cliente = clientes.find(c => c.id === newPMOC.cliente_id);
-      if (cliente?.email) {
+      if (cliente?.email && newPMOC.proxima_manutencao) {
         await base44.integrations.Core.SendEmail({
           to: cliente.email,
           subject: "PMOC Criado - ClimaPro",
@@ -359,6 +368,61 @@ ClimaPro`
     }
   };
 
+  const clientePainel = clientes.find((c) => c.id === clientePainelId) || null;
+  const equipamentosDoPainel = equipamentos.filter(
+    (eq) => eq.cliente_id === clientePainelId && eq.pmoc_ativo
+  );
+
+  const handleExecutarRodada = async (cliente) => {
+    try {
+      // Reaproveita o "cabeçalho" de PMOC do cliente se já existir; senão
+      // cria um novo — a lista de equipamentos do plano é sempre calculada
+      // dinamicamente a partir do cadastro, não fica presa a este registro.
+      let pmocDoCliente = pmocs.find((p) => p.cliente_id === cliente.id);
+      if (!pmocDoCliente) {
+        const mesReferencia = new Date();
+        mesReferencia.setDate(1);
+        pmocDoCliente = await createMutation.mutateAsync({
+          cliente_id: cliente.id,
+          empresa_id: user.empresa_id,
+          mes_referencia: mesReferencia.toISOString().split('T')[0],
+          data_execucao_programada: new Date().toISOString().split('T')[0],
+        });
+      }
+      setExecutandoRodada({ pmoc: pmocDoCliente, cliente });
+    } catch (error) {
+      console.error("Erro ao preparar rodada mensal:", error);
+      toast({ description: "❌ Erro ao iniciar a rodada mensal. Tente novamente.", variant: "destructive" });
+    }
+  };
+
+  if (executandoRodada) {
+    return (
+      <ExecutarManutencaoModal
+        pmoc={executandoRodada.pmoc}
+        cliente={executandoRodada.cliente}
+        onClose={() => {
+          setExecutandoRodada(null);
+          queryClient.invalidateQueries(['pmocs']);
+          queryClient.invalidateQueries(['equipamentos']);
+        }}
+      />
+    );
+  }
+
+  if (gerandoCadernoCliente) {
+    const equipamentosCaderno = equipamentos.filter(
+      (eq) => eq.cliente_id === gerandoCadernoCliente.id && eq.pmoc_ativo
+    );
+    return (
+      <CadernoManutencaoPDF
+        cliente={gerandoCadernoCliente}
+        equipamentos={equipamentosCaderno}
+        onClose={() => setGerandoCadernoCliente(null)}
+      />
+    );
+  }
+
   if (aprovandoManutencao) {
     return (
       <AprovarPMOCEmpresa
@@ -425,6 +489,35 @@ ClimaPro`
             Novo PMOC
           </Button>
         </div>
+
+        {/* Painel dinâmico por cliente — todos os equipamentos, cada um com sua
+            própria periodicidade, sem precisar recriar PMOCs manualmente */}
+        <Card className="mb-8 shadow-lg border-none">
+          <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50">
+            <CardTitle>🏢 Painel de Equipamentos por Cliente</CardTitle>
+            <div className="mt-2 max-w-md">
+              <select
+                value={clientePainelId}
+                onChange={(e) => setClientePainelId(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm"
+              >
+                <option value="">Selecione um cliente para ver o plano de PMOC</option>
+                {clientes.map((cliente) => (
+                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+                ))}
+              </select>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {clientePainel && (
+          <PainelPMOCCliente
+            cliente={clientePainel}
+            equipamentos={equipamentosDoPainel}
+            onExecutarRodada={handleExecutarRodada}
+            onGerarCaderno={setGerandoCadernoCliente}
+          />
+        )}
 
         {/* Seção de PMOCs aguardando aprovação */}
         {manutencoesAguardandoAprovacao.length > 0 && (

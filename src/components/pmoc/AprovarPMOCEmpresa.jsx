@@ -20,6 +20,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { calcularProximaManutencao } from "@/lib/pmocChecklist";
 
 export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico, equipamentos, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState(manutencao.observacoes_empresa || '');
@@ -29,34 +30,32 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
   const aprovarMutation = useMutation({
     mutationFn: async () => {
       const user = await base44.auth.me();
-      
-      // Calcular próxima manutenção baseado na periodicidade
       const hoje = new Date();
-      let proximaManutencao = new Date(hoje);
-      
-      switch (pmoc.periodicidade) {
-        case 'mensal':
-          proximaManutencao.setMonth(proximaManutencao.getMonth() + 1);
-          break;
-        case 'bimestral':
-          proximaManutencao.setMonth(proximaManutencao.getMonth() + 2);
-          break;
-        case 'trimestral':
-          proximaManutencao.setMonth(proximaManutencao.getMonth() + 3);
-          break;
-        case 'semestral':
-          proximaManutencao.setMonth(proximaManutencao.getMonth() + 6);
-          break;
-        case 'anual':
-          proximaManutencao.setFullYear(proximaManutencao.getFullYear() + 1);
-          break;
-        default:
-            // If no specific period, add a month by default to avoid issues, or handle as error
-            proximaManutencao.setMonth(proximaManutencao.getMonth() + 1);
-            break;
+
+      // 1. Atualizar cada equipamento: última manutenção sempre avança; a
+      // próxima manutenção (ciclo profundo) só avança para quem teve o ciclo
+      // profundo executado nesta rodada — equipamentos que passaram só pela
+      // checagem mensal mantêm a data do ciclo profundo deles intacta.
+      const cicloProfundoIds = new Set(manutencao.equipamentos_ciclo_profundo || []);
+      const datasAtualizadas = [];
+      for (const equipamento of equipamentos || []) {
+        const dadosEquipamento = { ultima_manutencao: hoje.toISOString().split('T')[0] };
+        if (cicloProfundoIds.has(equipamento.id) && equipamento.periodicidade_pmoc) {
+          const proxima = calcularProximaManutencao(hoje, equipamento.periodicidade_pmoc);
+          dadosEquipamento.proxima_manutencao = proxima.toISOString().split('T')[0];
+          datasAtualizadas.push(proxima);
+        } else if (equipamento.proxima_manutencao) {
+          datasAtualizadas.push(new Date(equipamento.proxima_manutencao));
+        }
+        await base44.entities.Equipamento.update(equipamento.id, dadosEquipamento);
       }
-      
-      // 1. Atualizar manutenção - status direto para "concluida"
+      // Próxima manutenção do "cabeçalho" do PMOC = a mais próxima entre os
+      // equipamentos (mantém os widgets antigos — dashboard/lista — úteis).
+      const proximaManutencao = datasAtualizadas.length > 0
+        ? new Date(Math.min(...datasAtualizadas.map((d) => d.getTime())))
+        : calcularProximaManutencao(hoje, pmoc.periodicidade);
+
+      // 2. Atualizar manutenção - status direto para "concluida"
       await base44.entities.ManutencaoPMOC.update(manutencao.id, {
         status: 'concluida',
         observacoes_empresa: observacoesEmpresa,
@@ -65,7 +64,7 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
         aprovado_por_empresa: user.email
       });
 
-      // 2. Atualizar PMOC - status direto para "aguardando_execucao" para próximo ciclo
+      // 3. Atualizar PMOC - status direto para "aguardando_execucao" para próximo ciclo
       await base44.entities.PMOC.update(pmoc.id, {
         status: 'aguardando_execucao',
         observacoes_empresa: observacoesEmpresa,
@@ -75,7 +74,7 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
         aprovado_por: user.email
       });
 
-      // 3. Enviar notificação ao cliente com link para visualizar
+      // 4. Enviar notificação ao cliente com link para visualizar
       if (cliente?.email) {
         await base44.integrations.Core.SendEmail({
           to: cliente.email,
@@ -106,7 +105,7 @@ Equipe ClimaPro`
         });
       }
       
-      // 4. Enviar notificação ao técnico
+      // 5. Enviar notificação ao técnico
       if (tecnico?.email) {
         await base44.integrations.Core.SendEmail({
           to: tecnico.email,
