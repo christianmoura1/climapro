@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 
 const TOAST_LIMIT = 20;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 300; // buffer para a animação de saída antes de desmontar
+const TOAST_AUTO_DISMISS_DELAY = 6000;
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -133,6 +134,12 @@ function toast({ ...props }) {
       },
     },
   });
+
+  // Some toasts (ex.: confirmações longas) passam duration: Infinity para
+  // exigir fechamento manual; os demais somem sozinhos depois de um tempo.
+  if (props.duration !== Infinity) {
+    setTimeout(dismiss, props.duration ?? TOAST_AUTO_DISMISS_DELAY);
+  }
 
   return {
     id,
