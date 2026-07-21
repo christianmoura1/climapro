@@ -19,7 +19,7 @@ const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Se
 // periodicidade ou forçar/desmarcar o ciclo profundo de um mês específico
 // direto nesta tela, sem sair dela. Ao abrir, também sincroniza a Agenda com
 // as próximas 12 visitas — documento e agenda nascem juntos.
-export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose }) {
+export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose, onExecutar }) {
   const [gerando, setGerando] = useState(false);
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
   const [equipamentosState, setEquipamentosState] = useState(equipamentos);
@@ -189,9 +189,10 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Gerado automaticamente a partir da periodicidade de cada equipamento — checagem mensal
-            em todos os meses + ciclo profundo destacado. Nada fica travado: troque a periodicidade
-            ou clique num mês para forçar/remover o ciclo profundo daquele equipamento específico.
+            Gerado automaticamente a partir da periodicidade de cada equipamento — cada mês mostra o
+            tipo de visita previsto. Clique no mês para executar a manutenção daquele momento (cobre
+            todos os equipamentos do cliente numa visita só); clique na bolinha abaixo para
+            forçar/remover manualmente o ciclo profundo daquele mês específico.
           </p>
 
           <div className="flex items-center gap-3 text-sm">
@@ -239,20 +240,31 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
                         </select>
                       </td>
                       {cronograma.map((m, idx) => (
-                        <td key={m.mes} className="p-1 text-center">
+                        <td key={m.mes} className="p-1 text-center align-top">
                           <button
                             type="button"
-                            title={m.cicloProfundo ? 'Ciclo profundo — clique para desmarcar' : 'Checagem mensal — clique para forçar ciclo profundo'}
-                            onClick={() => alternarMes(eq, idx)}
-                            disabled={updateEquipamentoMutation.isPending}
-                            className={`w-6 h-6 rounded-full text-sm leading-none transition-colors ${
+                            title="Clique para executar a manutenção deste mês"
+                            onClick={() => onExecutar()}
+                            className={`w-full min-w-[64px] rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize transition-colors ${
                               m.cicloProfundo
-                                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                : 'bg-muted text-muted-foreground hover:bg-muted-foreground/20'
-                            } ${m.manual ? 'ring-2 ring-offset-1 ring-amber-400' : ''}`}
+                                ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                                : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
+                            }`}
                           >
-                            {m.cicloProfundo ? '●' : '○'}
+                            {m.cicloProfundo ? (LABEL_PERIODICIDADE[eq.periodicidade_pmoc] || 'Ciclo profundo') : 'Mensal'}
                           </button>
+                          <button
+                            type="button"
+                            title={m.manual ? 'Ajuste manual — clique para voltar ao cálculo automático' : 'Clique para forçar/remover manualmente o ciclo profundo deste mês'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              alternarMes(eq, idx);
+                            }}
+                            disabled={updateEquipamentoMutation.isPending}
+                            className={`mt-1 mx-auto block w-2.5 h-2.5 rounded-full transition-colors ${
+                              m.manual ? 'bg-amber-400 hover:bg-amber-500' : 'bg-muted-foreground/20 hover:bg-muted-foreground/40'
+                            }`}
+                          />
                         </td>
                       ))}
                     </tr>
@@ -263,9 +275,9 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           </div>
 
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-600 inline-block" /> Ciclo profundo</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-muted inline-block border" /> Checagem mensal</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full ring-2 ring-amber-400 inline-block" /> Ajustado manualmente</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo (clique no rótulo para executar)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> Bolinha = ajuste manual daquele mês</span>
           </div>
 
           <Button
