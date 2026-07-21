@@ -1,49 +1,94 @@
 import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Download, CalendarRange } from "lucide-react";
+import { X, Download, CalendarRange, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { LABEL_PERIODICIDADE, gerarCronogramaAnual } from "@/lib/pmocChecklist";
+import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual, chaveCronograma } from "@/lib/pmocChecklist";
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
 
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 // O Plano Anual de Manutenção exigido pela Portaria GM 3.523 / NBR 16401 —
 // cronograma dos 12 meses do ano-calendário para todos os equipamentos ativos
-// no PMOC do cliente, marcando quando cada um tem só a checagem mensal e
-// quando soma o ciclo profundo próprio dele. Ao abrir, também sincroniza a
-// Agenda com as próximas 12 visitas (é o "gerar automaticamente" pedido —
-// documento e agenda nascem juntos, sem precisar recriar nada manualmente).
+// no PMOC do cliente. É gerado 100% automaticamente a partir da periodicidade
+// de cada equipamento, mas nada aqui fica travado: dá pra trocar a
+// periodicidade ou forçar/desmarcar o ciclo profundo de um mês específico
+// direto nesta tela, sem sair dela. Ao abrir, também sincroniza a Agenda com
+// as próximas 12 visitas — documento e agenda nascem juntos.
 export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose }) {
   const [gerando, setGerando] = useState(false);
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
+  const [equipamentosState, setEquipamentosState] = useState(equipamentos);
   const ano = new Date().getFullYear();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const sincronizar = async () => {
-      try {
-        const resultado = await sincronizarAgendaAnualPMOC({
-          empresaId,
-          cliente,
-          pmocId,
-          equipamentosAtivos: equipamentos,
-        });
-        setStatusAgenda(`ok:${resultado.criados}`);
-      } catch (error) {
-        console.error("Erro ao sincronizar agenda anual do PMOC:", error);
-        setStatusAgenda('erro');
-        toast({ description: "⚠️ Plano gerado, mas não foi possível sincronizar a Agenda.", variant: "destructive" });
-      }
+    setEquipamentosState(equipamentos);
+  }, [equipamentos]);
+
+  const updateEquipamentoMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Equipamento.update(id, data),
+    onSuccess: (atualizado) => {
+      setEquipamentosState((prev) => prev.map((eq) => (eq.id === atualizado.id ? atualizado : eq)));
+      queryClient.invalidateQueries(['equipamentos']);
+    },
+    onError: (error) => {
+      console.error("Erro ao atualizar equipamento:", error);
+      toast({ description: "❌ Erro ao salvar alteração. Tente novamente.", variant: "destructive" });
+    }
+  });
+
+  const sincronizarAgenda = async () => {
+    setStatusAgenda('sincronizando');
+    try {
+      const resultado = await sincronizarAgendaAnualPMOC({
+        empresaId,
+        cliente,
+        pmocId,
+        equipamentosAtivos: equipamentosState,
+      });
+      setStatusAgenda(`ok:${resultado.criados}`);
+      queryClient.invalidateQueries(['agenda-eventos']);
+    } catch (error) {
+      console.error("Erro ao sincronizar agenda anual do PMOC:", error);
+      setStatusAgenda('erro');
+      toast({ description: "⚠️ Não foi possível sincronizar a Agenda.", variant: "destructive" });
+    }
+  };
+
+  useEffect(() => {
+    sincronizarAgenda();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cliente, empresaId, pmocId]);
+
+  const alterarPeriodicidade = (equipamento, novaPeriodicidade) => {
+    updateEquipamentoMutation.mutate({
+      id: equipamento.id,
+      data: { periodicidade_pmoc: novaPeriodicidade },
+    });
+  };
+
+  const alternarMes = (equipamento, mesIndex0) => {
+    const cronograma = gerarCronogramaAnual(equipamento, ano);
+    const atual = cronograma[mesIndex0].cicloProfundo;
+    const overrides = {
+      ...(equipamento.cronograma_pmoc_overrides || {}),
+      [chaveCronograma(ano, mesIndex0)]: !atual,
     };
-    sincronizar();
-  }, [cliente, empresaId, pmocId, equipamentos]);
+    updateEquipamentoMutation.mutate({
+      id: equipamento.id,
+      data: { cronograma_pmoc_overrides: overrides },
+    });
+  };
 
   const gerarDocumento = () => {
     setGerando(true);
     try {
-      const linhas = equipamentos
+      const linhas = equipamentosState
         .map((eq) => {
           const cronograma = gerarCronogramaAnual(eq, ano);
           const celulas = cronograma
@@ -130,39 +175,106 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50">
+      <Card className="w-full max-w-6xl max-h-[90vh] flex flex-col">
+        <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50 shrink-0">
           <div className="flex justify-between items-center">
             <CardTitle className="flex items-center gap-2">
               <CalendarRange className="w-5 h-5 text-purple-600" />
-              Plano Anual de Manutenção {ano}
+              Plano Anual de Manutenção {ano} — {cliente.nome}
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Cronograma do ano inteiro para os {equipamentos.length} equipamento(s) de{' '}
-            <strong>{cliente.nome}</strong> — checagem mensal em todos os meses + ciclo profundo
-            destacado nos meses em que vence para cada equipamento, conforme exigido para
-            fiscalização.
+            Gerado automaticamente a partir da periodicidade de cada equipamento — checagem mensal
+            em todos os meses + ciclo profundo destacado. Nada fica travado: troque a periodicidade
+            ou clique num mês para forçar/remover o ciclo profundo daquele equipamento específico.
           </p>
-          <p className="text-sm text-foreground">
-            {statusAgenda === 'sincronizando' && 'Sincronizando a Agenda com as próximas 12 visitas...'}
-            {statusAgenda.startsWith('ok:') && (
-              `✅ Agenda sincronizada (${statusAgenda.split(':')[1]} evento(s) novo(s) criado(s)).`
-            )}
-            {statusAgenda === 'erro' && '⚠️ Não foi possível sincronizar a Agenda automaticamente.'}
-          </p>
+
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-foreground">
+              {statusAgenda === 'sincronizando' && 'Sincronizando a Agenda com as próximas 12 visitas...'}
+              {statusAgenda.startsWith('ok:') && `✅ Agenda sincronizada (${statusAgenda.split(':')[1]} evento(s) novo(s)).`}
+              {statusAgenda === 'erro' && '⚠️ Não foi possível sincronizar a Agenda automaticamente.'}
+            </span>
+            <Button variant="outline" size="sm" onClick={sincronizarAgenda} disabled={statusAgenda === 'sincronizando'}>
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+              Ressincronizar
+            </Button>
+          </div>
+
+          <div className="overflow-x-auto border rounded-lg">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50 text-left">
+                  <th className="p-2 font-medium">Equipamento</th>
+                  <th className="p-2 font-medium">Periodicidade</th>
+                  {MESES_ABREV.map((m) => (
+                    <th key={m} className="p-2 font-medium text-center">{m}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {equipamentosState.map((eq) => {
+                  const cronograma = gerarCronogramaAnual(eq, ano);
+                  return (
+                    <tr key={eq.id} className="border-t">
+                      <td className="p-2">
+                        <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>
+                        <p className="text-xs text-muted-foreground">{eq.marca} {eq.modelo}</p>
+                      </td>
+                      <td className="p-2">
+                        <select
+                          value={eq.periodicidade_pmoc || 'mensal'}
+                          onChange={(e) => alterarPeriodicidade(eq, e.target.value)}
+                          disabled={updateEquipamentoMutation.isPending}
+                          className="h-8 rounded-md border border-input bg-white px-2 text-xs shadow-sm capitalize"
+                        >
+                          {PERIODICIDADES_PMOC.map((p) => (
+                            <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
+                          ))}
+                        </select>
+                      </td>
+                      {cronograma.map((m, idx) => (
+                        <td key={m.mes} className="p-1 text-center">
+                          <button
+                            type="button"
+                            title={m.cicloProfundo ? 'Ciclo profundo — clique para desmarcar' : 'Checagem mensal — clique para forçar ciclo profundo'}
+                            onClick={() => alternarMes(eq, idx)}
+                            disabled={updateEquipamentoMutation.isPending}
+                            className={`w-6 h-6 rounded-full text-sm leading-none transition-colors ${
+                              m.cicloProfundo
+                                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                : 'bg-muted text-muted-foreground hover:bg-muted-foreground/20'
+                            } ${m.manual ? 'ring-2 ring-offset-1 ring-amber-400' : ''}`}
+                          >
+                            {m.cicloProfundo ? '●' : '○'}
+                          </button>
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-600 inline-block" /> Ciclo profundo</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-muted inline-block border" /> Checagem mensal</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full ring-2 ring-amber-400 inline-block" /> Ajustado manualmente</span>
+          </div>
+
           <Button
             className="w-full bg-purple-600 hover:bg-purple-700"
             onClick={gerarDocumento}
             disabled={gerando}
           >
             <Download className="w-4 h-4 mr-2" />
-            {gerando ? 'Gerando...' : 'Gerar e Baixar'}
+            {gerando ? 'Gerando...' : 'Gerar e Baixar PDF'}
           </Button>
         </CardContent>
       </Card>

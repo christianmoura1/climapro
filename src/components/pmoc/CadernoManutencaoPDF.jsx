@@ -80,9 +80,14 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
           return `
             <div class="execucao">
               <h3>Execução ${idx + 1} — ${format(new Date(exec.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</h3>
-              <p class="meta">Responsável no local: ${exec.nome_responsavel_local || 'não informado'} • Aprovado em: ${exec.data_aprovacao_empresa ? format(new Date(exec.data_aprovacao_empresa), "dd/MM/yyyy", { locale: ptBR }) : '—'}</p>
+              <p class="meta">Responsável no local: ${exec.nome_cliente_confirmacao || exec.nome_responsavel_local || 'não informado'} • Aprovado em: ${exec.data_aprovacao_empresa ? format(new Date(exec.data_aprovacao_empresa), "dd/MM/yyyy", { locale: ptBR }) : '—'}</p>
               ${blocosEquipamento}
-              ${exec.assinatura_tecnico ? `<div class="assinatura"><img src="${exec.assinatura_tecnico}" /><p>${exec.nome_responsavel_local}</p></div>` : ''}
+              ${(exec.assinatura_tecnico || exec.assinatura_cliente) ? `
+                <div style="display:flex; gap:20px; justify-content:center;">
+                  ${exec.assinatura_tecnico ? `<div class="assinatura"><img src="${exec.assinatura_tecnico}" /><p>${exec.nome_responsavel_local || 'Técnico'}</p></div>` : ''}
+                  ${exec.assinatura_cliente ? `<div class="assinatura"><img src="${exec.assinatura_cliente}" /><p>${exec.nome_cliente_confirmacao || 'Cliente'}</p></div>` : ''}
+                </div>
+              ` : ''}
             </div>`;
         })
         .join('');

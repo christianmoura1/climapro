@@ -302,12 +302,25 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
             </div>
           ` : ''}
 
-          ${manutencao.assinatura_tecnico ? `
+          ${(manutencao.assinatura_tecnico || manutencao.assinatura_cliente) ? `
             <div class="signature-box">
-              <h3 style="color: #334155; margin-top: 0;">✍️ Assinatura do Responsável no Local</h3>
-              <img src="${manutencao.assinatura_tecnico}" class="signature-img" alt="Assinatura"/>
-              <p class="signature-name">${manutencao.nome_responsavel_local}</p>
-              <p class="signature-role">Responsável pelo local</p>
+              <h3 style="color: #334155; margin-top: 0;">✍️ Assinaturas</h3>
+              <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                ${manutencao.assinatura_tecnico ? `
+                  <div style="flex:1; min-width:200px;">
+                    <img src="${manutencao.assinatura_tecnico}" class="signature-img" alt="Assinatura do Técnico"/>
+                    <p class="signature-name">${manutencao.nome_responsavel_local}</p>
+                    <p class="signature-role">Técnico responsável</p>
+                  </div>
+                ` : ''}
+                ${manutencao.assinatura_cliente ? `
+                  <div style="flex:1; min-width:200px;">
+                    <img src="${manutencao.assinatura_cliente}" class="signature-img" alt="Assinatura do Cliente"/>
+                    <p class="signature-name">${manutencao.nome_cliente_confirmacao}</p>
+                    <p class="signature-role">Responsável pelo local</p>
+                  </div>
+                ` : ''}
+              </div>
               <p style="color: #64748b; margin: 10px 0 0 0; font-size: 12px;">
                 Assinado em: ${format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
               </p>
@@ -519,29 +532,44 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
             </Card>
           )}
 
-          {/* Assinatura do Responsável */}
-          {manutencao.assinatura_tecnico && (
+          {/* Assinaturas do Técnico e do Cliente */}
+          {(manutencao.assinatura_tecnico || manutencao.assinatura_cliente) && (
             <Card className="border-2 border-indigo-200 bg-indigo-50">
               <CardHeader>
-                <CardTitle className="text-base">✍️ Assinatura do Responsável no Local</CardTitle>
+                <CardTitle className="text-base">✍️ Assinaturas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-4 rounded-lg text-center">
-                  <img
-                    src={manutencao.assinatura_tecnico}
-                    alt="Assinatura"
-                    className="max-w-md mx-auto border-2 border-border rounded-lg"
-                  />
-                  <p className="mt-3 font-medium text-foreground">
-                    {manutencao.nome_responsavel_local}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Responsável pelo local
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Assinado em: {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                  </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {manutencao.assinatura_tecnico && (
+                    <div className="bg-white p-4 rounded-lg text-center">
+                      <img
+                        src={manutencao.assinatura_tecnico}
+                        alt="Assinatura do Técnico"
+                        className="max-w-full mx-auto border-2 border-border rounded-lg"
+                      />
+                      <p className="mt-3 font-medium text-foreground">
+                        {manutencao.nome_responsavel_local}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Técnico responsável</p>
+                    </div>
+                  )}
+                  {manutencao.assinatura_cliente && (
+                    <div className="bg-white p-4 rounded-lg text-center">
+                      <img
+                        src={manutencao.assinatura_cliente}
+                        alt="Assinatura do Cliente"
+                        className="max-w-full mx-auto border-2 border-border rounded-lg"
+                      />
+                      <p className="mt-3 font-medium text-foreground">
+                        {manutencao.nome_cliente_confirmacao}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Responsável pelo local</p>
+                    </div>
+                  )}
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Assinado em: {format(new Date(manutencao.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                </p>
               </CardContent>
             </Card>
           )}

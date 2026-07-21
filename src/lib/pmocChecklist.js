@@ -121,11 +121,25 @@ function dataReferenciaCiclo(equipamento) {
   return new Date();
 }
 
+// Chave de `equipamento.cronograma_pmoc_overrides` para um mês — formato
+// "AAAA-M" (mês 1-12, sem zero à esquerda).
+export function chaveCronograma(ano, mesIndex0) {
+  return `${ano}-${mesIndex0 + 1}`;
+}
+
+function overrideParaMes(equipamento, ano, mesIndex0) {
+  const overrides = equipamento?.cronograma_pmoc_overrides;
+  if (!overrides) return undefined;
+  return overrides[chaveCronograma(ano, mesIndex0)];
+}
+
 // O Plano Anual de Manutenção que a Portaria GM 3.523 / NBR 16401 exigem: os
 // 12 meses do ano-calendário informado, marcando em quais este equipamento
 // tem, além da checagem mensal obrigatória (todo mês, todo equipamento
 // ativo), o ciclo profundo próprio dele (troca de gás, teste elétrico
-// completo, etc.) previsto.
+// completo, etc.) previsto. Por padrão é 100% calculado a partir da
+// periodicidade, mas `cronograma_pmoc_overrides` permite forçar um mês
+// específico sem mudar a periodicidade do equipamento inteiro.
 export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()) {
   const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
   const intervaloMeses = INTERVALO_MESES_PMOC[periodicidade] || 1;
@@ -134,8 +148,10 @@ export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()
 
   return Array.from({ length: 12 }, (_, i) => {
     const mesesAtual = ano * 12 + i;
-    const cicloProfundo = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
-    return { mes: i + 1, data: new Date(ano, i, 1), cicloProfundo };
+    const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
+    const override = overrideParaMes(equipamento, ano, i);
+    const cicloProfundo = override === undefined ? calculado : override;
+    return { mes: i + 1, data: new Date(ano, i, 1), cicloProfundo, manual: override !== undefined };
   });
 }
 
@@ -152,7 +168,9 @@ export function gerarProximasVisitas(equipamento, quantidade = 12, apartirDe = n
   return Array.from({ length: quantidade }, (_, i) => {
     const data = new Date(inicio.getFullYear(), inicio.getMonth() + i, 1);
     const mesesAtual = data.getFullYear() * 12 + data.getMonth();
-    const cicloProfundo = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
+    const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
+    const override = overrideParaMes(equipamento, data.getFullYear(), data.getMonth());
+    const cicloProfundo = override === undefined ? calculado : override;
     return { data, cicloProfundo };
   });
 }
