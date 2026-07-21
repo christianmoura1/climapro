@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, AlertCircle, Filter, Download } from "lucide-react";
+import { ArrowLeft, AlertCircle, Filter, Download } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,6 @@ import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-import PMOCForm from "../components/pmoc/PMOCForm";
-import PMOCList from "../components/pmoc/PMOCList";
-import PMOCDetail from "../components/pmoc/PMOCDetail";
 import AprovarPMOCEmpresa from "../components/pmoc/AprovarPMOCEmpresa";
 import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
 import PainelPMOCCliente from "../components/pmoc/PainelPMOCCliente";
@@ -24,9 +21,6 @@ import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
 import { toast } from "@/components/ui/use-toast";
 
 export default function PMOCPage() {
-  const [showForm, setShowForm] = useState(false);
-  const [editingPMOC, setEditingPMOC] = useState(null);
-  const [viewingPMOC, setViewingPMOC] = useState(null);
   const [aprovandoManutencao, setAprovandoManutencao] = useState(null);
   const [visualizandoManutencao, setVisualizandoManutencao] = useState(null);
   const [filtroCliente, setFiltroCliente] = useState("");
@@ -46,7 +40,7 @@ export default function PMOCPage() {
   }, []);
 
   // FILTRAR PMOCS POR EMPRESA E CLIENTE
-  const { data: pmocs = [], isLoading } = useQuery({
+  const { data: pmocs = [] } = useQuery({
     queryKey: ['pmocs', user?.empresa_id, filtroCliente],
     queryFn: async () => {
       if (!user) return [];
@@ -160,45 +154,12 @@ export default function PMOCPage() {
     enabled: !!user
   });
 
+  // Cria o "cabeçalho" de PMOC do cliente na primeira rodada mensal — não há
+  // mais tela de criação manual, isso é 100% automático (ver handleExecutarRodada).
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.PMOC.create(data),
-    onSuccess: async (newPMOC) => {
-      queryClient.invalidateQueries(['pmocs']);
-      setShowForm(false);
-      
-      // Enviar notificação por e-mail (só quando o PMOC já nasce com uma
-      // próxima manutenção definida — o "cabeçalho" criado automaticamente
-      // pela rodada mensal não tem periodicidade/data única, cada
-      // equipamento tem a sua)
-      const cliente = clientes.find(c => c.id === newPMOC.cliente_id);
-      if (cliente?.email && newPMOC.proxima_manutencao) {
-        await base44.integrations.Core.SendEmail({
-          to: cliente.email,
-          subject: "PMOC Criado - ClimaPro",
-          body: `Olá ${cliente.nome},\n\nSeu PMOC foi criado com sucesso.\nPeriodicidade: ${newPMOC.periodicidade}\nPróxima manutenção: ${format(new Date(newPMOC.proxima_manutencao), "dd/MM/yyyy", { locale: ptBR })}\n\nAtenciosamente,\nEquipe ClimaPro`
-        });
-      }
-    }
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.PMOC.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['pmocs']);
-      setShowForm(false);
-      setEditingPMOC(null);
-    }
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.PMOC.delete(id), 
-    onSuccess: () => {
-      queryClient.invalidateQueries(['pmocs']);
-      toast({ description: "✅ PMOC excluído com sucesso!", variant: "success" });
-    },
-    onError: (error) => {
-      console.error("Erro ao excluir PMOC:", error);
-      toast({ description: "❌ Erro ao excluir PMOC. Tente novamente.", variant: "destructive" });
     }
   });
 
@@ -214,113 +175,6 @@ export default function PMOCPage() {
       toast({ description: "❌ Erro ao excluir histórico. Tente novamente.", variant: "destructive" });
     }
   });
-
-  const handleSubmit = async (data) => {
-    // Calcular próxima manutenção baseado na periodicidade
-    const dataInicio = new Date(data.data_inicio);
-    let proximaManutencao = new Date(dataInicio);
-    
-    switch (data.periodicidade) {
-      case 'mensal':
-        proximaManutencao.setMonth(proximaManutencao.getMonth() + 1);
-        break;
-      case 'bimestral':
-        proximaManutencao.setMonth(proximaManutencao.getMonth() + 2);
-        break;
-      case 'trimestral':
-        proximaManutencao.setMonth(proximaManutencao.getMonth() + 3);
-        break;
-      case 'semestral':
-        proximaManutencao.setMonth(proximaManutencao.getMonth() + 6);
-        break;
-      case 'anual':
-        proximaManutencao.setFullYear(proximaManutencao.getFullYear() + 1);
-        break;
-      default:
-        // Default to monthly if periodicidade is not recognized
-        proximaManutencao.setMonth(proximaManutencao.getMonth() + 1);
-    }
-
-    // Preparar mês de referência (primeiro dia do mês)
-    const mesReferencia = new Date(data.data_inicio);
-    mesReferencia.setDate(1);
-
-    const pmocData = {
-      ...data,
-      empresa_id: user.empresa_id,
-      mes_referencia: mesReferencia.toISOString().split('T')[0],
-      data_execucao_programada: proximaManutencao.toISOString().split('T')[0],
-      proxima_manutencao: proximaManutencao.toISOString().split('T')[0]
-    };
-
-    if (editingPMOC) {
-      updateMutation.mutate({ id: editingPMOC.id, data: pmocData });
-    } else {
-      // Criar PMOC
-      const newPMOC = await createMutation.mutateAsync(pmocData);
-      
-      // 🆕 CRIAR EVENTO NA AGENDA AUTOMATICAMENTE
-      try {
-        const cliente = clientes.find(c => c.id === pmocData.cliente_id);
-        const tecnico = tecnicos.find(t => t.id === pmocData.tecnico_responsavel_id);
-        
-        // Criar evento na agenda
-        await base44.entities.AgendaEvento.create({
-          empresa_id: user.empresa_id,
-          pmoc_id: newPMOC.id,
-          cliente_id: pmocData.cliente_id,
-          tecnico_id: pmocData.tecnico_responsavel_id,
-          titulo: `PMOC ${pmocData.periodicidade} - ${cliente?.nome || 'Cliente'}`,
-          descricao: `Manutenção preventiva ${pmocData.periodicidade} programada`,
-          tipo: 'pmoc',
-          origem: 'automatico',
-          data_inicio: new Date(proximaManutencao).toISOString(),
-          data_fim: new Date(new Date(proximaManutencao).setHours(new Date(proximaManutencao).getHours() + 2)).toISOString(),
-          endereco: cliente?.endereco || '',
-          latitude: cliente?.latitude,
-          longitude: cliente?.longitude,
-          status: 'pendente',
-          cor: '#9333ea',
-          recorrente: true,
-          frequencia_recorrencia: pmocData.periodicidade === 'mensal' ? 'mensal' :
-                                  pmocData.periodicidade === 'bimestral' ? 'mensal' : // This is as per outline, 'bimestral' maps to 'mensal'
-                                  pmocData.periodicidade === 'trimestral' ? 'trimestral' :
-                                  pmocData.periodicidade === 'semestral' ? 'semestral' :
-                                  'anual' // Default for 'anual' or any other unrecognized
-        });
-        
-        // Enviar notificação ao técnico se designado
-        if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
-            to: tecnico.email,
-            subject: `📅 Novo PMOC Agendado - ${cliente?.nome}`,
-            body: `Olá ${tecnico.nome},
-
-Um novo PMOC foi agendado para você:
-
-📋 Cliente: ${cliente?.nome}
-📍 Endereço: ${cliente?.endereco}
-📆 Data: ${format(proximaManutencao, "dd/MM/yyyy", { locale: ptBR })}
-🔄 Periodicidade: ${pmocData.periodicidade}
-
-O PMOC foi adicionado automaticamente à sua agenda.
-
-Atenciosamente,
-ClimaPro`
-          });
-        }
-      } catch (error) {
-        console.error("Erro ao criar evento na agenda ou enviar e-mail:", error);
-        // Não bloquear a criação do PMOC se falhar a criação do evento ou envio de e-mail
-      }
-    }
-  };
-
-  const handleDelete = (pmoc) => {
-    if (window.confirm(`⚠️ Confirma a exclusão do PMOC de ${clientes.find(c => c.id === pmoc.cliente_id)?.nome || 'cliente'}?\n\nEsta ação não pode ser desfeita.`)) {
-      deleteMutation.mutate(pmoc.id);
-    }
-  };
 
   const handleAprovarManutencao = (manutencao) => {
     const pmoc = pmocs.find(p => p.id === manutencao.pmoc_id);
@@ -469,46 +323,19 @@ ClimaPro`
     );
   }
 
-  if (viewingPMOC) {
-    return (
-      <PMOCDetail
-        pmoc={viewingPMOC}
-        cliente={clientes.find(c => c.id === viewingPMOC.cliente_id)}
-        tecnico={tecnicos.find(t => t.id === viewingPMOC.tecnico_responsavel_id)}
-        onClose={() => setViewingPMOC(null)}
-        onUpdate={(updatedData) => {
-          updateMutation.mutate({ id: viewingPMOC.id, data: updatedData });
-          setViewingPMOC(null);
-        }}
-      />
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">PMOC</h1>
-              <p className="text-muted-foreground mt-1">Planos de Manutenção, Operação e Controle</p>
-            </div>
+        <div className="flex items-center gap-4 mb-8">
+          <Link to={createPageUrl("Dashboard")}>
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">PMOC</h1>
+            <p className="text-muted-foreground mt-1">Planos de Manutenção, Operação e Controle</p>
           </div>
-          <Button 
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditingPMOC(null); // Ensure no PMOC is being edited when opening new form
-            }}
-            className="bg-purple-600 hover:bg-purple-700"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Novo PMOC
-          </Button>
         </div>
 
         {/* Painel dinâmico por cliente — todos os equipamentos, cada um com sua
@@ -562,8 +389,7 @@ ClimaPro`
                 {manutencoesAguardandoAprovacao.map((manutencao) => {
                   const cliente = clientes.find(c => c.id === manutencao.cliente_id);
                   const tecnico = tecnicos.find(t => t.id === manutencao.tecnico_id);
-                  const pmoc = pmocs.find(p => p.id === manutencao.pmoc_id);
-                  
+
                   return (
                     <div key={manutencao.id} className="p-4 hover:bg-orange-100 transition-colors">
                       <div className="flex justify-between items-start">
@@ -572,9 +398,6 @@ ClimaPro`
                             <h3 className="font-semibold text-foreground">
                               {cliente?.nome || 'Cliente não identificado'}
                             </h3>
-                            <Badge className="bg-purple-100 text-purple-800 capitalize">
-                              {pmoc?.periodicidade || 'N/A'}
-                            </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <p>🔧 Técnico: {tecnico?.nome || 'Não atribuído'}</p>
@@ -595,20 +418,6 @@ ClimaPro`
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {showForm && (
-          <PMOCForm
-            pmoc={editingPMOC}
-            clientes={clientes}
-            tecnicos={tecnicos}
-            equipamentos={equipamentos}
-            onSubmit={handleSubmit}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingPMOC(null);
-            }}
-          />
         )}
 
         {/* Seção de Histórico de PMOCs Concluídos */}
@@ -650,8 +459,7 @@ ClimaPro`
                 {manutencoesConcluidas.map((manutencao) => {
                   const cliente = clientes.find(c => c.id === manutencao.cliente_id);
                   const tecnico = tecnicos.find(t => t.id === manutencao.tecnico_id);
-                  const pmoc = pmocs.find(p => p.id === manutencao.pmoc_id);
-                  
+
                   return (
                     <div key={manutencao.id} className="p-4 hover:bg-muted transition-colors">
                       <div className="flex justify-between items-start">
@@ -660,9 +468,6 @@ ClimaPro`
                             <h3 className="font-semibold text-foreground">
                               {cliente?.nome || 'Cliente não identificado'}
                             </h3>
-                            <Badge className="bg-purple-100 text-purple-800 capitalize">
-                              {pmoc?.periodicidade || 'N/A'}
-                            </Badge>
                             <Badge className="bg-green-100 text-green-800">
                               ✅ Concluído
                             </Badge>
@@ -716,19 +521,6 @@ ClimaPro`
             )}
           </CardContent>
         </Card>
-
-        <PMOCList
-          pmocs={pmocs}
-          clientes={clientes}
-          tecnicos={tecnicos}
-          isLoading={isLoading}
-          onView={setViewingPMOC}
-          onEdit={(pmoc) => {
-            setEditingPMOC(pmoc);
-            setShowForm(true);
-          }}
-          onDelete={handleDelete}
-        />
       </div>
     </div>
   );
