@@ -157,11 +157,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   });
 
   // Quais equipamentos têm o ciclo profundo vencendo nesta rodada (calculado
-  // uma vez, na carga) — usado para montar o checklist e, na aprovação, para
-  // saber de quais equipamentos avançar a próxima_manutencao.
+  // uma vez, na carga, pelo mês corrente do Plano Anual) — usado para montar
+  // o checklist e, na aprovação, para saber de quais equipamentos avançar a
+  // próxima_manutencao.
   const [cicloProfundoDevido, setCicloProfundoDevido] = useState({});
 
-  // Inicializar checklists quando equipamentos carregarem
+  // Inicializar checklists quando equipamentos carregarem — o checklist de
+  // cada equipamento segue o que o Plano Anual prevê para o MÊS ATUAL.
   useEffect(() => {
     if (equipamentos.length > 0 && Object.keys(checklists).length === 0) {
       const checklistsIniciais = {};
