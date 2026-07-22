@@ -4,7 +4,10 @@
 // Portaria GM 3.523 (limpeza de filtros + inspeção). O ciclo profundo se soma
 // à visita do mês em que vence.
 
-export const PERIODICIDADES_PMOC = ['mensal', 'bimestral', 'trimestral', 'semestral', 'anual'];
+// Níveis oferecidos no plano — bimestral existe só como legado (equipamentos
+// antigos podem ter esse valor salvo), não entra mais na escada nem nos
+// seletores.
+export const PERIODICIDADES_PMOC = ['mensal', 'trimestral', 'semestral', 'anual'];
 
 export const LABEL_PERIODICIDADE = {
   mensal: 'Mensal',
@@ -136,15 +139,14 @@ function dataReferenciaCiclo(equipamento) {
 }
 
 // Escada completa do PMOC: TODOS os níveis rodam juntos — mensal todo mês,
-// bimestral a cada 2, trimestral a cada 3, semestral a cada 6 e anual 1x/ano.
-// Cada mês recebe o rótulo do ciclo mais profundo que vence nele. Do mais
-// profundo para o mais raso, para o find() pegar o certo em meses onde vários
-// coincidem (ex: mês 6 é divisível por 2, 3 e 6 → semestral).
+// trimestral a cada 3, semestral a cada 6 e anual 1x/ano. Cada mês recebe o
+// rótulo do ciclo mais profundo que vence nele. Do mais profundo para o mais
+// raso, para o find() pegar o certo em meses onde vários coincidem (ex: mês
+// 6 é divisível por 3 e 6 → semestral).
 const NIVEIS_ESCADA_PMOC = [
   { intervalo: 12, periodicidade: 'anual' },
   { intervalo: 6, periodicidade: 'semestral' },
   { intervalo: 3, periodicidade: 'trimestral' },
-  { intervalo: 2, periodicidade: 'bimestral' },
 ];
 
 // Periodicidade efetiva de um equipamento num mês específico: a distância em
