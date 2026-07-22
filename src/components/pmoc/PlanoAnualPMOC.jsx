@@ -70,12 +70,14 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   // sozinhos a partir daí (Março = trimestral também acerta Junho, Setembro
   // e Dezembro automaticamente, sem precisar tocar em cada um).
   const ancorarPeriodicidadeNoMes = (equipamento, mesIndex0, novaPeriodicidade) => {
-    const dataAncora = new Date(ano, mesIndex0, 1);
+    // Formata manualmente ("yyyy-mm-01") — toISOString() converteria para UTC
+    // e poderia deslocar o dia/mês dependendo do fuso do usuário.
+    const dataAncora = `${ano}-${String(mesIndex0 + 1).padStart(2, '0')}-01`;
     updateEquipamentoMutation.mutate({
       id: equipamento.id,
       data: {
         periodicidade_pmoc: novaPeriodicidade,
-        ciclo_ancora_pmoc: dataAncora.toISOString().split('T')[0],
+        ciclo_ancora_pmoc: dataAncora,
       },
     });
   };

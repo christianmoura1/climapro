@@ -109,6 +109,18 @@ function mod(a, b) {
   return ((a % b) + b) % b;
 }
 
+// Datas vindas do banco como "yyyy-mm-dd" precisam ser interpretadas no fuso
+// LOCAL: `new Date("2026-01-01")` assume meia-noite UTC, que no Brasil
+// (UTC-3) ainda é 31/dez — o mês recuaria 1 e todo o cronograma deslocaria.
+function parseDataLocal(valor) {
+  if (valor instanceof Date) return valor;
+  if (typeof valor === 'string') {
+    const m = valor.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+  return new Date(valor);
+}
+
 // Âncora do ciclo profundo daquele equipamento: `ciclo_ancora_pmoc` é a
 // âncora explícita — o mês em que o usuário escolheu que o ciclo profundo
 // cai, direto na tela do Plano Anual (redefine o padrão do ano inteiro a
@@ -116,10 +128,10 @@ function mod(a, b) {
 // cai para próxima/última manutenção já registrada, depois instalação, senão
 // hoje.
 function dataReferenciaCiclo(equipamento) {
-  if (equipamento?.ciclo_ancora_pmoc) return new Date(equipamento.ciclo_ancora_pmoc);
-  if (equipamento?.proxima_manutencao) return new Date(equipamento.proxima_manutencao);
-  if (equipamento?.ultima_manutencao) return new Date(equipamento.ultima_manutencao);
-  if (equipamento?.data_instalacao) return new Date(equipamento.data_instalacao);
+  if (equipamento?.ciclo_ancora_pmoc) return parseDataLocal(equipamento.ciclo_ancora_pmoc);
+  if (equipamento?.proxima_manutencao) return parseDataLocal(equipamento.proxima_manutencao);
+  if (equipamento?.ultima_manutencao) return parseDataLocal(equipamento.ultima_manutencao);
+  if (equipamento?.data_instalacao) return parseDataLocal(equipamento.data_instalacao);
   return new Date();
 }
 
