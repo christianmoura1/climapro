@@ -45,7 +45,7 @@ export default function SetupInicial() {
         console.log("Usuário carregado:", currentUser);
 
         // BLOQUEAR: Se for admin global, redirecionar
-        if (currentUser.email === "christianmoura2014@gmail.com") {
+        if (currentUser.role === 'admin') {
           navigate(createPageUrl("AdminPanel"));
           return;
         }

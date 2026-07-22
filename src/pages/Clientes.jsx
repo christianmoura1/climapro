@@ -48,7 +48,7 @@ export default function ClientesPage() {
     queryKey: ['clientes', empresaId],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: empresaId });
@@ -60,7 +60,7 @@ export default function ClientesPage() {
     queryKey: ['equipamentos', empresaId],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Equipamento.list();
       }
       return base44.entities.Equipamento.filter({ empresa_id: empresaId });
@@ -130,7 +130,7 @@ export default function ClientesPage() {
       setEditingCliente(null);
       
       if (data.temAcessoPortal) {
-        const linkPortal = `https://climapro.base44.app`;
+        const linkPortal = `https://geradordepmoc.com.br`;
         const mensagemParaEnviar = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro
 
 Olá ${data.cliente.nome}!
@@ -368,7 +368,7 @@ ${mensagemParaEnviar}`, variant: "success" });
     // Remove registros com IDs da importação problemática (prefixo 6a11c234)
     if (cliente.id?.startsWith('6a11c234')) return false;
     // Sempre filtra por empresa_id (para todos os usuários não-admin-global)
-    if (user.email !== "christianmoura2014@gmail.com") {
+    if (!(user.role === 'admin' && !user.empresa_id)) {
       if (!empresaId || cliente.empresa_id !== empresaId) return false;
     }
     // Filtra por nome ou telefone

@@ -73,7 +73,7 @@ export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
               <strong>Importante:</strong> O slug serve apenas para identificação interna. 
-              Todos os usuários acessam pelo mesmo domínio (climapro.base44.app), 
+              Todos os usuários acessam pelo mesmo domínio (geradordepmoc.com.br), 
               mas os dados ficam isolados por empresa.
             </AlertDescription>
           </Alert>

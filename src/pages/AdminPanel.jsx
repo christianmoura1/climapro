@@ -39,7 +39,7 @@ export default function AdminPanel() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
         
-        if (currentUser.email !== "christianmoura2014@gmail.com") {
+        if (currentUser.role !== 'admin') {
           navigate(createPageUrl("Dashboard"));
         } else {
           setIsAdmin(true);

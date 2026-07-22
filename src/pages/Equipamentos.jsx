@@ -37,7 +37,7 @@ export default function EquipamentosPage() {
     queryKey: ['equipamentos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Equipamento.list('-created_date');
       }
       return base44.entities.Equipamento.filter(
@@ -52,7 +52,7 @@ export default function EquipamentosPage() {
     queryKey: ['clientes', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
@@ -65,7 +65,7 @@ export default function EquipamentosPage() {
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         // For admin, fetch all technicians (or a subset if needed)
         return base44.entities.Tecnico.list();
       }

@@ -90,7 +90,7 @@ A manutenção preventiva (PMOC) foi concluída com sucesso em seu estabelecimen
 📆 Próxima Manutenção: ${format(proximaManutencao, "dd/MM/yyyy", { locale: ptBR })}
 
 📋 Para visualizar o relatório completo do serviço executado, acesse:
-👉 https://climapro.base44.app
+👉 https://geradordepmoc.com.br
 
 No portal, você poderá:
 • Ver todos os itens executados

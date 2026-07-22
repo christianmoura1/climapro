@@ -45,7 +45,7 @@ export default function ChamadosPage() {
         if (isMounted) {
           console.log("[Chamados] Usuário logado:", currentUser);
           setUser(currentUser);
-          setIsAdmin(currentUser.role === 'admin' || currentUser.email === "christianmoura2014@gmail.com");
+          setIsAdmin(currentUser.role === 'admin');
         }
       } catch (error) {
         console.error("[Chamados] Erro ao carregar usuário:", error);
@@ -81,7 +81,7 @@ export default function ChamadosPage() {
     queryKey: ['chamados', user?.empresa_id, user?.role, forceRender],
     queryFn: async () => {
       if (!user) return [];
-      const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+      const adminUser = (user.role === 'admin' && !user.empresa_id);
       if (adminUser) {
         return base44.entities.Chamado.list('-created_date', 1000);
       }
@@ -100,7 +100,7 @@ export default function ChamadosPage() {
     queryFn: async () => {
       if (!user) return [];
       try {
-        const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+        const adminUser = (user.role === 'admin' && !user.empresa_id);
         let lista = adminUser
           ? await base44.entities.Cliente.list('-created_date', 500)
           : await base44.entities.Cliente.filter({ empresa_id: user.empresa_id }, '-created_date', 500);
@@ -149,7 +149,7 @@ export default function ChamadosPage() {
     queryKey: ['chamados-aguardando-aprovacao', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Chamado.filter({
           status: 'aguardando_aprovacao_empresa'
         }, '-data_finalizacao');

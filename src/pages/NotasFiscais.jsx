@@ -34,7 +34,7 @@ export default function NotasFiscaisPage() {
   }, []);
 
   // Verificar se tem acesso ao módulo de notas fiscais (plano avançado ou admin)
-  const temAcesso = empresa?.plano === 'avancado' || user?.email === "christianmoura2014@gmail.com";
+  const temAcesso = empresa?.plano === 'avancado' || (user?.role === 'admin' && !user?.empresa_id);
 
   const { data: configuracaoFiscal } = useQuery({
     queryKey: ['configuracao-fiscal', user?.empresa_id],
@@ -48,7 +48,7 @@ export default function NotasFiscaisPage() {
   const { data: notasFiscais = [] } = useQuery({
     queryKey: ['notas-fiscais', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.NotaFiscal.list('-data_emissao');
       }
       return base44.entities.NotaFiscal.filter(
@@ -62,7 +62,7 @@ export default function NotasFiscaisPage() {
   const { data: clientes = [] } = useQuery({
     queryKey: ['clientes', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });

@@ -50,7 +50,7 @@ export default function AgendaPage() {
   const { data: eventos = [], isLoading } = useQuery({
     queryKey: ['agenda-eventos', user?.empresa_id, dataAtual.getMonth(), dataAtual.getFullYear()],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.AgendaEvento.list('-data_inicio');
       }
       return base44.entities.AgendaEvento.filter(
@@ -64,7 +64,7 @@ export default function AgendaPage() {
   const { data: tecnicos = [] } = useQuery({
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -76,7 +76,7 @@ export default function AgendaPage() {
     queryKey: ['clientes', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
@@ -87,7 +87,7 @@ export default function AgendaPage() {
   const { data: chamados = [] } = useQuery({
     queryKey: ['chamados', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Chamado.list();
       }
       return base44.entities.Chamado.filter({ empresa_id: user.empresa_id });
@@ -98,7 +98,7 @@ export default function AgendaPage() {
   const { data: pmocs = [] } = useQuery({
     queryKey: ['pmocs', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.PMOC.list();
       }
       return base44.entities.PMOC.filter({ empresa_id: user.empresa_id });

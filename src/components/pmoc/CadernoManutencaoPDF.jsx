@@ -128,6 +128,7 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
     <h1>📖 Caderno de Manutenção — Livro de Registro PMOC</h1>
     <p><strong>${empresa?.nome || ''}</strong>${empresa?.cnpj ? ` — CNPJ ${empresa.cnpj}` : ''}</p>
     <p>Cliente: <strong>${cliente.nome}</strong> — ${cliente.endereco || ''}</p>
+    ${empresa?.responsavel_tecnico_nome ? `<p>Responsável Técnico: <strong>${empresa.responsavel_tecnico_nome}</strong>${empresa.responsavel_tecnico_registro ? ` — ${empresa.responsavel_tecnico_registro}` : ''}</p>` : ''}
     <p>Documento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} — disponível para fiscalização a qualquer momento.</p>
   </div>
 

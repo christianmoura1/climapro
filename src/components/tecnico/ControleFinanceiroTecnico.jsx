@@ -70,7 +70,7 @@ Descrição: ${novaMovimentacao.descricao}
 Data: ${format(new Date(novaMovimentacao.data_movimentacao), 'dd/MM/yyyy', { locale: ptBR })}
 
 Acesse o painel para aprovar ou rejeitar:
-https://climapro.base44.app/Financeiro
+https://geradordepmoc.com.br/Financeiro
 
 Atenciosamente,
 ClimaPro`

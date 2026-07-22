@@ -131,7 +131,7 @@ export default function ClienteDetalhes({
                 <div className="flex items-center gap-3 pt-2">
                   <Badge className="bg-blue-100 text-blue-800"><Key className="w-3 h-3 mr-1" />Portal Ativo</Badge>
                   <Button size="sm" variant="outline" className="text-blue-600 border-blue-300" onClick={() => {
-                    const msg = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro\n\nOlá ${cliente.nome}!\n\nAcesse: https://climapro.base44.app\n\nEmail: ${cliente.email}\nCrie sua senha no primeiro acesso.\n\nDúvidas? ${cliente.whatsapp || cliente.telefone}`;
+                    const msg = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro\n\nOlá ${cliente.nome}!\n\nAcesse: https://geradordepmoc.com.br\n\nEmail: ${cliente.email}\nCrie sua senha no primeiro acesso.\n\nDúvidas? ${cliente.whatsapp || cliente.telefone}`;
                     navigator.clipboard.writeText(msg).then(() => toast({ description: '✅ Instruções copiadas!', variant: "success" })).catch(() => toast({ description: msg, variant: "default" }));
                   }}>
                     <Copy className="w-3 h-3 mr-1" />Copiar Link de Acesso

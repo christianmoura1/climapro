@@ -67,7 +67,7 @@ export default function PontoEletronicoPage() {
       const inicio = startOfMonth(mesReferencia);
       const fim = endOfMonth(mesReferencia);
       
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         const todosPontos = await base44.entities.PontoEletronico.list('-data_hora');
         return todosPontos.filter(p => {
           const dataPonto = obterDataLocal(p.data_hora);
@@ -91,7 +91,7 @@ export default function PontoEletronicoPage() {
   const { data: tecnicos = [] } = useQuery({
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });

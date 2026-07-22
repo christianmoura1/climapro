@@ -302,7 +302,7 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
   <div class="footer">
     Documento gerado automaticamente pelo sistema ClimaPro<br>
     Data de geração: ${formatarDataBrasil(new Date().toISOString())}<br>
-    https://climapro.base44.app
+    https://geradordepmoc.com.br
   </div>
 </body>
 </html>
