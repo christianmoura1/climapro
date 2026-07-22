@@ -32,22 +32,20 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
       const user = await base44.auth.me();
       const hoje = new Date();
 
-      // 1. Atualizar cada equipamento: última manutenção sempre avança; a
-      // próxima manutenção (ciclo profundo) só avança para quem teve o ciclo
-      // profundo executado nesta rodada — equipamentos que passaram só pela
-      // checagem mensal mantêm a data do ciclo profundo deles intacta.
-      const cicloProfundoIds = new Set(manutencao.equipamentos_ciclo_profundo || []);
+      // 1. Atualizar cada equipamento: toda visita do PMOC é mensal no mínimo
+      // (checagem básica), então a próxima manutenção é sempre daqui a 1 mês,
+      // para TODOS — o que muda mês a mês é o nível do checklist, e isso é
+      // regido pela âncora do Plano Anual, não por esta data. Sem isso, quem
+      // passasse só pela checagem mensal ficava com proxima_manutencao nula e
+      // aparecia como "Nunca executado" mesmo depois de executar.
       const datasAtualizadas = [];
       for (const equipamento of equipamentos || []) {
-        const dadosEquipamento = { ultima_manutencao: hoje.toISOString().split('T')[0] };
-        if (cicloProfundoIds.has(equipamento.id) && equipamento.periodicidade_pmoc) {
-          const proxima = calcularProximaManutencao(hoje, equipamento.periodicidade_pmoc);
-          dadosEquipamento.proxima_manutencao = proxima.toISOString().split('T')[0];
-          datasAtualizadas.push(proxima);
-        } else if (equipamento.proxima_manutencao) {
-          datasAtualizadas.push(new Date(equipamento.proxima_manutencao));
-        }
-        await base44.entities.Equipamento.update(equipamento.id, dadosEquipamento);
+        const proxima = calcularProximaManutencao(hoje, 'mensal');
+        datasAtualizadas.push(proxima);
+        await base44.entities.Equipamento.update(equipamento.id, {
+          ultima_manutencao: hoje.toISOString().split('T')[0],
+          proxima_manutencao: proxima.toISOString().split('T')[0],
+        });
       }
       // Próxima manutenção do "cabeçalho" do PMOC = a mais próxima entre os
       // equipamentos (mantém os widgets antigos — dashboard/lista — úteis).
@@ -334,25 +332,40 @@ Equipe ClimaPro`
             </CardContent>
           </Card>
 
-          {/* Assinatura do Responsável no Local */}
-          {manutencao.assinatura_tecnico && (
+          {/* Assinaturas do Técnico e do Cliente */}
+          {(manutencao.assinatura_tecnico || manutencao.assinatura_cliente) && (
             <Card className="border-2 border-indigo-200 bg-indigo-50">
               <CardHeader>
-                <CardTitle className="text-base">✍️ Assinatura do Responsável no Local</CardTitle>
+                <CardTitle className="text-base">✍️ Assinaturas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-white p-4 rounded-lg text-center">
-                  <img
-                    src={manutencao.assinatura_tecnico}
-                    alt="Assinatura"
-                    className="max-w-md mx-auto border-2 border-border rounded-lg"
-                  />
-                  <p className="mt-3 font-medium text-foreground">
-                    {manutencao.nome_responsavel_local}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Responsável pelo local
-                  </p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {manutencao.assinatura_tecnico && (
+                    <div className="bg-white p-4 rounded-lg text-center">
+                      <img
+                        src={manutencao.assinatura_tecnico}
+                        alt="Assinatura do Técnico"
+                        className="max-w-full mx-auto border-2 border-border rounded-lg"
+                      />
+                      <p className="mt-3 font-medium text-foreground">
+                        {manutencao.nome_responsavel_local}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Técnico responsável</p>
+                    </div>
+                  )}
+                  {manutencao.assinatura_cliente && (
+                    <div className="bg-white p-4 rounded-lg text-center">
+                      <img
+                        src={manutencao.assinatura_cliente}
+                        alt="Assinatura do Cliente"
+                        className="max-w-full mx-auto border-2 border-border rounded-lg"
+                      />
+                      <p className="mt-3 font-medium text-foreground">
+                        {manutencao.nome_cliente_confirmacao}
+                      </p>
+                      <p className="text-sm text-muted-foreground">Responsável pelo local</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

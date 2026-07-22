@@ -119,6 +119,29 @@ export default function Dashboard() {
     enabled: !!user && (!!user.empresa_id || isAdmin)
   });
 
+  // EQUIPAMENTOS ATIVOS NO PMOC + CLIENTES (para o widget de próximas manutenções)
+  const { data: equipamentosPmoc = [] } = useQuery({
+    queryKey: ['equipamentos-pmoc-dashboard', user?.empresa_id],
+    queryFn: async () => {
+      if (isAdmin) {
+        return base44.entities.Equipamento.filter({ pmoc_ativo: true });
+      }
+      return base44.entities.Equipamento.filter({ empresa_id: user.empresa_id, pmoc_ativo: true });
+    },
+    enabled: !!user && (!!user.empresa_id || isAdmin)
+  });
+
+  const { data: clientes = [] } = useQuery({
+    queryKey: ['clientes', user?.empresa_id],
+    queryFn: async () => {
+      if (isAdmin) {
+        return base44.entities.Cliente.list();
+      }
+      return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
+    },
+    enabled: !!user && (!!user.empresa_id || isAdmin)
+  });
+
   // LEMBRETES DE MANUTENÇÃO VENCIDOS (data <= hoje e ainda não enviados)
   const hoje = new Date().toISOString().split('T')[0];
   const { data: lembretesVencidos = [] } = useQuery({
@@ -381,7 +404,7 @@ export default function Dashboard() {
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8">
           <RecentChamados chamados={chamados.slice(0, 5)} />
-          <ProximosPMOCs pmocs={pmocs.slice(0, 5)} />
+          <ProximosPMOCs equipamentos={equipamentosPmoc} clientes={clientes} />
         </div>
       </div>
     </div>

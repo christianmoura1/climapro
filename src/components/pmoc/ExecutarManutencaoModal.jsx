@@ -117,13 +117,15 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   const [user, setUser] = useState(null);
   const [tecnico, setTecnico] = useState(null);
   const queryClient = useQueryClient();
-  const sigCanvas = useRef(null);
+  const sigCanvasTecnico = useRef(null);
+  const sigCanvasCliente = useRef(null);
 
   // Estados principais
   const [equipamentoExpandido, setEquipamentoExpandido] = useState(null);
   const [checklists, setChecklists] = useState({});
   const [fotos, setFotos] = useState({});
   const [observacoesPorEquipamento, setObservacoesPorEquipamento] = useState({});
+  const [nomeTecnico, setNomeTecnico] = useState("");
   const [nomeCliente, setNomeCliente] = useState("");
   const [uploadingFoto, setUploadingFoto] = useState(null);
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
@@ -132,10 +134,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     const loadUser = async () => {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      
+
       if (currentUser.tecnico_id) {
         const tecnicoData = await base44.entities.Tecnico.filter({ id: currentUser.tecnico_id });
         setTecnico(tecnicoData[0]);
+        setNomeTecnico(tecnicoData[0]?.nome || currentUser.full_name || "");
+      } else {
+        setNomeTecnico(currentUser.full_name || "");
       }
     };
     loadUser();
@@ -152,11 +157,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   });
 
   // Quais equipamentos têm o ciclo profundo vencendo nesta rodada (calculado
-  // uma vez, na carga) — usado para montar o checklist e, na aprovação, para
-  // saber de quais equipamentos avançar a próxima_manutencao.
+  // uma vez, na carga, pelo mês corrente do Plano Anual) — usado para montar
+  // o checklist e, na aprovação, para saber de quais equipamentos avançar a
+  // próxima_manutencao.
   const [cicloProfundoDevido, setCicloProfundoDevido] = useState({});
 
-  // Inicializar checklists quando equipamentos carregarem
+  // Inicializar checklists quando equipamentos carregarem — o checklist de
+  // cada equipamento segue o que o Plano Anual prevê para o MÊS ATUAL.
   useEffect(() => {
     if (equipamentos.length > 0 && Object.keys(checklists).length === 0) {
       const checklistsIniciais = {};
@@ -236,8 +243,8 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }));
   };
 
-  const limparAssinatura = () => {
-    const canvas = sigCanvas.current;
+  const limparAssinatura = (canvasRef) => {
+    const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
@@ -246,22 +253,22 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }
   };
 
-  const isCanvasEmpty = () => {
-    const canvas = sigCanvas.current;
+  const isCanvasEmpty = (canvasRef) => {
+    const canvas = canvasRef.current;
     if (!canvas) return true;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return true;
-    
+
     const pixelBuffer = new Uint32Array(
       ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
     );
-    
+
     return !pixelBuffer.some(color => color !== 0);
   };
 
-  const getCanvasDataURL = () => {
-    return sigCanvas.current ? sigCanvas.current.toDataURL() : '';
+  const getCanvasDataURL = (canvasRef) => {
+    return canvasRef.current ? canvasRef.current.toDataURL() : '';
   };
 
   const validarFormulario = () => {
@@ -275,6 +282,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       if (!checklist.every(item => item.concluido)) {
         return `❌ O checklist do equipamento ${equipamentos.find(eq => eq.id === equipamentoId)?.modelo || 'desconhecido'} não está totalmente concluído.`;
       }
+    }
+
+    if (!nomeTecnico.trim() || isCanvasEmpty(sigCanvasTecnico)) {
+      return "❌ Assinatura do técnico é obrigatória";
+    }
+    if (!nomeCliente.trim() || isCanvasEmpty(sigCanvasCliente)) {
+      return "❌ Assinatura do cliente é obrigatória";
     }
 
     return null;
@@ -382,8 +396,10 @@ ClimaPro`
       // toast({ description: "Não foi possível capturar a localização atual. A manutenção será registrada sem dados de GPS.", variant: "default" });
     }
 
-    // Capturar assinatura
-    const assinaturaBase64 = getCanvasDataURL();
+    // Capturar as duas assinaturas — técnico que executou e cliente que
+    // confirma no local, cada um com seu próprio traço.
+    const assinaturaTecnicoBase64 = getCanvasDataURL(sigCanvasTecnico);
+    const assinaturaClienteBase64 = getCanvasDataURL(sigCanvasCliente);
 
     const dadosManutencao = {
       empresa_id: user.empresa_id,
@@ -403,8 +419,10 @@ ClimaPro`
           return `${eq?.modelo || 'Equipamento'}: ${obs}`;
         })
         .join('\n\n'),
-      assinatura_tecnico: assinaturaBase64,
-      nome_responsavel_local: nomeCliente,
+      assinatura_tecnico: assinaturaTecnicoBase64,
+      assinatura_cliente: assinaturaClienteBase64,
+      nome_responsavel_local: nomeTecnico,
+      nome_cliente_confirmacao: nomeCliente,
       latitude,
       longitude,
       endereco
@@ -553,20 +571,25 @@ ClimaPro`
 
   ${htmlEquipamentos}
 
-  ${!isCanvasEmpty() ? `
   <div class="section">
-    <div class="section-title">✍️ Assinatura do Cliente</div>
-    <div class="assinatura">
-      <img src="${getCanvasDataURL()}" alt="Assinatura do Cliente" />
-      <p style="margin-top: 10px; font-size: 12px; color: #6b7280;">
-        ${nomeCliente}
-      </p>
-      <p style="margin-top: 5px; font-size: 11px; color: #9ca3af;">
-        Confirmo a realização do serviço conforme descrito acima.
-      </p>
+    <div class="section-title">✍️ Assinaturas</div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+      ${!isCanvasEmpty(sigCanvasTecnico) ? `
+      <div class="assinatura" style="flex:1; min-width:220px;">
+        <img src="${getCanvasDataURL(sigCanvasTecnico)}" alt="Assinatura do Técnico" />
+        <p style="margin-top: 10px; font-size: 12px; color: #6b7280;">${nomeTecnico}</p>
+        <p style="margin-top: 5px; font-size: 11px; color: #9ca3af;">Técnico responsável pela execução.</p>
+      </div>
+      ` : ''}
+      ${!isCanvasEmpty(sigCanvasCliente) ? `
+      <div class="assinatura" style="flex:1; min-width:220px;">
+        <img src="${getCanvasDataURL(sigCanvasCliente)}" alt="Assinatura do Cliente" />
+        <p style="margin-top: 10px; font-size: 12px; color: #6b7280;">${nomeCliente}</p>
+        <p style="margin-top: 5px; font-size: 11px; color: #9ca3af;">Confirmo a realização do serviço conforme descrito acima.</p>
+      </div>
+      ` : ''}
     </div>
   </div>
-  ` : ''}
 
   <div class="footer">
     Documento gerado automaticamente pelo ClimaPro<br>
@@ -629,7 +652,7 @@ ClimaPro`
               <Button
                 variant="outline"
                 onClick={gerarRelatorioPDF}
-                disabled={gerandoRelatorio || !todosEquipamentosConcluidos || isCanvasEmpty() || !nomeCliente.trim()}
+                disabled={gerandoRelatorio || !todosEquipamentosConcluidos || isCanvasEmpty(sigCanvasTecnico) || !nomeTecnico.trim() || isCanvasEmpty(sigCanvasCliente) || !nomeCliente.trim()}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Prévia PDF
@@ -887,10 +910,42 @@ ClimaPro`
             )}
           </div>
 
-          {/* Assinatura do Cliente */}
+          {/* Assinaturas — técnico que executou e cliente que confirma no local,
+              cada um com seu próprio traço, exigido pela norma como
+              comprovação de que a visita realmente aconteceu. */}
+          <Card className="border-2 border-purple-200 bg-purple-50">
+            <CardHeader>
+              <CardTitle className="text-lg">✍️ Assinatura do Técnico</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="nome-tecnico">Nome do Técnico *</Label>
+                <Input
+                  id="nome-tecnico"
+                  value={nomeTecnico}
+                  onChange={(e) => setNomeTecnico(e.target.value)}
+                  placeholder="Nome completo do técnico responsável"
+                />
+              </div>
+              <div>
+                <Label>Assinatura Digital *</Label>
+                <SignatureCanvas canvasRef={sigCanvasTecnico} width={600} height={200} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => limparAssinatura(sigCanvasTecnico)}
+                  className="mt-2"
+                >
+                  Limpar Assinatura
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-2 border-indigo-200 bg-indigo-50">
             <CardHeader>
-              <CardTitle className="text-lg">✍️ Assinatura do Responsável</CardTitle>
+              <CardTitle className="text-lg">✍️ Assinatura do Cliente</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -904,12 +959,12 @@ ClimaPro`
               </div>
               <div>
                 <Label>Assinatura Digital *</Label>
-                <SignatureCanvas canvasRef={sigCanvas} width={600} height={200} />
+                <SignatureCanvas canvasRef={sigCanvasCliente} width={600} height={200} />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={limparAssinatura}
+                  onClick={() => limparAssinatura(sigCanvasCliente)}
                   className="mt-2"
                 >
                   Limpar Assinatura
