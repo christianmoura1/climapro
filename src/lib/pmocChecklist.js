@@ -135,25 +135,44 @@ function dataReferenciaCiclo(equipamento) {
   return new Date();
 }
 
-// Periodicidade efetiva de um equipamento num mês específico, a partir da
-// periodicidade-base + âncora do ciclo: mensal em todo mês, exceto no mês em
-// que o ciclo profundo daquela periodicidade vence.
+// Escada completa do PMOC: TODOS os níveis rodam juntos — mensal todo mês,
+// bimestral a cada 2, trimestral a cada 3, semestral a cada 6 e anual 1x/ano.
+// Cada mês recebe o rótulo do ciclo mais profundo que vence nele. Do mais
+// profundo para o mais raso, para o find() pegar o certo em meses onde vários
+// coincidem (ex: mês 6 é divisível por 2, 3 e 6 → semestral).
+const NIVEIS_ESCADA_PMOC = [
+  { intervalo: 12, periodicidade: 'anual' },
+  { intervalo: 6, periodicidade: 'semestral' },
+  { intervalo: 3, periodicidade: 'trimestral' },
+  { intervalo: 2, periodicidade: 'bimestral' },
+];
+
+// Periodicidade efetiva de um equipamento num mês específico: a distância em
+// meses desde a âncora (mês em que cai o ciclo ANUAL) determina o nível.
 export function periodicidadeDoMes(equipamento, data = new Date()) {
-  const base = equipamento?.periodicidade_pmoc || 'mensal';
-  const intervaloMeses = INTERVALO_MESES_PMOC[base] || 1;
   const referencia = dataReferenciaCiclo(equipamento);
   const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
   const mesesAtual = data.getFullYear() * 12 + data.getMonth();
-  const periodicidade = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0 ? base : 'mensal';
+  const offset = mod(mesesAtual - mesesReferencia, 12);
+  const nivel = NIVEIS_ESCADA_PMOC.find((n) => offset % n.intervalo === 0);
+  const periodicidade = nivel ? nivel.periodicidade : 'mensal';
   return { periodicidade, cicloProfundo: periodicidade !== 'mensal' };
 }
 
+// Âncora (yyyy-mm-01) que faz a periodicidade escolhida cair no mês escolhido:
+// recua o intervalo daquele nível, de modo que o mês vira exatamente aquele
+// degrau da escada — e todos os outros meses se reposicionam juntos (ex:
+// Trimestral em Março → Fev/Abr bimestrais, Jun semestral, Dez anual).
+export function ancoraParaEscolha(ano, mesIndex0, periodicidade) {
+  const intervalo = INTERVALO_MESES_PMOC[periodicidade] || 1;
+  const d = new Date(ano, mesIndex0 - intervalo, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
 // O Plano Anual de Manutenção que a Portaria GM 3.523 / NBR 16401 exigem: os
-// 12 meses do ano-calendário informado, com a periodicidade efetiva de cada
-// um. Escolher uma periodicidade num mês (na tela do Plano Anual) redefine a
-// periodicidade-base do equipamento com aquele mês como âncora — os outros
-// meses recalculam sozinhos a partir daí (ex: trimestral ancorado em Março
-// também acerta Junho, Setembro, Dezembro automaticamente).
+// 12 meses do ano-calendário informado, cada um já pré-preenchido com o nível
+// da escada que vence nele — mensais, bimestrais, trimestrais, semestral e
+// anual, tudo no mesmo ano, automaticamente.
 export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()) {
   return Array.from({ length: 12 }, (_, i) => {
     const data = new Date(ano, i, 1);

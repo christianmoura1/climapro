@@ -7,7 +7,7 @@ import { X, Download, CalendarRange, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual } from "@/lib/pmocChecklist";
+import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual, ancoraParaEscolha } from "@/lib/pmocChecklist";
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
 
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -70,14 +70,11 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   // sozinhos a partir daí (Março = trimestral também acerta Junho, Setembro
   // e Dezembro automaticamente, sem precisar tocar em cada um).
   const ancorarPeriodicidadeNoMes = (equipamento, mesIndex0, novaPeriodicidade) => {
-    // Formata manualmente ("yyyy-mm-01") — toISOString() converteria para UTC
-    // e poderia deslocar o dia/mês dependendo do fuso do usuário.
-    const dataAncora = `${ano}-${String(mesIndex0 + 1).padStart(2, '0')}-01`;
     updateEquipamentoMutation.mutate({
       id: equipamento.id,
       data: {
         periodicidade_pmoc: novaPeriodicidade,
-        ciclo_ancora_pmoc: dataAncora,
+        ciclo_ancora_pmoc: ancoraParaEscolha(ano, mesIndex0, novaPeriodicidade),
       },
     });
   };
@@ -184,11 +181,12 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Gerado automaticamente a partir da periodicidade de cada equipamento. Escolher uma
-            periodicidade no seletor de um mês redefine o padrão do ano inteiro a partir dali — ex:
-            marcar Março como trimestral já acerta Junho, Setembro e Dezembro sozinho. Clique no
-            rótulo do mês para executar a manutenção (cobre todos os equipamentos do cliente numa
-            visita só).
+            Plano completo gerado automaticamente: todos os níveis rodam juntos — mensal todo mês,
+            bimestral a cada 2, trimestral a cada 3, semestral a cada 6 e anual 1x/ano — e cada mês
+            já vem pré-preenchido com o ciclo mais profundo que vence nele. Escolher uma
+            periodicidade num mês reposiciona o calendário inteiro (ex: Trimestral em Março →
+            Fevereiro/Abril bimestrais, Junho semestral, Dezembro anual, tudo sozinho). Clique no
+            rótulo do mês para executar a manutenção.
           </p>
 
           <div className="flex items-center gap-3 text-sm">
