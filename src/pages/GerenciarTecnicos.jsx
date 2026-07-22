@@ -78,7 +78,7 @@ export default function GerenciarTecnicosPage() {
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -119,7 +119,7 @@ export default function GerenciarTecnicosPage() {
       });
       
       if (data.temAcesso) {
-        const linkSistema = `https://climapro.base44.app`;
+        const linkSistema = `https://geradordepmoc.com.br`;
         const mensagemParaEnviar = `🔐 ACESSO AO SISTEMA ClimaPro
 
 Olá ${data.tecnico.nome}!
@@ -304,7 +304,7 @@ Data: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
 ⚠️ IMPORTANTE: Este valor só será creditado após sua aprovação!
 
 📱 Acesse seu painel para aprovar ou rejeitar:
-https://climapro.base44.app/TecnicoDashboard
+https://geradordepmoc.com.br/TecnicoDashboard
 
 Aba: Controle Financeiro → Créditos Pendentes
 
@@ -326,7 +326,7 @@ A empresa ${empresa?.nome || 'ClimaPro'} enviou um crédito de:
 
 ⚠️ *AÇÃO NECESSÁRIA:*
 Acesse seu painel para aprovar ou rejeitar:
-https://climapro.base44.app/TecnicoDashboard
+https://geradordepmoc.com.br/TecnicoDashboard
 
 O valor só será creditado após sua aprovação!`;
 

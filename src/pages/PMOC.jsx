@@ -52,7 +52,7 @@ export default function PMOCPage() {
         filters.cliente_id = filtroCliente;
       }
       
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         if (filtroCliente) {
           return base44.entities.PMOC.filter({ cliente_id: filtroCliente }, '-created_date');
         }
@@ -69,7 +69,7 @@ export default function PMOCPage() {
     queryKey: ['manutencoes-aguardando-aprovacao', user?.empresa_id],
     queryFn: async () => {
       if (!user) return []; // Ensure user is loaded before fetching
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.ManutencaoPMOC.filter({
           status: 'aguardando_aprovacao_empresa'
         }, '-data_execucao');
@@ -87,7 +87,7 @@ export default function PMOCPage() {
     queryKey: ['clientes', user?.empresa_id],
     queryFn: async () => {
       if (!user) return []; // Ensure user is loaded before fetching
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Cliente.list();
       }
       return base44.entities.Cliente.filter({ empresa_id: user.empresa_id });
@@ -100,7 +100,7 @@ export default function PMOCPage() {
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return []; // Ensure user is loaded before fetching
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -113,7 +113,7 @@ export default function PMOCPage() {
     queryKey: ['equipamentos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return []; // Ensure user is loaded before fetching
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Equipamento.list();
       }
       return base44.entities.Equipamento.filter({ empresa_id: user.empresa_id });
@@ -136,7 +136,7 @@ export default function PMOCPage() {
         filters.cliente_id = filtroCliente;
       }
       
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         if (filtroCliente) {
           return base44.entities.ManutencaoPMOC.filter(
             { status: 'concluida', cliente_id: filtroCliente },

@@ -33,7 +33,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
     queryFn: async () => {
       if (!user) return [];
       
-      const todosChamados = user.email === "christianmoura2014@gmail.com"
+      const todosChamados = (user.role === 'admin' && !user.empresa_id)
         ? await base44.entities.Chamado.list('-created_date')
         : await base44.entities.Chamado.filter(
             { empresa_id: user.empresa_id },
@@ -50,7 +50,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -62,7 +62,7 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
     queryKey: ['equipamentos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
-      if (user.email === "christianmoura2014@gmail.com") {
+      if ((user.role === 'admin' && !user.empresa_id)) {
         return base44.entities.Equipamento.list();
       }
       return base44.entities.Equipamento.filter({ empresa_id: user.empresa_id });

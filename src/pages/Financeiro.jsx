@@ -63,10 +63,10 @@ export default function FinanceiroPage() {
           const financeiroAtivo = modulosAtivos.financeiro === true;
           setModuloAtivo(financeiroAtivo);
           
-          if (!financeiroAtivo && currentUser.email !== "christianmoura2014@gmail.com") {
+          if (!financeiroAtivo && currentUser.role !== 'admin') {
             setModuloAtivo(false);
           }
-        } else if (currentUser.email === "christianmoura2014@gmail.com") {
+        } else if (currentUser.role === 'admin') {
           setModuloAtivo(true);
         }
       } catch (error) {
@@ -80,7 +80,7 @@ export default function FinanceiroPage() {
   const { data: lancamentos = [], isLoading: loadingLancamentos, error: lancamentosError } = useQuery({
     queryKey: ['financeiro', user?.empresa_id, forceRender],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Financeiro.list('-data_lancamento');
       }
       return base44.entities.Financeiro.filter(
@@ -96,7 +96,7 @@ export default function FinanceiroPage() {
   const { data: gastosPendentes = [] } = useQuery({
     queryKey: ['gastos-pendentes', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.GastoTecnico.filter({ status_aprovacao: 'pendente' });
       }
       return base44.entities.GastoTecnico.filter({
@@ -110,7 +110,7 @@ export default function FinanceiroPage() {
   const { data: movimentacoesPendentes = [], isLoading: loadingMovimentacoes } = useQuery({
     queryKey: ['movimentacoes-pendentes', user?.empresa_id, forceRender],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         const todasMovimentacoes = await base44.entities.MovimentacaoTecnico.list('-data_envio');
         return todasMovimentacoes.filter(m => m.status === 'pendente');
       }
@@ -130,7 +130,7 @@ export default function FinanceiroPage() {
   const { data: movimentacoesTecnicos = [] } = useQuery({
     queryKey: ['movimentacoes-tecnicos', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.MovimentacaoTecnico.list('-data_movimentacao');
       }
       return base44.entities.MovimentacaoTecnico.filter({
@@ -143,7 +143,7 @@ export default function FinanceiroPage() {
   const { data: tecnicos = [] } = useQuery({
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -154,7 +154,7 @@ export default function FinanceiroPage() {
   const { data: creditosTecnicos = [] } = useQuery({
     queryKey: ['creditos-tecnicos', user?.empresa_id, forceRender],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.CreditoTecnico.list('-data_envio');
       }
       return base44.entities.CreditoTecnico.filter(

@@ -62,13 +62,13 @@ export default function Dashboard() {
         const currentUser = await base44.auth.me();
         console.log('[CLIMAPRO-BOOT] Dashboard - usuário carregado:', currentUser.email);
         setUser(currentUser);
-        setIsAdmin(currentUser.email === "christianmoura2014@gmail.com");
+        setIsAdmin(currentUser.role === 'admin' && !currentUser.empresa_id);
         
         // Marcar como inicializado
         window.__climapro_initialized = true;
         
         // Se usuário não tem empresa_id, redirecionar para setup
-        if (!currentUser.empresa_id && currentUser.email !== "christianmoura2014@gmail.com") {
+        if (!currentUser.empresa_id && currentUser.role !== 'admin') {
           navigate(createPageUrl("SetupInicial"));
         }
       } catch (error) {
@@ -84,7 +84,7 @@ export default function Dashboard() {
   const { data: chamados = [] } = useQuery({
     queryKey: ['chamados', user?.empresa_id, user?.role],
     queryFn: async () => {
-      const adminUser = user.role === 'admin' || user.email === "christianmoura2014@gmail.com";
+      const adminUser = (user.role === 'admin' && !user.empresa_id);
       if (adminUser) {
         return base44.entities.Chamado.list('-created_date', 1000);
       }

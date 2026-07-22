@@ -28,7 +28,7 @@ export default function ValorTecnicosPage() {
   const { data: tecnicos = [] } = useQuery({
     queryKey: ['tecnicos', user?.empresa_id],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Tecnico.list();
       }
       return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
@@ -39,7 +39,7 @@ export default function ValorTecnicosPage() {
   const { data: chamados = [] } = useQuery({
     queryKey: ['chamados', user?.empresa_id, mesReferencia],
     queryFn: async () => {
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.Chamado.list();
       }
       return base44.entities.Chamado.filter({ empresa_id: user.empresa_id });
@@ -51,7 +51,7 @@ export default function ValorTecnicosPage() {
     queryKey: ['valores-tecnicos', user?.empresa_id, mesReferencia],
     queryFn: async () => {
       const mesFormatado = mesReferencia + '-01';
-      if (user?.email === "christianmoura2014@gmail.com") {
+      if ((user?.role === 'admin' && !user?.empresa_id)) {
         return base44.entities.ValorTecnico.filter({ mes_referencia: mesFormatado });
       }
       return base44.entities.ValorTecnico.filter({

@@ -158,7 +158,7 @@ export default function Layout({ children, currentPageName }) {
         setUser(currentUser);
         
         // Verificar se é admin global
-        const isAdmin = currentUser.email === "christianmoura2014@gmail.com";
+        const isAdmin = currentUser.role === 'admin';
         setIsAdminGlobal(isAdmin);
         
         // Se for admin global e estiver tentando acessar páginas restritas, redirecionar
