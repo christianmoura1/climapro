@@ -18,7 +18,7 @@ import CronogramaAnualGrid, { MESES_ABREV } from "./CronogramaAnualGrid";
 // periodicidade ou forçar/desmarcar o ciclo profundo de um mês específico
 // direto nesta tela, sem sair dela. Ao abrir, também sincroniza a Agenda com
 // as próximas 12 visitas — documento e agenda nascem juntos.
-export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose, onExecutar }) {
+export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose }) {
   const [gerando, setGerando] = useState(false);
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
   const [equipamentosState, setEquipamentosState] = useState(equipamentos);
@@ -180,12 +180,10 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Plano completo gerado automaticamente: todos os níveis rodam juntos — mensal todo mês,
-            bimestral a cada 2, trimestral a cada 3, semestral a cada 6 e anual 1x/ano — e cada mês
-            já vem pré-preenchido com o ciclo mais profundo que vence nele. Escolher uma
-            periodicidade num mês reposiciona o calendário inteiro (ex: Trimestral em Março →
-            Fevereiro/Abril bimestrais, Junho semestral, Dezembro anual, tudo sozinho). Clique no
-            rótulo do mês para executar a manutenção.
+            Plano completo gerado automaticamente: mensal todo mês, trimestral a cada 3, semestral
+            a cada 6 e anual 1x/ano — cada mês já vem pré-preenchido com o ciclo mais profundo que
+            vence nele. Clique num mês para alterar o plano; o calendário inteiro se reposiciona
+            sozinho a partir dali.
           </p>
 
           <div className="flex items-center gap-3 text-sm">
@@ -203,7 +201,6 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           <CronogramaAnualGrid
             equipamentos={equipamentosState}
             ano={ano}
-            onExecutar={onExecutar}
             onAncorar={ancorarPeriodicidadeNoMes}
             salvando={updateEquipamentoMutation.isPending}
           />

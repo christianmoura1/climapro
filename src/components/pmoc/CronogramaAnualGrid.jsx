@@ -4,9 +4,11 @@ import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual } from "
 export const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 // Grade do cronograma anual (equipamento × 12 meses), compartilhada entre o
-// painel do cliente na página PMOC e o modal do Plano Anual — um único lugar
-// define como o plano aparece e como se edita a periodicidade mês a mês.
-export default function CronogramaAnualGrid({ equipamentos, ano, onExecutar, onAncorar, salvando, renderInfoEquipamento }) {
+// painel do cliente na página PMOC e o modal do Plano Anual. Cada mês é um
+// único rótulo com a periodicidade calculada automaticamente — as opções de
+// alteração só aparecem ao clicar nele (é um <select> estilizado como chip);
+// escolher um valor reposiciona o calendário do ano inteiro.
+export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento }) {
   return (
     <div className="overflow-x-auto border rounded-lg">
       <table className="w-full text-sm">
@@ -32,25 +34,17 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onExecutar, onA
                   )}
                 </td>
                 {cronograma.map((m, idx) => (
-                  <td key={m.mes} className="p-1 text-center align-top">
-                    <button
-                      type="button"
-                      title="Clique para executar a manutenção deste mês"
-                      onClick={() => onExecutar()}
-                      className={`w-full min-w-[76px] rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize transition-colors ${
-                        m.cicloProfundo
-                          ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-                          : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
-                      }`}
-                    >
-                      {LABEL_PERIODICIDADE[m.periodicidade]}
-                    </button>
+                  <td key={m.mes} className="p-1 text-center align-middle">
                     <select
                       value={m.periodicidade}
                       onChange={(e) => onAncorar(eq, idx, e.target.value)}
                       disabled={salvando}
-                      title="Definir a periodicidade deste mês (reposiciona o calendário inteiro)"
-                      className="mt-1 w-full min-w-[76px] h-6 rounded border border-input bg-white text-[9px] px-1 capitalize"
+                      title="Clique para alterar o plano deste mês (reposiciona o calendário inteiro)"
+                      className={`w-full min-w-[76px] appearance-none rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize text-center cursor-pointer transition-colors border-0 ${
+                        m.cicloProfundo
+                          ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                          : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
+                      }`}
                     >
                       {PERIODICIDADES_PMOC.map((p) => (
                         <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>

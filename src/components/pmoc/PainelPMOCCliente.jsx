@@ -139,7 +139,6 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
                   <CronogramaAnualGrid
                     equipamentos={itens}
                     ano={ano}
-                    onExecutar={() => onExecutarRodada(cliente)}
                     onAncorar={handleAncorar}
                     salvando={updateEquipamentoMutation.isPending}
                     renderInfoEquipamento={renderInfoEquipamento}
@@ -148,9 +147,9 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
               ))}
 
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo (clique no rótulo para executar)</span>
+                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
-                <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-input bg-white inline-block" /> Seletor = redefine o calendário a partir daquele mês</span>
+                <span>Clique num mês para alterar o plano — o calendário se reposiciona sozinho a partir dali.</span>
               </div>
             </div>
           </>

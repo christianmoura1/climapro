@@ -294,11 +294,6 @@ export default function PMOCPage() {
           setVendoPlanoAnualCliente(null);
           queryClient.invalidateQueries(['agenda-eventos']);
         }}
-        onExecutar={() => {
-          const cliente = vendoPlanoAnualCliente;
-          setVendoPlanoAnualCliente(null);
-          handleExecutarRodada(cliente);
-        }}
       />
     );
   }
