@@ -38,7 +38,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
     },
     onError: (error) => {
       console.error("Erro ao atualizar equipamento:", error);
-      toast({ description: "❌ Erro ao salvar alteração. Tente novamente.", variant: "destructive" });
+      toast({ description: `❌ Erro ao salvar: ${error.message || 'tente novamente.'}`, variant: "destructive" });
     }
   });
 
