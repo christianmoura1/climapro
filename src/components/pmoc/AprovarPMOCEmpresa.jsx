@@ -32,22 +32,20 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
       const user = await base44.auth.me();
       const hoje = new Date();
 
-      // 1. Atualizar cada equipamento: última manutenção sempre avança; a
-      // próxima manutenção (ciclo profundo) só avança para quem teve o ciclo
-      // profundo executado nesta rodada — equipamentos que passaram só pela
-      // checagem mensal mantêm a data do ciclo profundo deles intacta.
-      const cicloProfundoIds = new Set(manutencao.equipamentos_ciclo_profundo || []);
+      // 1. Atualizar cada equipamento: toda visita do PMOC é mensal no mínimo
+      // (checagem básica), então a próxima manutenção é sempre daqui a 1 mês,
+      // para TODOS — o que muda mês a mês é o nível do checklist, e isso é
+      // regido pela âncora do Plano Anual, não por esta data. Sem isso, quem
+      // passasse só pela checagem mensal ficava com proxima_manutencao nula e
+      // aparecia como "Nunca executado" mesmo depois de executar.
       const datasAtualizadas = [];
       for (const equipamento of equipamentos || []) {
-        const dadosEquipamento = { ultima_manutencao: hoje.toISOString().split('T')[0] };
-        if (cicloProfundoIds.has(equipamento.id) && equipamento.periodicidade_pmoc) {
-          const proxima = calcularProximaManutencao(hoje, equipamento.periodicidade_pmoc);
-          dadosEquipamento.proxima_manutencao = proxima.toISOString().split('T')[0];
-          datasAtualizadas.push(proxima);
-        } else if (equipamento.proxima_manutencao) {
-          datasAtualizadas.push(new Date(equipamento.proxima_manutencao));
-        }
-        await base44.entities.Equipamento.update(equipamento.id, dadosEquipamento);
+        const proxima = calcularProximaManutencao(hoje, 'mensal');
+        datasAtualizadas.push(proxima);
+        await base44.entities.Equipamento.update(equipamento.id, {
+          ultima_manutencao: hoje.toISOString().split('T')[0],
+          proxima_manutencao: proxima.toISOString().split('T')[0],
+        });
       }
       // Próxima manutenção do "cabeçalho" do PMOC = a mais próxima entre os
       // equipamentos (mantém os widgets antigos — dashboard/lista — úteis).

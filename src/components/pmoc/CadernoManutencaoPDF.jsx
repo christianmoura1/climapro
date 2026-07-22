@@ -44,7 +44,7 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
 
       const linhasResumo = equipamentos
         .map((eq) => {
-          const status = statusManutencao(eq.proxima_manutencao);
+          const status = statusManutencao(eq.proxima_manutencao, eq.ultima_manutencao);
           return `
             <tr>
               <td>${eq.numero_equipamento || '—'}</td>

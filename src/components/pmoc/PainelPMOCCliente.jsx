@@ -56,7 +56,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
 
   const contagem = equipamentos.reduce(
     (acc, eq) => {
-      const status = statusManutencao(eq.proxima_manutencao);
+      const status = statusManutencao(eq.proxima_manutencao, eq.ultima_manutencao);
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
@@ -64,7 +64,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
   );
 
   const renderInfoEquipamento = (eq) => {
-    const status = statusManutencao(eq.proxima_manutencao);
+    const status = statusManutencao(eq.proxima_manutencao, eq.ultima_manutencao);
     return (
       <div className="min-w-[140px]">
         <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>

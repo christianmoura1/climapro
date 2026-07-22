@@ -97,8 +97,8 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                       {tipo.label}
                     </Badge>
                     {equipamento.pmoc_ativo && (
-                      <Badge variant="outline" className={STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao)].cor}>
-                        {STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao)].label}
+                      <Badge variant="outline" className={STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao, equipamento.ultima_manutencao)].cor}>
+                        {STATUS_MANUTENCAO_CONFIG[statusManutencao(equipamento.proxima_manutencao, equipamento.ultima_manutencao)].label}
                       </Badge>
                     )}
                   </div>

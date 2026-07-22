@@ -86,12 +86,19 @@ export function calcularProximaManutencao(dataBase, periodicidade) {
 
 const UM_DIA_MS = 24 * 60 * 60 * 1000;
 
-// 'em_dia' | 'vence_em_breve' (<=7 dias) | 'atrasado' | 'nunca_executado'
-export function statusManutencao(proximaManutencao) {
-  if (!proximaManutencao) return 'nunca_executado';
+// 'em_dia' | 'vence_em_breve' (<=7 dias) | 'atrasado' | 'nunca_executado'.
+// Se a próxima manutenção não estiver gravada mas houver última execução,
+// assume última + 1 mês (toda visita do PMOC é mensal no mínimo) — cobre
+// registros antigos em que a aprovação não preenchia a próxima data.
+export function statusManutencao(proximaManutencao, ultimaManutencao) {
+  let proxima = proximaManutencao ? parseDataLocal(proximaManutencao) : null;
+  if (!proxima && ultimaManutencao) {
+    proxima = calcularProximaManutencao(parseDataLocal(ultimaManutencao), 'mensal');
+  }
+  if (!proxima) return 'nunca_executado';
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-  const proxima = new Date(proximaManutencao);
+  proxima = new Date(proxima);
   proxima.setHours(0, 0, 0, 0);
   const diasRestantes = Math.ceil((proxima - hoje) / UM_DIA_MS);
   if (diasRestantes < 0) return 'atrasado';
