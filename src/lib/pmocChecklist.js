@@ -109,52 +109,39 @@ function mod(a, b) {
   return ((a % b) + b) % b;
 }
 
-// Âncora do ciclo profundo daquele equipamento: usa a próxima manutenção já
-// calculada quando existe (ela é sempre congruente, módulo a periodicidade,
-// com todas as datas futuras corretas do ciclo — não importa se já ficou no
-// passado em relação ao ano exibido), senão cai para última manutenção /
-// instalação / hoje.
+// Âncora do ciclo profundo daquele equipamento: `ciclo_ancora_pmoc` é a
+// âncora explícita — o mês em que o usuário escolheu que o ciclo profundo
+// cai, direto na tela do Plano Anual (redefine o padrão do ano inteiro a
+// partir dali, não é uma exceção isolada daquele mês). Sem âncora explícita,
+// cai para próxima/última manutenção já registrada, depois instalação, senão
+// hoje.
 function dataReferenciaCiclo(equipamento) {
+  if (equipamento?.ciclo_ancora_pmoc) return new Date(equipamento.ciclo_ancora_pmoc);
   if (equipamento?.proxima_manutencao) return new Date(equipamento.proxima_manutencao);
   if (equipamento?.ultima_manutencao) return new Date(equipamento.ultima_manutencao);
   if (equipamento?.data_instalacao) return new Date(equipamento.data_instalacao);
   return new Date();
 }
 
-// Chave de `equipamento.cronograma_pmoc_overrides` para um mês — formato
-// "AAAA-M" (mês 1-12, sem zero à esquerda).
-export function chaveCronograma(ano, mesIndex0) {
-  return `${ano}-${mesIndex0 + 1}`;
-}
-
-function overrideParaMes(equipamento, ano, mesIndex0) {
-  const overrides = equipamento?.cronograma_pmoc_overrides;
-  if (!overrides) return undefined;
-  return overrides[chaveCronograma(ano, mesIndex0)] || undefined;
-}
-
-// Periodicidade efetiva de um equipamento num mês específico: se aquele mês
-// foi ajustado manualmente (`cronograma_pmoc_overrides`), usa o valor
-// escolhido — Janeiro pode ser mensal, Fevereiro mensal, Março trimestral,
-// cada mês com a sua; sem ajuste, cai no cálculo automático a partir da
-// periodicidade-base do equipamento (mensal em todo mês, exceto no mês em
-// que o ciclo daquela periodicidade vence).
+// Periodicidade efetiva de um equipamento num mês específico, a partir da
+// periodicidade-base + âncora do ciclo: mensal em todo mês, exceto no mês em
+// que o ciclo profundo daquela periodicidade vence.
 export function periodicidadeDoMes(equipamento, data = new Date()) {
   const base = equipamento?.periodicidade_pmoc || 'mensal';
   const intervaloMeses = INTERVALO_MESES_PMOC[base] || 1;
   const referencia = dataReferenciaCiclo(equipamento);
   const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
   const mesesAtual = data.getFullYear() * 12 + data.getMonth();
-  const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0 ? base : 'mensal';
-  const override = overrideParaMes(equipamento, data.getFullYear(), data.getMonth());
-  const periodicidade = override || calculado;
-  return { periodicidade, cicloProfundo: periodicidade !== 'mensal', manual: override !== undefined };
+  const periodicidade = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0 ? base : 'mensal';
+  return { periodicidade, cicloProfundo: periodicidade !== 'mensal' };
 }
 
 // O Plano Anual de Manutenção que a Portaria GM 3.523 / NBR 16401 exigem: os
 // 12 meses do ano-calendário informado, com a periodicidade efetiva de cada
-// um (editável mês a mês direto na tela, sem depender só do cálculo
-// automático).
+// um. Escolher uma periodicidade num mês (na tela do Plano Anual) redefine a
+// periodicidade-base do equipamento com aquele mês como âncora — os outros
+// meses recalculam sozinhos a partir daí (ex: trimestral ancorado em Março
+// também acerta Junho, Setembro, Dezembro automaticamente).
 export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()) {
   return Array.from({ length: 12 }, (_, i) => {
     const data = new Date(ano, i, 1);
@@ -175,7 +162,7 @@ export function gerarProximasVisitas(equipamento, quantidade = 12, apartirDe = n
 
 // Monta o checklist completo de uma visita para um equipamento no mês de
 // `hoje`: sempre a base mensal + os itens da periodicidade efetiva daquele
-// mês específico (respeitando ajuste manual, se houver).
+// mês específico.
 export function checklistParaEquipamento(equipamento, hoje = new Date()) {
   const { periodicidade, cicloProfundo: cicloProfundoDevido } = periodicidadeDoMes(equipamento, hoje);
 

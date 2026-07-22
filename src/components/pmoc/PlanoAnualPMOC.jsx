@@ -7,7 +7,7 @@ import { X, Download, CalendarRange, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual, chaveCronograma } from "@/lib/pmocChecklist";
+import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual } from "@/lib/pmocChecklist";
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
 
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -65,21 +65,18 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cliente, empresaId, pmocId]);
 
-  // "" = volta ao cálculo automático (remove o ajuste daquele mês); qualquer
-  // periodicidade explícita fixa aquele mês específico, independente do que
-  // a fórmula diria — é o "Janeiro: mensal, Fevereiro: mensal, Março:
-  // trimestral" que dá controle total mês a mês, sem mexer nos outros meses.
-  const definirPeriodicidadeMes = (equipamento, mesIndex0, novaPeriodicidade) => {
-    const overrides = { ...(equipamento.cronograma_pmoc_overrides || {}) };
-    const chave = chaveCronograma(ano, mesIndex0);
-    if (novaPeriodicidade) {
-      overrides[chave] = novaPeriodicidade;
-    } else {
-      delete overrides[chave];
-    }
+  // Escolher uma periodicidade num mês redefine a periodicidade-base do
+  // equipamento com aquele mês como âncora — os outros 11 meses recalculam
+  // sozinhos a partir daí (Março = trimestral também acerta Junho, Setembro
+  // e Dezembro automaticamente, sem precisar tocar em cada um).
+  const ancorarPeriodicidadeNoMes = (equipamento, mesIndex0, novaPeriodicidade) => {
+    const dataAncora = new Date(ano, mesIndex0, 1);
     updateEquipamentoMutation.mutate({
       id: equipamento.id,
-      data: { cronograma_pmoc_overrides: overrides },
+      data: {
+        periodicidade_pmoc: novaPeriodicidade,
+        ciclo_ancora_pmoc: dataAncora.toISOString().split('T')[0],
+      },
     });
   };
 
@@ -185,10 +182,11 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Gerado automaticamente a partir da periodicidade de cada equipamento, mas cada mês pode
-            ser ajustado individualmente no seletor abaixo do rótulo — Janeiro mensal, Fevereiro
-            mensal, Março trimestral, e assim por diante. Clique no rótulo do mês para executar a
-            manutenção daquele momento (cobre todos os equipamentos do cliente numa visita só).
+            Gerado automaticamente a partir da periodicidade de cada equipamento. Escolher uma
+            periodicidade no seletor de um mês redefine o padrão do ano inteiro a partir dali — ex:
+            marcar Março como trimestral já acerta Junho, Setembro e Dezembro sozinho. Clique no
+            rótulo do mês para executar a manutenção (cobre todos os equipamentos do cliente numa
+            visita só).
           </p>
 
           <div className="flex items-center gap-3 text-sm">
@@ -237,15 +235,12 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
                             {LABEL_PERIODICIDADE[m.periodicidade]}
                           </button>
                           <select
-                            value={m.manual ? m.periodicidade : ''}
-                            onChange={(e) => definirPeriodicidadeMes(eq, idx, e.target.value)}
+                            value={m.periodicidade}
+                            onChange={(e) => ancorarPeriodicidadeNoMes(eq, idx, e.target.value)}
                             disabled={updateEquipamentoMutation.isPending}
-                            title="Ajustar a periodicidade deste mês específico"
-                            className={`mt-1 w-full min-w-[76px] h-6 rounded border text-[9px] px-1 capitalize ${
-                              m.manual ? 'border-amber-400 bg-amber-50' : 'border-input bg-white'
-                            }`}
+                            title="Definir a periodicidade a partir deste mês (redefine o ano inteiro)"
+                            className="mt-1 w-full min-w-[76px] h-6 rounded border border-input bg-white text-[9px] px-1 capitalize"
                           >
-                            <option value="">Auto</option>
                             {PERIODICIDADES_PMOC.map((p) => (
                               <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
                             ))}
@@ -262,7 +257,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo (clique no rótulo para executar)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-amber-400 bg-amber-50 inline-block" /> Seletor = ajuste manual daquele mês ("Auto" volta ao cálculo)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-input bg-white inline-block" /> Seletor = redefine a periodicidade a partir daquele mês</span>
           </div>
 
           <Button
