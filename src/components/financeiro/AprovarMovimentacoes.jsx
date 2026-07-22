@@ -106,7 +106,7 @@ ClimaPro`
 Sua movimentação de R$ ${parseFloat(mov.valor).toFixed(2)} foi aprovada!
 
 Acesse seu painel para mais detalhes:
-https://climapro.base44.app/TecnicoDashboard`;
+https://geradordepmoc.com.br/TecnicoDashboard`;
           
           const whatsappUrl = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
           window.open(whatsappUrl, '_blank');

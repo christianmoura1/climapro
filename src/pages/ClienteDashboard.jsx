@@ -194,7 +194,7 @@ Tel: ${cliente.telefone}
 Email: ${cliente.email}
 
 🌐 *Acesse o sistema:*
-https://climapro.base44.app/Chamados`;
+https://geradordepmoc.com.br/Chamados`;
 
       // Pegar telefone da empresa (remover caracteres especiais)
       const telefoneEmpresa = empresa?.telefone?.replace(/\D/g, '') || '';
