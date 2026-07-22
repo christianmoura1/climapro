@@ -130,28 +130,35 @@ export function chaveCronograma(ano, mesIndex0) {
 function overrideParaMes(equipamento, ano, mesIndex0) {
   const overrides = equipamento?.cronograma_pmoc_overrides;
   if (!overrides) return undefined;
-  return overrides[chaveCronograma(ano, mesIndex0)];
+  return overrides[chaveCronograma(ano, mesIndex0)] || undefined;
+}
+
+// Periodicidade efetiva de um equipamento num mês específico: se aquele mês
+// foi ajustado manualmente (`cronograma_pmoc_overrides`), usa o valor
+// escolhido — Janeiro pode ser mensal, Fevereiro mensal, Março trimestral,
+// cada mês com a sua; sem ajuste, cai no cálculo automático a partir da
+// periodicidade-base do equipamento (mensal em todo mês, exceto no mês em
+// que o ciclo daquela periodicidade vence).
+export function periodicidadeDoMes(equipamento, data = new Date()) {
+  const base = equipamento?.periodicidade_pmoc || 'mensal';
+  const intervaloMeses = INTERVALO_MESES_PMOC[base] || 1;
+  const referencia = dataReferenciaCiclo(equipamento);
+  const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
+  const mesesAtual = data.getFullYear() * 12 + data.getMonth();
+  const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0 ? base : 'mensal';
+  const override = overrideParaMes(equipamento, data.getFullYear(), data.getMonth());
+  const periodicidade = override || calculado;
+  return { periodicidade, cicloProfundo: periodicidade !== 'mensal', manual: override !== undefined };
 }
 
 // O Plano Anual de Manutenção que a Portaria GM 3.523 / NBR 16401 exigem: os
-// 12 meses do ano-calendário informado, marcando em quais este equipamento
-// tem, além da checagem mensal obrigatória (todo mês, todo equipamento
-// ativo), o ciclo profundo próprio dele (troca de gás, teste elétrico
-// completo, etc.) previsto. Por padrão é 100% calculado a partir da
-// periodicidade, mas `cronograma_pmoc_overrides` permite forçar um mês
-// específico sem mudar a periodicidade do equipamento inteiro.
+// 12 meses do ano-calendário informado, com a periodicidade efetiva de cada
+// um (editável mês a mês direto na tela, sem depender só do cálculo
+// automático).
 export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()) {
-  const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
-  const intervaloMeses = INTERVALO_MESES_PMOC[periodicidade] || 1;
-  const referencia = dataReferenciaCiclo(equipamento);
-  const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
-
   return Array.from({ length: 12 }, (_, i) => {
-    const mesesAtual = ano * 12 + i;
-    const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
-    const override = overrideParaMes(equipamento, ano, i);
-    const cicloProfundo = override === undefined ? calculado : override;
-    return { mes: i + 1, data: new Date(ano, i, 1), cicloProfundo, manual: override !== undefined };
+    const data = new Date(ano, i, 1);
+    return { mes: i + 1, data, ...periodicidadeDoMes(equipamento, data) };
   });
 }
 
@@ -159,30 +166,18 @@ export function gerarCronogramaAnual(equipamento, ano = new Date().getFullYear()
 // janela corrida (não presa ao ano-calendário) — usado para popular a Agenda
 // com antecedência real, independente de quando o equipamento entrou no PMOC.
 export function gerarProximasVisitas(equipamento, quantidade = 12, apartirDe = new Date()) {
-  const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
-  const intervaloMeses = INTERVALO_MESES_PMOC[periodicidade] || 1;
-  const referencia = dataReferenciaCiclo(equipamento);
-  const mesesReferencia = referencia.getFullYear() * 12 + referencia.getMonth();
   const inicio = new Date(apartirDe.getFullYear(), apartirDe.getMonth(), 1);
-
   return Array.from({ length: quantidade }, (_, i) => {
     const data = new Date(inicio.getFullYear(), inicio.getMonth() + i, 1);
-    const mesesAtual = data.getFullYear() * 12 + data.getMonth();
-    const calculado = mod(mesesAtual - mesesReferencia, intervaloMeses) === 0;
-    const override = overrideParaMes(equipamento, data.getFullYear(), data.getMonth());
-    const cicloProfundo = override === undefined ? calculado : override;
-    return { data, cicloProfundo };
+    return { data, ...periodicidadeDoMes(equipamento, data) };
   });
 }
 
-// Monta o checklist completo de uma visita para um equipamento: sempre a base
-// mensal + os itens do ciclo profundo quando ele está vencendo/vencido.
+// Monta o checklist completo de uma visita para um equipamento no mês de
+// `hoje`: sempre a base mensal + os itens da periodicidade efetiva daquele
+// mês específico (respeitando ajuste manual, se houver).
 export function checklistParaEquipamento(equipamento, hoje = new Date()) {
-  const periodicidade = equipamento?.periodicidade_pmoc || 'mensal';
-  const cicloProfundoDevido =
-    periodicidade === 'mensal' ||
-    !equipamento?.proxima_manutencao ||
-    new Date(equipamento.proxima_manutencao) <= hoje;
+  const { periodicidade, cicloProfundo: cicloProfundoDevido } = periodicidadeDoMes(equipamento, hoje);
 
   const itensMensal = CHECKLIST_MENSAL_BASE.map((descricao) => ({
     descricao,

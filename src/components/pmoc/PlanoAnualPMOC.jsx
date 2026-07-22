@@ -65,20 +65,18 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cliente, empresaId, pmocId]);
 
-  const alterarPeriodicidade = (equipamento, novaPeriodicidade) => {
-    updateEquipamentoMutation.mutate({
-      id: equipamento.id,
-      data: { periodicidade_pmoc: novaPeriodicidade },
-    });
-  };
-
-  const alternarMes = (equipamento, mesIndex0) => {
-    const cronograma = gerarCronogramaAnual(equipamento, ano);
-    const atual = cronograma[mesIndex0].cicloProfundo;
-    const overrides = {
-      ...(equipamento.cronograma_pmoc_overrides || {}),
-      [chaveCronograma(ano, mesIndex0)]: !atual,
-    };
+  // "" = volta ao cálculo automático (remove o ajuste daquele mês); qualquer
+  // periodicidade explícita fixa aquele mês específico, independente do que
+  // a fórmula diria — é o "Janeiro: mensal, Fevereiro: mensal, Março:
+  // trimestral" que dá controle total mês a mês, sem mexer nos outros meses.
+  const definirPeriodicidadeMes = (equipamento, mesIndex0, novaPeriodicidade) => {
+    const overrides = { ...(equipamento.cronograma_pmoc_overrides || {}) };
+    const chave = chaveCronograma(ano, mesIndex0);
+    if (novaPeriodicidade) {
+      overrides[chave] = novaPeriodicidade;
+    } else {
+      delete overrides[chave];
+    }
     updateEquipamentoMutation.mutate({
       id: equipamento.id,
       data: { cronograma_pmoc_overrides: overrides },
@@ -92,12 +90,11 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         .map((eq) => {
           const cronograma = gerarCronogramaAnual(eq, ano);
           const celulas = cronograma
-            .map((m) => `<td class="${m.cicloProfundo ? 'ciclo-profundo' : 'mensal'}">${m.cicloProfundo ? '●' : '○'}</td>`)
+            .map((m) => `<td class="${m.cicloProfundo ? 'ciclo-profundo' : 'mensal'}">${LABEL_PERIODICIDADE[m.periodicidade]}</td>`)
             .join('');
           return `
             <tr>
               <td class="equip-nome">${eq.numero_equipamento || '—'}<br/><span class="muted">${eq.marca} ${eq.modelo}</span></td>
-              <td style="text-transform:capitalize;">${LABEL_PERIODICIDADE[eq.periodicidade_pmoc] || '—'}</td>
               ${celulas}
             </tr>`;
         })
@@ -120,8 +117,8 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   th { background: #f3f4f6; }
   td.equip-nome { text-align: left; font-weight: 600; }
   td.equip-nome .muted { font-weight: 400; color: #6b7280; font-size: 11px; }
-  td.ciclo-profundo { color: #7c3aed; font-weight: bold; font-size: 16px; }
-  td.mensal { color: #9ca3af; font-size: 14px; }
+  td.ciclo-profundo { color: #6b21a8; font-weight: bold; background: #f3e8ff; }
+  td.mensal { color: #9ca3af; }
   .legenda { margin-top: 16px; font-size: 12px; color: #4b5563; display: flex; gap: 24px; }
   .legenda span { display: inline-flex; align-items: center; gap: 6px; }
   .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; }
@@ -138,7 +135,6 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
     <thead>
       <tr>
         <th>Equipamento</th>
-        <th>Periodicidade</th>
         ${MESES_ABREV.map((m) => `<th>${m}</th>`).join('')}
       </tr>
     </thead>
@@ -146,8 +142,8 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   </table>
 
   <div class="legenda">
-    <span>● Ciclo profundo (troca de gás, teste elétrico, etc.)</span>
-    <span>○ Checagem mensal básica (filtros, inspeção, drenos)</span>
+    <span>Destacado = ciclo profundo daquele mês (troca de gás, teste elétrico, etc.)</span>
+    <span>Mensal = checagem básica (filtros, inspeção, drenos)</span>
   </div>
 
   <div class="footer">
@@ -189,10 +185,10 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="p-6 space-y-4 overflow-y-auto">
           <p className="text-sm text-muted-foreground">
-            Gerado automaticamente a partir da periodicidade de cada equipamento — cada mês mostra o
-            tipo de visita previsto. Clique no mês para executar a manutenção daquele momento (cobre
-            todos os equipamentos do cliente numa visita só); clique na bolinha abaixo para
-            forçar/remover manualmente o ciclo profundo daquele mês específico.
+            Gerado automaticamente a partir da periodicidade de cada equipamento, mas cada mês pode
+            ser ajustado individualmente no seletor abaixo do rótulo — Janeiro mensal, Fevereiro
+            mensal, Março trimestral, e assim por diante. Clique no rótulo do mês para executar a
+            manutenção daquele momento (cobre todos os equipamentos do cliente numa visita só).
           </p>
 
           <div className="flex items-center gap-3 text-sm">
@@ -212,7 +208,6 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
               <thead>
                 <tr className="bg-muted/50 text-left">
                   <th className="p-2 font-medium">Equipamento</th>
-                  <th className="p-2 font-medium">Periodicidade</th>
                   {MESES_ABREV.map((m) => (
                     <th key={m} className="p-2 font-medium text-center">{m}</th>
                   ))}
@@ -227,44 +222,34 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
                         <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>
                         <p className="text-xs text-muted-foreground">{eq.marca} {eq.modelo}</p>
                       </td>
-                      <td className="p-2">
-                        <select
-                          value={eq.periodicidade_pmoc || 'mensal'}
-                          onChange={(e) => alterarPeriodicidade(eq, e.target.value)}
-                          disabled={updateEquipamentoMutation.isPending}
-                          className="h-8 rounded-md border border-input bg-white px-2 text-xs shadow-sm capitalize"
-                        >
-                          {PERIODICIDADES_PMOC.map((p) => (
-                            <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
-                          ))}
-                        </select>
-                      </td>
                       {cronograma.map((m, idx) => (
                         <td key={m.mes} className="p-1 text-center align-top">
                           <button
                             type="button"
                             title="Clique para executar a manutenção deste mês"
                             onClick={() => onExecutar()}
-                            className={`w-full min-w-[64px] rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize transition-colors ${
+                            className={`w-full min-w-[76px] rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize transition-colors ${
                               m.cicloProfundo
                                 ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
                                 : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
                             }`}
                           >
-                            {m.cicloProfundo ? (LABEL_PERIODICIDADE[eq.periodicidade_pmoc] || 'Ciclo profundo') : 'Mensal'}
+                            {LABEL_PERIODICIDADE[m.periodicidade]}
                           </button>
-                          <button
-                            type="button"
-                            title={m.manual ? 'Ajuste manual — clique para voltar ao cálculo automático' : 'Clique para forçar/remover manualmente o ciclo profundo deste mês'}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              alternarMes(eq, idx);
-                            }}
+                          <select
+                            value={m.manual ? m.periodicidade : ''}
+                            onChange={(e) => definirPeriodicidadeMes(eq, idx, e.target.value)}
                             disabled={updateEquipamentoMutation.isPending}
-                            className={`mt-1 mx-auto block w-2.5 h-2.5 rounded-full transition-colors ${
-                              m.manual ? 'bg-amber-400 hover:bg-amber-500' : 'bg-muted-foreground/20 hover:bg-muted-foreground/40'
+                            title="Ajustar a periodicidade deste mês específico"
+                            className={`mt-1 w-full min-w-[76px] h-6 rounded border text-[9px] px-1 capitalize ${
+                              m.manual ? 'border-amber-400 bg-amber-50' : 'border-input bg-white'
                             }`}
-                          />
+                          >
+                            <option value="">Auto</option>
+                            {PERIODICIDADES_PMOC.map((p) => (
+                              <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
+                            ))}
+                          </select>
                         </td>
                       ))}
                     </tr>
@@ -277,7 +262,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo (clique no rótulo para executar)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> Bolinha = ajuste manual daquele mês</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-amber-400 bg-amber-50 inline-block" /> Seletor = ajuste manual daquele mês ("Auto" volta ao cálculo)</span>
           </div>
 
           <Button
