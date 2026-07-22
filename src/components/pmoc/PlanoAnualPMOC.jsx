@@ -7,10 +7,9 @@ import { X, Download, CalendarRange, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual, ancoraParaEscolha } from "@/lib/pmocChecklist";
+import { LABEL_PERIODICIDADE, gerarCronogramaAnual, ancoraParaEscolha } from "@/lib/pmocChecklist";
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
-
-const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+import CronogramaAnualGrid, { MESES_ABREV } from "./CronogramaAnualGrid";
 
 // O Plano Anual de Manutenção exigido pela Portaria GM 3.523 / NBR 16401 —
 // cronograma dos 12 meses do ano-calendário para todos os equipamentos ativos
@@ -201,64 +200,13 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
             </Button>
           </div>
 
-          <div className="overflow-x-auto border rounded-lg">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/50 text-left">
-                  <th className="p-2 font-medium">Equipamento</th>
-                  {MESES_ABREV.map((m) => (
-                    <th key={m} className="p-2 font-medium text-center">{m}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {equipamentosState.map((eq) => {
-                  const cronograma = gerarCronogramaAnual(eq, ano);
-                  return (
-                    <tr key={eq.id} className="border-t">
-                      <td className="p-2">
-                        <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>
-                        <p className="text-xs text-muted-foreground">{eq.marca} {eq.modelo}</p>
-                      </td>
-                      {cronograma.map((m, idx) => (
-                        <td key={m.mes} className="p-1 text-center align-top">
-                          <button
-                            type="button"
-                            title="Clique para executar a manutenção deste mês"
-                            onClick={() => onExecutar()}
-                            className={`w-full min-w-[76px] rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize transition-colors ${
-                              m.cicloProfundo
-                                ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
-                                : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
-                            }`}
-                          >
-                            {LABEL_PERIODICIDADE[m.periodicidade]}
-                          </button>
-                          <select
-                            value={m.periodicidade}
-                            onChange={(e) => ancorarPeriodicidadeNoMes(eq, idx, e.target.value)}
-                            disabled={updateEquipamentoMutation.isPending}
-                            title="Definir a periodicidade a partir deste mês (redefine o ano inteiro)"
-                            className="mt-1 w-full min-w-[76px] h-6 rounded border border-input bg-white text-[9px] px-1 capitalize"
-                          >
-                            {PERIODICIDADES_PMOC.map((p) => (
-                              <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
-                            ))}
-                          </select>
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo (clique no rótulo para executar)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded border border-input bg-white inline-block" /> Seletor = redefine a periodicidade a partir daquele mês</span>
-          </div>
+          <CronogramaAnualGrid
+            equipamentos={equipamentosState}
+            ano={ano}
+            onExecutar={onExecutar}
+            onAncorar={ancorarPeriodicidadeNoMes}
+            salvando={updateEquipamentoMutation.isPending}
+          />
 
           <Button
             className="w-full bg-purple-600 hover:bg-purple-700"
