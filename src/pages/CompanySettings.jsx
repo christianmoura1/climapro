@@ -39,7 +39,9 @@ export default function CompanySettings() {
     telefone: "",
     email_contato: "",
     endereco: "",
-    logo_url: ""
+    logo_url: "",
+    responsavel_tecnico_nome: "",
+    responsavel_tecnico_registro: ""
   });
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -52,7 +54,9 @@ export default function CompanySettings() {
         telefone: empresa.telefone || "",
         email_contato: empresa.email_contato || "",
         endereco: empresa.endereco || "",
-        logo_url: empresa.logo_url || ""
+        logo_url: empresa.logo_url || "",
+        responsavel_tecnico_nome: empresa.responsavel_tecnico_nome || "",
+        responsavel_tecnico_registro: empresa.responsavel_tecnico_registro || ""
       });
     }
   }, [empresa]);
@@ -244,6 +248,36 @@ export default function CompanySettings() {
                   placeholder="Rua, número, bairro, cidade - UF"
                   disabled={uploadingLogo}
                 />
+              </div>
+
+              <div className="space-y-3 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div>
+                  <Label className="text-purple-900 font-semibold">Responsável Técnico (PMOC)</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    A Portaria GM nº 3.523/98 exige identificar o responsável técnico habilitado nos
+                    documentos do PMOC — sai impresso no Plano Anual e no Caderno de Manutenção.
+                  </p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome do Responsável Técnico</Label>
+                    <Input
+                      value={formData.responsavel_tecnico_nome}
+                      onChange={(e) => setFormData({...formData, responsavel_tecnico_nome: e.target.value})}
+                      placeholder="Ex: João da Silva"
+                      disabled={uploadingLogo}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Registro Profissional (CREA/CFT)</Label>
+                    <Input
+                      value={formData.responsavel_tecnico_registro}
+                      onChange={(e) => setFormData({...formData, responsavel_tecnico_registro: e.target.value})}
+                      placeholder="Ex: CREA-SP 123456789"
+                      disabled={uploadingLogo}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">

@@ -22,8 +22,14 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   const [gerando, setGerando] = useState(false);
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
   const [equipamentosState, setEquipamentosState] = useState(equipamentos);
+  const [empresa, setEmpresa] = useState(null);
   const ano = new Date().getFullYear();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!empresaId) return;
+    base44.entities.Empresa.get(empresaId).then(setEmpresa).catch(() => setEmpresa(null));
+  }, [empresaId]);
 
   useEffect(() => {
     setEquipamentosState(equipamentos);
@@ -122,7 +128,9 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
 <body>
   <div class="header">
     <h1>📅 Plano Anual de Manutenção ${ano}</h1>
+    ${empresa ? `<p><strong>${empresa.nome}</strong>${empresa.cnpj ? ` — CNPJ ${empresa.cnpj}` : ''}</p>` : ''}
     <p>Cliente: <strong>${cliente.nome}</strong> — ${cliente.endereco || ''}</p>
+    ${empresa?.responsavel_tecnico_nome ? `<p>Responsável Técnico: <strong>${empresa.responsavel_tecnico_nome}</strong>${empresa.responsavel_tecnico_registro ? ` — ${empresa.responsavel_tecnico_registro}` : ''}</p>` : ''}
     <p>Documento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} conforme Portaria GM nº 3.523/98 e NBR 16401.</p>
   </div>
 
