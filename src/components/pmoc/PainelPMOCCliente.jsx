@@ -109,7 +109,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
               disabled={equipamentos.length === 0}
             >
               <PlayCircle className="w-4 h-4 mr-2" />
-              Executar Rodada Mensal
+              Executar PMOC
             </Button>
           </div>
         </div>
