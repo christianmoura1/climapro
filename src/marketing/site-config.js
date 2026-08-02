@@ -3,65 +3,65 @@ export const SITE_URL = "https://geradordepmoc.com.br";
 export const publicPages = [
   {
     path: "/",
-    title: "ClimaPro | Gest?o de PMOC, chamados e equipes de climatiza??o",
+    title: "ClimaPro | Gestão de PMOC, chamados e equipes de climatização",
     description:
-      "Organize chamados, PMOC, agenda e equipe t?cnica no ClimaPro. Registre a execu??o do servi?o e acompanhe a rotina da sua empresa.",
-    eyebrow: "Gest?o de climatiza??o",
+      "Organize chamados, PMOC, agenda e equipe técnica no ClimaPro. Registre a execução do serviço e acompanhe a rotina da sua empresa.",
+    eyebrow: "Gestão de climatização",
     schemaType: "WebSite",
   },
   {
     path: "/solucoes/sistema-pmoc",
-    title: "Sistema PMOC para planejar e registrar manuten??es | ClimaPro",
+    title: "Sistema PMOC para planejar e registrar manutenções | ClimaPro",
     description:
-      "Monte o cronograma anual, execute checklists por equipamento e re?na fotos, assinaturas e hist?rico das manuten??es PMOC.",
-    eyebrow: "Solu??o para PMOC",
+      "Monte o cronograma anual, execute checklists por equipamento e reúna fotos, assinaturas e histórico das manutenções PMOC.",
+    eyebrow: "Solução para PMOC",
     schemaType: "WebPage",
   },
   {
     path: "/solucoes/ordem-servico-ar-condicionado",
-    title: "Ordem de servi?o para ar-condicionado com fotos e assinatura | ClimaPro",
+    title: "Ordem de serviço para ar-condicionado com fotos e assinatura | ClimaPro",
     description:
-      "Abra, agende e acompanhe ordens de servi?o de ar-condicionado. A equipe registra fotos, v?deos, assinatura do cliente e status do atendimento.",
-    eyebrow: "Solu??o para chamados",
+      "Abra, agende e acompanhe ordens de serviço de ar-condicionado. A equipe registra fotos, vídeos, assinatura do cliente e status do atendimento.",
+    eyebrow: "Solução para chamados",
     schemaType: "WebPage",
   },
   {
     path: "/para/tecnico-autonomo",
-    title: "Sistema para t?cnico de ar-condicionado aut?nomo | ClimaPro",
+    title: "Sistema para técnico de ar-condicionado autônomo | ClimaPro",
     description:
       "Organize os chamados, agenda e registros das visitas de ar-condicionado. Comece com o plano gratuito do ClimaPro.",
-    eyebrow: "Para t?cnico aut?nomo",
+    eyebrow: "Para técnico autônomo",
     schemaType: "WebPage",
   },
   {
     path: "/recursos/modelo-ordem-servico-ar-condicionado",
-    title: "Modelo de ordem de servi?o para ar-condicionado | Baixe gr?tis",
+    title: "Modelo de ordem de serviço para ar-condicionado | Baixe grátis",
     description:
-      "Baixe um modelo de ordem de servi?o para manuten??o de ar-condicionado e saiba quais campos registrar no atendimento.",
+      "Baixe um modelo de ordem de serviço para manutenção de ar-condicionado e saiba quais campos registrar no atendimento.",
     eyebrow: "Recurso gratuito",
     schemaType: "Article",
   },
   {
     path: "/recursos/checklist-manutencao-preventiva-ar-condicionado",
-    title: "Checklist de manuten??o preventiva de ar-condicionado | Gr?tis",
+    title: "Checklist de manutenção preventiva de ar-condicionado | Grátis",
     description:
-      "Use este checklist de manuten??o preventiva de ar-condicionado para planejar a visita, registrar observa??es e orientar a rotina da equipe.",
+      "Use este checklist de manutenção preventiva de ar-condicionado para planejar a visita, registrar observações e orientar a rotina da equipe.",
     eyebrow: "Recurso gratuito",
     schemaType: "Article",
   },
   {
     path: "/recursos/guia-pmoc",
-    title: "Guia PMOC: o que ?, quando avaliar e como organizar | ClimaPro",
+    title: "Guia PMOC: o que é, quando avaliar e como organizar | ClimaPro",
     description:
-      "Entenda o que ? PMOC, o que a lei prev? para ambientes climatizados e como organizar plano, execu??o e registros com revis?o t?cnica.",
-    eyebrow: "Guia pr?tico",
+      "Entenda o que é PMOC, o que a lei prevê para ambientes climatizados e como organizar plano, execução e registros com revisão técnica.",
+    eyebrow: "Guia prático",
     schemaType: "Article",
   },
   {
     path: "/recursos/calculadora-preco-pmoc",
-    title: "Calculadora de pre?o de PMOC: estime custos e margem | ClimaPro",
+    title: "Calculadora de preço de PMOC: estime custos e margem | ClimaPro",
     description:
-      "Estime m?o de obra, deslocamento, insumos, custos indiretos e margem para formar uma refer?ncia de pre?o de PMOC.",
+      "Estime mão de obra, deslocamento, insumos, custos indiretos e margem para formar uma referência de preço de PMOC.",
     eyebrow: "Ferramenta gratuita",
     schemaType: "WebApplication",
   },
@@ -91,22 +91,22 @@ export function canonicalUrl(pathname) {
 
 const labels = {
   "sistema-pmoc": "Sistema PMOC",
-  "ordem-servico-ar-condicionado": "Ordem de servi?o",
-  "tecnico-autonomo": "T?cnico aut?nomo",
+  "ordem-servico-ar-condicionado": "Ordem de serviço",
+  "tecnico-autonomo": "Técnico autônomo",
   "modelo-ordem-servico-ar-condicionado": "Modelo de OS",
   "checklist-manutencao-preventiva-ar-condicionado": "Checklist de preventiva",
   "guia-pmoc": "Guia PMOC",
-  "calculadora-preco-pmoc": "Calculadora de pre?o",
+  "calculadora-preco-pmoc": "Calculadora de preço",
 };
 
 export function getBreadcrumbs(pathname) {
   const normalized = normalizePath(pathname);
   const currentSegment = normalized.split("/").filter(Boolean).at(-1);
 
-  if (!currentSegment) return [{ name: "In?cio", path: "/" }];
+  if (!currentSegment) return [{ name: "Início", path: "/" }];
 
   return [
-    { name: "In?cio", path: "/" },
+    { name: "Início", path: "/" },
     { name: labels[currentSegment] ?? currentSegment, path: normalized },
   ];
 }

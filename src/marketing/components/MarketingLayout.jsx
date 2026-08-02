@@ -7,8 +7,8 @@ import SeoHead from "./SeoHead";
 
 const navigation = [
   { label: "Sistema PMOC", href: "/solucoes/sistema-pmoc" },
-  { label: "Ordem de servi?o", href: "/solucoes/ordem-servico-ar-condicionado" },
-  { label: "Para aut?nomos", href: "/para/tecnico-autonomo" },
+  { label: "Ordem de serviço", href: "/solucoes/ordem-servico-ar-condicionado" },
+  { label: "Para autônomos", href: "/para/tecnico-autonomo" },
   { label: "Recursos", href: "/recursos/guia-pmoc" },
 ];
 
@@ -26,16 +26,16 @@ export default function MarketingLayout({ page, children }) {
     <div className="marketing-site">
       <SeoHead page={page} />
       <a className="m-skip-link" href="#conteudo">
-        Ir para o conte?do
+        Ir para o conteúdo
       </a>
 
       <header className="m-header">
         <div className="m-container m-header__inner">
-          <Link to="/" aria-label="ClimaPro ? p?gina inicial" className="m-brand-link">
-            <Logo subtitle="Opera??o de climatiza??o" />
+          <Link to="/" aria-label="ClimaPro — página inicial" className="m-brand-link">
+            <Logo subtitle="Operação de climatização" />
           </Link>
 
-          <nav className="m-nav m-nav--desktop" aria-label="Navega??o principal">
+          <nav className="m-nav m-nav--desktop" aria-label="Navegação principal">
             {navigation.map((item) => (
               <Link key={item.href} to={item.href} className="m-nav__link">
                 {item.label}
@@ -65,7 +65,7 @@ export default function MarketingLayout({ page, children }) {
         </div>
 
         {menuOpen ? (
-          <nav id="menu-mobile" className="m-nav-mobile" aria-label="Navega??o m?vel">
+          <nav id="menu-mobile" className="m-nav-mobile" aria-label="Navegação móvel">
             <div className="m-container">
               {navigation.map((item) => (
                 <Link key={item.href} to={item.href} className="m-nav-mobile__link">
@@ -84,7 +84,7 @@ export default function MarketingLayout({ page, children }) {
 
       <main id="conteudo">
         {page.path !== "/" ? (
-          <nav className="m-container m-breadcrumbs" aria-label="Navega??o estrutural">
+          <nav className="m-container m-breadcrumbs" aria-label="Navegação estrutural">
             <ol>
               {breadcrumbs.map((item, index) => (
                 <li key={item.path}>
@@ -105,17 +105,17 @@ export default function MarketingLayout({ page, children }) {
       <footer className="m-footer">
         <div className="m-container m-footer__grid">
           <div className="m-footer__brand">
-            <Logo dark subtitle="Opera??o de climatiza??o" />
+            <Logo dark subtitle="Operação de climatização" />
             <p>
-              Chamados, PMOC, agenda e registros de campo para empresas e t?cnicos de
-              climatiza??o.
+              Chamados, PMOC, agenda e registros de campo para empresas e técnicos de
+              climatização.
             </p>
           </div>
           <div>
-            <p className="m-footer__title">Solu??es</p>
+            <p className="m-footer__title">Soluções</p>
             <Link to="/solucoes/sistema-pmoc">Sistema PMOC</Link>
-            <Link to="/solucoes/ordem-servico-ar-condicionado">Ordem de servi?o</Link>
-            <Link to="/para/tecnico-autonomo">Para t?cnico aut?nomo</Link>
+            <Link to="/solucoes/ordem-servico-ar-condicionado">Ordem de serviço</Link>
+            <Link to="/para/tecnico-autonomo">Para técnico autônomo</Link>
           </div>
           <div>
             <p className="m-footer__title">Recursos gratuitos</p>
@@ -124,7 +124,7 @@ export default function MarketingLayout({ page, children }) {
               Checklist de preventiva
             </Link>
             <Link to="/recursos/guia-pmoc">Guia PMOC</Link>
-            <Link to="/recursos/calculadora-preco-pmoc">Calculadora de pre?o</Link>
+            <Link to="/recursos/calculadora-preco-pmoc">Calculadora de preço</Link>
           </div>
           <div>
             <p className="m-footer__title">Conta</p>
@@ -133,8 +133,8 @@ export default function MarketingLayout({ page, children }) {
           </div>
         </div>
         <div className="m-container m-footer__bottom">
-          <span>? {new Date().getFullYear()} ClimaPro.</span>
-          <span>Conte?do em portugu?s do Brasil.</span>
+          <span>© {new Date().getFullYear()} ClimaPro.</span>
+          <span>Conteúdo em português do Brasil.</span>
         </div>
       </footer>
     </div>

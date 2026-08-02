@@ -29,13 +29,13 @@ const features = [
     icon: Columns3,
     title: "Chamados em Kanban",
     description:
-      "Abra o atendimento, atribua um t?cnico e acompanhe cada etapa at? a revis?o da empresa.",
+      "Abra o atendimento, atribua um técnico e acompanhe cada etapa até a revisão da empresa.",
   },
   {
     icon: CalendarDays,
     title: "Agenda operacional",
     description:
-      "Vincule a visita ao chamado e mantenha data, hor?rio, endere?o e respons?vel no mesmo fluxo.",
+      "Vincule a visita ao chamado e mantenha data, horário, endereço e responsável no mesmo fluxo.",
   },
   {
     icon: ClipboardCheck,
@@ -45,49 +45,49 @@ const features = [
   },
   {
     icon: Camera,
-    title: "Evid?ncias da visita",
+    title: "Evidências da visita",
     description:
-      "Registre fotos, v?deos quando aplic?vel, observa??es e a assinatura coletada no atendimento.",
+      "Registre fotos, vídeos quando aplicável, observações e a assinatura coletada no atendimento.",
   },
   {
     icon: UsersRound,
     title: "Equipe e clientes",
     description:
-      "Organize t?cnicos, clientes, locais e equipamentos sem espalhar a opera??o em planilhas.",
+      "Organize técnicos, clientes, locais e equipamentos sem espalhar a operação em planilhas.",
   },
   {
     icon: FileCheck2,
-    title: "Hist?rico para consulta",
+    title: "Histórico para consulta",
     description:
-      "Mantenha os registros ligados ao cliente e abra vers?es preparadas para imprimir ou salvar em PDF.",
+      "Mantenha os registros ligados ao cliente e abra versões preparadas para imprimir ou salvar em PDF.",
   },
 ];
 
 const faq = [
   {
-    question: "O plano gratuito pede cart?o de cr?dito?",
+    question: "O plano gratuito pede cartão de crédito?",
     answer:
-      "N?o. O plano Free n?o passa por checkout e pode ser usado dentro dos limites exibidos no sistema.",
+      "Não. O plano Free não passa por checkout e pode ser usado dentro dos limites exibidos no sistema.",
   },
   {
-    question: "Posso cadastrar t?cnicos?",
+    question: "Posso cadastrar técnicos?",
     answer:
-      "Sim. O limite varia por plano; no Free, a configura??o atual prev? um t?cnico.",
+      "Sim. O limite varia por plano; no Free, a configuração atual prevê um técnico.",
   },
   {
     question: "Consigo acompanhar chamados por status?",
     answer:
-      "Sim. Os chamados aparecem em um quadro Kanban e tamb?m podem ser ligados ? agenda e ao t?cnico respons?vel.",
+      "Sim. Os chamados aparecem em um quadro Kanban e também podem ser ligados à agenda e ao técnico responsável.",
   },
   {
-    question: "O relat?rio sai em PDF?",
+    question: "O relatório sai em PDF?",
     answer:
-      "O ClimaPro abre vers?es preparadas para impress?o. No navegador, voc? pode escolher ?Salvar como PDF?.",
+      "O ClimaPro abre versões preparadas para impressão. No navegador, você pode escolher “Salvar como PDF”.",
   },
   {
-    question: "O ClimaPro substitui o respons?vel t?cnico?",
+    question: "O ClimaPro substitui o responsável técnico?",
     answer:
-      "N?o. O sistema organiza dados, execu??o e documentos. O conte?do t?cnico e as obriga??es do caso continuam sob revis?o do profissional habilitado.",
+      "Não. O sistema organiza dados, execução e documentos. O conteúdo técnico e as obrigações do caso continuam sob revisão do profissional habilitado.",
   },
 ];
 
@@ -95,14 +95,14 @@ export default function HomePage() {
   return (
     <MarketingLayout page={page}>
       <Hero
-        eyebrow="Opera??o de climatiza??o em um s? fluxo"
-        title="Gest?o de manuten??o para quem vive a rotina da climatiza??o"
-        description="Chamados, PMOC e agenda para sua opera??o de climatiza??o. Cadastre os equipamentos, envie a equipe para o atendimento e mantenha o hist?rico de cada servi?o no mesmo lugar."
+        eyebrow="Operação de climatização em um só fluxo"
+        title="Gestão de manutenção para quem vive a rotina da climatização"
+        description="Chamados, PMOC e agenda para sua operação de climatização. Cadastre os equipamentos, envie a equipe para o atendimento e mantenha o histórico de cada serviço no mesmo lugar."
         secondary={{
           label: "Ver como funciona o PMOC",
           href: "/solucoes/sistema-pmoc",
         }}
-        notes={["Plano Free dispon?vel", "Sem cart?o no plano gratuito", "Acesso pelo navegador"]}
+        notes={["Plano Free disponível", "Sem cartão no plano gratuito", "Acesso pelo navegador"]}
         visual={<RecordPreview kind="service-order" />}
       />
 
@@ -110,27 +110,27 @@ export default function HomePage() {
         <div className="m-container">
           <SectionHeading
             eyebrow="Do chamado ao registro"
-            title="A informa??o acompanha o trabalho de campo"
-            description="O ClimaPro conecta a solicita??o, a agenda, a execu??o e a aprova??o. Assim, o contexto n?o se perde quando o atendimento muda de m?o."
+            title="A informação acompanha o trabalho de campo"
+            description="O ClimaPro conecta a solicitação, a agenda, a execução e a aprovação. Assim, o contexto não se perde quando o atendimento muda de mão."
             align="center"
           />
           <FlowSteps
             items={[
               {
                 title: "Cadastre o contexto",
-                description: "Cliente, endere?o, equipamento e motivo do atendimento entram no chamado.",
+                description: "Cliente, endereço, equipamento e motivo do atendimento entram no chamado.",
               },
               {
                 title: "Organize a visita",
-                description: "Defina t?cnico, data e hor?rio. O endere?o cadastrado pode ser aberto no Google Maps.",
+                description: "Defina técnico, data e horário. O endereço cadastrado pode ser aberto no Google Maps.",
               },
               {
-                title: "Registre a execu??o",
-                description: "A equipe descreve o servi?o, adiciona evid?ncias e coleta a assinatura do cliente.",
+                title: "Registre a execução",
+                description: "A equipe descreve o serviço, adiciona evidências e coleta a assinatura do cliente.",
               },
               {
                 title: "Revise e preserve",
-                description: "A empresa aprova o registro e mant?m o hist?rico ligado ao cliente e ao equipamento.",
+                description: "A empresa aprova o registro e mantém o histórico ligado ao cliente e ao equipamento.",
               },
             ]}
           />
@@ -142,7 +142,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Rotina operacional"
             title="O que sua equipe consegue fazer no ClimaPro"
-            description="Recursos constru?dos em torno do atendimento t?cnico, sem promessas de automa??es que o produto ainda n?o entrega."
+            description="Recursos construídos em torno do atendimento técnico, sem promessas de automações que o produto ainda não entrega."
           />
           <FeatureGrid items={features} />
         </div>
@@ -152,11 +152,11 @@ export default function HomePage() {
         <div className="m-container m-split m-split--center">
           <div>
             <span className="m-eyebrow m-eyebrow--light">PMOC organizado por equipamento</span>
-            <h2>O plano anual s? funciona quando a execu??o volta para o hist?rico</h2>
+            <h2>O plano anual só funciona quando a execução volta para o histórico</h2>
             <p>
-              Cadastre os equipamentos do cliente, distribua as manuten??es ao longo do ano e
+              Cadastre os equipamentos do cliente, distribua as manutenções ao longo do ano e
               registre checklist, fotos e assinaturas durante a visita. Depois, revise o
-              conte?do antes de disponibiliz?-lo ao cliente.
+              conteúdo antes de disponibilizá-lo ao cliente.
             </p>
             <Link className="m-button m-button--light" to="/solucoes/sistema-pmoc">
               Conhecer o sistema PMOC
@@ -172,8 +172,8 @@ export default function HomePage() {
           <div>
             <SectionHeading
               eyebrow="Comece pelo plano gratuito"
-              title="Teste o fluxo com uma opera??o pequena"
-              description="O plano Free configurado no produto inclui at? 5 chamados por m?s, 1 t?cnico, 1 cliente e agenda b?sica. Quando a opera??o crescer, os planos dispon?veis aparecem dentro do sistema."
+              title="Teste o fluxo com uma operação pequena"
+              description="O plano Free configurado no produto inclui até 5 chamados por mês, 1 técnico, 1 cliente e agenda básica. Quando a operação crescer, os planos disponíveis aparecem dentro do sistema."
             />
             <a className="m-button" href="/InitialChoice">
               Criar conta gratuita
@@ -185,9 +185,9 @@ export default function HomePage() {
             <strong>R$ 0</strong>
             <p>Para conhecer o fluxo antes de contratar.</p>
             <ul>
-              <li><ClipboardCheck aria-hidden="true" /> At? 5 chamados por m?s</li>
-              <li><UsersRound aria-hidden="true" /> 1 t?cnico e 1 cliente</li>
-              <li><CalendarDays aria-hidden="true" /> Agenda b?sica</li>
+              <li><ClipboardCheck aria-hidden="true" /> Até 5 chamados por mês</li>
+              <li><UsersRound aria-hidden="true" /> 1 técnico e 1 cliente</li>
+              <li><CalendarDays aria-hidden="true" /> Agenda básica</li>
             </ul>
           </aside>
         </div>
@@ -198,14 +198,14 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Ferramentas de campo"
             title="Materiais gratuitos para usar antes mesmo de criar a conta"
-            description="Baixe um modelo, leve um checklist para a visita ou estime seus custos. Cada recurso tem conte?do pr?prio e pode ser usado sem cadastro."
+            description="Baixe um modelo, leve um checklist para a visita ou estime seus custos. Cada recurso tem conteúdo próprio e pode ser usado sem cadastro."
           />
           <FeatureGrid
             columns={4}
             items={[
               {
-                title: "Modelo de ordem de servi?o",
-                description: "Arquivo edit?vel com os campos essenciais para documentar o atendimento.",
+                title: "Modelo de ordem de serviço",
+                description: "Arquivo editável com os campos essenciais para documentar o atendimento.",
                 link: {
                   label: "Baixar modelo",
                   href: "/recursos/modelo-ordem-servico-ar-condicionado",
@@ -213,7 +213,7 @@ export default function HomePage() {
               },
               {
                 title: "Checklist de preventiva",
-                description: "Uma base adapt?vel para inspe??o, observa??es, fotos e a??es recomendadas.",
+                description: "Uma base adaptável para inspeção, observações, fotos e ações recomendadas.",
                 link: {
                   label: "Abrir checklist",
                   href: "/recursos/checklist-manutencao-preventiva-ar-condicionado",
@@ -225,10 +225,10 @@ export default function HomePage() {
                 link: { label: "Ler o guia", href: "/recursos/guia-pmoc" },
               },
               {
-                title: "Calculadora de pre?o",
-                description: "Estime m?o de obra, deslocamento, custos indiretos e margem do contrato.",
+                title: "Calculadora de preço",
+                description: "Estime mão de obra, deslocamento, custos indiretos e margem do contrato.",
                 link: {
-                  label: "Calcular pre?o",
+                  label: "Calcular preço",
                   href: "/recursos/calculadora-preco-pmoc",
                 },
               },
@@ -242,7 +242,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Antes de criar sua conta"
             title="Perguntas frequentes"
-            description="Respostas diretas sobre o que j? est? dispon?vel no produto."
+            description="Respostas diretas sobre o que já está disponível no produto."
           />
           <FaqList items={faq} />
         </div>
@@ -250,10 +250,10 @@ export default function HomePage() {
 
       <div className="m-container m-cta-wrap">
         <CtaBand
-          title="Coloque o pr?ximo atendimento em ordem"
-          description="Crie a conta gratuita, cadastre seu primeiro cliente e conhe?a o fluxo completo do chamado."
+          title="Coloque o próximo atendimento em ordem"
+          description="Crie a conta gratuita, cadastre seu primeiro cliente e conheça o fluxo completo do chamado."
           secondary={{
-            label: "Ver ordem de servi?o",
+            label: "Ver ordem de serviço",
             href: "/solucoes/ordem-servico-ar-condicionado",
           }}
         />

@@ -22,6 +22,14 @@ function count(pattern, text) {
   return [...text.matchAll(pattern)].length;
 }
 
+function hasEncodingCorruption(text) {
+  return (
+    /\p{L}\?\p{L}/u.test(text) ||
+    /\uFFFD/u.test(text) ||
+    /\u00c3[\u0080-\u00bf]|\u00c2[\u0080-\u00bf]|\u00e2(?:\u20ac|\u2122)/u.test(text)
+  );
+}
+
 for (const page of publicPages) {
   const file = fileFor(page.path);
   let html;
@@ -29,7 +37,7 @@ for (const page of publicPages) {
   try {
     html = await readFile(file, "utf8");
   } catch {
-    fail(`${page.path}: arquivo pr?-renderizado ausente`);
+    fail(`${page.path}: arquivo pré-renderizado ausente`);
     continue;
   }
 
@@ -54,24 +62,25 @@ for (const page of publicPages) {
     fail(`${page.path}: canonical incorreta`);
   }
   if (!html.includes('name="robots" content="index,follow')) {
-    fail(`${page.path}: robots de indexa??o ausente`);
+    fail(`${page.path}: robots de indexação ausente`);
   }
   if (!html.includes('type="application/ld+json"')) {
     fail(`${page.path}: JSON-LD ausente`);
   }
-  if (html.includes("<!--seo-head-->")) fail(`${page.path}: marcador SEO n?o substitu?do`);
-  if (text.length < 1500) fail(`${page.path}: conte?do insuficiente (${text.length} caracteres)`);
+  if (html.includes("<!--seo-head-->")) fail(`${page.path}: marcador SEO não substituído`);
+  if (hasEncodingCorruption(html)) fail(`${page.path}: encoding corrompido no HTML`);
+  if (text.length < 1500) fail(`${page.path}: conteúdo insuficiente (${text.length} caracteres)`);
 
   const forbiddenClaims = [
-    /emiss?o autom?tica de NFS-e/i,
+    /emissão automática de NFS-e/i,
     /suporte 24\/7/i,
     /100% seguro/i,
     /sem curva de aprendizado/i,
-    /sincroniza??o de rotas/i,
+    /sincronização de rotas/i,
     /white label/i,
   ];
   for (const claim of forbiddenClaims) {
-    if (claim.test(text)) fail(`${page.path}: claim n?o comprovada (${claim})`);
+    if (claim.test(text)) fail(`${page.path}: claim não comprovada (${claim})`);
   }
 }
 
@@ -91,13 +100,13 @@ const appShell = await readFile(path.join(dist, "__app.html"), "utf8");
 if (!appShell.includes('name="robots" content="noindex,nofollow"')) {
   fail("app-shell: noindex ausente");
 }
-if (/<h1\b/.test(appShell)) fail("app-shell: conte?do p?blico indevido");
+if (/<h1\b/.test(appShell)) fail("app-shell: conteúdo público indevido");
 
 const notFound = await readFile(path.join(dist, "404.html"), "utf8");
 if (!notFound.includes('name="robots" content="noindex,nofollow"')) {
   fail("404: noindex ausente");
 }
-if (/<script type="module"/.test(notFound)) fail("404: JavaScript do app n?o deve carregar");
+if (/<script type="module"/.test(notFound)) fail("404: JavaScript do app não deve carregar");
 
 const vercel = JSON.parse(await readFile(path.join(root, "vercel.json"), "utf8"));
 if (vercel.rewrites?.some((rewrite) => rewrite.source === "/(.*)")) {
@@ -113,16 +122,19 @@ for (const download of [
   "checklist-manutencao-preventiva-ar-condicionado.csv",
   "checklist-manutencao-preventiva-ar-condicionado.html",
 ]) {
-  const info = await stat(path.join(dist, "downloads", download));
+  const downloadPath = path.join(dist, "downloads", download);
+  const info = await stat(downloadPath);
+  const content = await readFile(downloadPath, "utf8");
   if (info.size < 300) fail(`download vazio ou incompleto: ${download}`);
+  if (hasEncodingCorruption(content)) fail(`download com encoding corrompido: ${download}`);
 }
 
 if (errors.length) {
-  console.error("Valida??o SEO falhou:");
+  console.error("Validação SEO falhou:");
   errors.forEach((error) => console.error(`- ${error}`));
   process.exit(1);
 }
 
 console.log(
-  `SEO validado: ${publicPages.length} p?ginas ?nicas, sitemap, robots, 404, app-shell e 4 downloads.`,
+  `SEO validado: ${publicPages.length} páginas únicas, sitemap, robots, 404, app-shell e 4 downloads.`,
 );

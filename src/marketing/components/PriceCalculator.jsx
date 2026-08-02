@@ -14,11 +14,11 @@ const fields = [
   { key: "hours", label: "Horas por visita", min: 0, step: 0.5, suffix: "h" },
   { key: "people", label: "Pessoas por visita", min: 1, step: 1, suffix: "pessoas" },
   { key: "hourlyCost", label: "Custo da hora por pessoa", min: 0, step: 1, prefix: "R$" },
-  { key: "distance", label: "Quil?metros por visita (ida e volta)", min: 0, step: 1, suffix: "km" },
-  { key: "kmCost", label: "Custo por quil?metro", min: 0, step: 0.1, prefix: "R$" },
+  { key: "distance", label: "Quilômetros por visita (ida e volta)", min: 0, step: 1, suffix: "km" },
+  { key: "kmCost", label: "Custo por quilômetro", min: 0, step: 0.1, prefix: "R$" },
   { key: "supplies", label: "Insumos estimados por visita", min: 0, step: 10, prefix: "R$" },
   { key: "overhead", label: "Custos indiretos sobre o direto", min: 0, max: 100, step: 1, suffix: "%" },
-  { key: "margin", label: "Margem desejada sobre o pre?o", min: 0, max: 90, step: 1, suffix: "%" },
+  { key: "margin", label: "Margem desejada sobre o preço", min: 0, max: 90, step: 1, suffix: "%" },
 ];
 
 export const initialCalculatorValues = {
@@ -93,13 +93,13 @@ export default function PriceCalculator() {
       </div>
 
       <aside className="m-calculator__result" aria-live="polite">
-        <span className="m-record__code">REFER?NCIA CALCULADA</span>
+        <span className="m-record__code">REFERÊNCIA CALCULADA</span>
         <p className="m-calculator__price">{currency.format(result.suggestedPrice)}</p>
         <span>para o contrato anual</span>
 
         <dl>
           <div>
-            <dt>M?o de obra</dt>
+            <dt>Mão de obra</dt>
             <dd>{currency.format(result.labor)}</dd>
           </div>
           <div>
@@ -122,7 +122,7 @@ export default function PriceCalculator() {
 
         <div className="m-calculator__references">
           <div>
-            <span>Refer?ncia mensal</span>
+            <span>Referência mensal</span>
             <strong>{currency.format(result.monthlyReference)}</strong>
           </div>
           <div>
@@ -134,8 +134,8 @@ export default function PriceCalculator() {
         <div className="m-calculator__warning">
           <CircleAlert aria-hidden="true" />
           <p>
-            Esta conta ? uma refer?ncia, n?o uma tabela de mercado. Inclua impostos, pe?as,
-            an?lises, responsabilidade t?cnica, risco, sazonalidade e demais custos reais do
+            Esta conta é uma referência, não uma tabela de mercado. Inclua impostos, peças,
+            análises, responsabilidade técnica, risco, sazonalidade e demais custos reais do
             seu escopo.
           </p>
         </div>
