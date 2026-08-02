@@ -12,6 +12,11 @@ import {
   PreventiveChecklistPage,
   ServiceOrderTemplatePage,
 } from "@/marketing/pages/ResourcePages";
+import {
+  CuritibaPmocPage,
+  SaoPauloPmocPage,
+  VitoriaVilaVelhaPmocPage,
+} from "@/marketing/pages/RegionalPmocPages";
 import "@/marketing/marketing.css";
 
 export default function MarketingRoutes() {
@@ -35,6 +40,9 @@ export default function MarketingRoutes() {
       />
       <Route path="/recursos/guia-pmoc" element={<PmocGuidePage />} />
       <Route path="/recursos/calculadora-preco-pmoc" element={<PmocCalculatorPage />} />
+      <Route path="/pmoc/curitiba" element={<CuritibaPmocPage />} />
+      <Route path="/pmoc/sao-paulo" element={<SaoPauloPmocPage />} />
+      <Route path="/pmoc/vitoria-vila-velha" element={<VitoriaVilaVelhaPmocPage />} />
     </Routes>
   );
 }

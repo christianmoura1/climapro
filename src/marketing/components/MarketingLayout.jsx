@@ -131,6 +131,12 @@ export default function MarketingLayout({ page, children }) {
             <a href="/InitialChoice">Criar conta gratuita</a>
             <a href="/Login">Entrar no sistema</a>
           </div>
+          <div>
+            <p className="m-footer__title">PMOC por região</p>
+            <Link to="/pmoc/curitiba">Curitiba e região</Link>
+            <Link to="/pmoc/sao-paulo">São Paulo e Grande SP</Link>
+            <Link to="/pmoc/vitoria-vila-velha">Vitória e Vila Velha</Link>
+          </div>
         </div>
         <div className="m-container m-footer__bottom">
           <span>© {new Date().getFullYear()} ClimaPro.</span>
