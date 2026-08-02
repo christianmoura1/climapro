@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import HomePage from "@/marketing/pages/HomePage";
+import LandingPage from "@/pages/LandingPage";
 import {
   PmocLandingPage,
   ServiceOrderLandingPage,
@@ -22,7 +22,7 @@ import "@/marketing/marketing.css";
 export default function MarketingRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<Navigate to="/" replace />} />
       <Route path="/solucoes/sistema-pmoc" element={<PmocLandingPage />} />
       <Route
