@@ -31,15 +31,15 @@ import { getPublicPage } from "@/marketing/site-config";
 
 const officialSources = [
   {
-    label: "Lei n? 13.589/2018 ? Presid?ncia da Rep?blica",
+    label: "Lei nº 13.589/2018 — Presidência da República",
     href: "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13589.htm",
   },
   {
-    label: "Portaria GM/MS n? 3.523/1998 ? Biblioteca Virtual em Sa?de",
+    label: "Portaria GM/MS nº 3.523/1998 — Biblioteca Virtual em Saúde",
     href: "https://bvsms.saude.gov.br/bvs/saudelegis/gm/1998/anexo/anexo_prt3523_28_08_1998.pdf",
   },
   {
-    label: "RE Anvisa n? 9/2003 ? Biblioteca Virtual em Sa?de",
+    label: "RE Anvisa nº 9/2003 — Biblioteca Virtual em Saúde",
     href: "https://bvs.saude.gov.br/bvs/saudelegis/anvisa/2003/rdc0009_16_01_2003.html",
   },
 ];
@@ -48,32 +48,32 @@ const pmocFaq = [
   {
     question: "O sistema cria o PMOC sozinho?",
     answer:
-      "Ele organiza cronograma, checklist e documentos a partir dos dados cadastrados. O conte?do t?cnico precisa ser conferido e revisado para o caso real.",
+      "Ele organiza cronograma, checklist e documentos a partir dos dados cadastrados. O conteúdo técnico precisa ser conferido e revisado para o caso real.",
   },
   {
     question: "Quem deve revisar o documento?",
     answer:
-      "O profissional habilitado e respons?vel pelo escopo, de acordo com as atribui??es e regras aplic?veis ? instala??o.",
+      "O profissional habilitado e responsável pelo escopo, de acordo com as atribuições e regras aplicáveis à instalação.",
   },
   {
-    question: "A manuten??o pode ter fotos e assinaturas?",
+    question: "A manutenção pode ter fotos e assinaturas?",
     answer:
-      "Sim. A execu??o aceita fotos por equipamento e coleta os registros de assinatura do t?cnico e do respons?vel no local.",
+      "Sim. A execução aceita fotos por equipamento e coleta os registros de assinatura do técnico e do responsável no local.",
   },
   {
     question: "O cliente participa do fluxo?",
     answer:
-      "Sim. Depois da revis?o da empresa, o registro pode seguir para valida??o do cliente.",
+      "Sim. Depois da revisão da empresa, o registro pode seguir para validação do cliente.",
   },
   {
     question: "O ClimaPro garante conformidade legal?",
     answer:
-      "N?o. ? uma ferramenta de organiza??o e registro. A conformidade depende da instala??o, da execu??o, dos dados inseridos e da revis?o t?cnica.",
+      "Não. É uma ferramenta de organização e registro. A conformidade depende da instalação, da execução, dos dados inseridos e da revisão técnica.",
   },
   {
-    question: "PMOC ? obrigat?rio em qualquer ar-condicionado?",
+    question: "PMOC é obrigatório em qualquer ar-condicionado?",
     answer:
-      "A Lei n? 13.589/2018 trata de edif?cios de uso p?blico e coletivo com ambientes climatizados artificialmente. Situa??es espec?ficas devem ser avaliadas com o respons?vel t?cnico e as regras aplic?veis.",
+      "A Lei nº 13.589/2018 trata de edifícios de uso público e coletivo com ambientes climatizados artificialmente. Situações específicas devem ser avaliadas com o responsável técnico e as regras aplicáveis.",
   },
 ];
 
@@ -83,9 +83,9 @@ export function PmocLandingPage() {
   return (
     <MarketingLayout page={page}>
       <Hero
-        eyebrow="Cronograma, execu??o e hist?rico"
-        title="Sistema PMOC para sair da planilha e acompanhar cada manuten??o"
-        description="Cadastre os equipamentos do cliente e organize o cronograma do ano. Na visita, o t?cnico preenche o checklist previsto, adiciona fotos e coleta assinaturas. Depois, a empresa revisa o registro antes de disponibiliz?-lo ao cliente."
+        eyebrow="Cronograma, execução e histórico"
+        title="Sistema PMOC para sair da planilha e acompanhar cada manutenção"
+        description="Cadastre os equipamentos do cliente e organize o cronograma do ano. Na visita, o técnico preenche o checklist previsto, adiciona fotos e coleta assinaturas. Depois, a empresa revisa o registro antes de disponibilizá-lo ao cliente."
         primary={{
           label: "Cadastrar o primeiro PMOC",
           href: "/InitialChoice",
@@ -95,7 +95,7 @@ export function PmocLandingPage() {
           label: "Ler o guia PMOC",
           href: "/recursos/guia-pmoc",
         }}
-        notes={["Cronograma de 12 meses", "Hist?rico por equipamento", "Revis?o antes do cliente"]}
+        notes={["Cronograma de 12 meses", "Histórico por equipamento", "Revisão antes do cliente"]}
         visual={<RecordPreview />}
       />
 
@@ -103,8 +103,8 @@ export function PmocLandingPage() {
         <div className="m-container">
           <SectionHeading
             eyebrow="O que o sistema organiza"
-            title="Plano e execu??o permanecem conectados"
-            description="A rotina ? constru?da a partir dos clientes e equipamentos cadastrados, n?o de um documento solto que desaparece depois da assinatura."
+            title="Plano e execução permanecem conectados"
+            description="A rotina é construída a partir dos clientes e equipamentos cadastrados, não de um documento solto que desaparece depois da assinatura."
             align="center"
           />
           <FeatureGrid
@@ -113,37 +113,37 @@ export function PmocLandingPage() {
                 icon: CalendarCheck2,
                 title: "Cronograma anual",
                 description:
-                  "Distribua as manuten??es por 12 meses considerando a periodicidade definida para cada equipamento.",
+                  "Distribua as manutenções por 12 meses considerando a periodicidade definida para cada equipamento.",
               },
               {
                 icon: CheckSquare2,
                 title: "Checklist em campo",
                 description:
-                  "O t?cnico registra os itens previstos na execu??o e inclui observa??es do equipamento.",
+                  "O técnico registra os itens previstos na execução e inclui observações do equipamento.",
               },
               {
                 icon: Camera,
                 title: "Fotos e assinaturas",
                 description:
-                  "Cada execu??o aceita evid?ncias fotogr?ficas e registros de assinatura do t?cnico e do respons?vel no local.",
+                  "Cada execução aceita evidências fotográficas e registros de assinatura do técnico e do responsável no local.",
               },
               {
                 icon: UserCheck,
-                title: "Fluxo de revis?o",
+                title: "Fluxo de revisão",
                 description:
-                  "A manuten??o conclu?da pelo t?cnico aguarda a aprova??o da empresa antes da valida??o do cliente.",
+                  "A manutenção concluída pelo técnico aguarda a aprovação da empresa antes da validação do cliente.",
               },
               {
                 icon: FileClock,
-                title: "Hist?rico do equipamento",
+                title: "Histórico do equipamento",
                 description:
-                  "As visitas ficam ligadas ao equipamento para consulta das execu??es ao longo do tempo.",
+                  "As visitas ficam ligadas ao equipamento para consulta das execuções ao longo do tempo.",
               },
               {
                 icon: FileText,
-                title: "Plano e caderno imprim?veis",
+                title: "Plano e caderno imprimíveis",
                 description:
-                  "Abra vers?es preparadas para impress?o e use o navegador para salvar o documento como PDF.",
+                  "Abra versões preparadas para impressão e use o navegador para salvar o documento como PDF.",
               },
             ]}
           />
@@ -155,13 +155,13 @@ export function PmocLandingPage() {
           <div>
             <SectionHeading
               eyebrow="Cronograma anual por equipamento"
-              title="A pr?xima visita nasce do plano, n?o da mem?ria"
-              description="O plano anual re?ne equipamentos, periodicidades e meses previstos. Na agenda, a equipe enxerga o que precisa ser executado e mant?m o registro ligado ? origem."
+              title="A próxima visita nasce do plano, não da memória"
+              description="O plano anual reúne equipamentos, periodicidades e meses previstos. Na agenda, a equipe enxerga o que precisa ser executado e mantém o registro ligado à origem."
             />
             <ul className="m-check-list">
               <li><CheckSquare2 aria-hidden="true" /> Planejamento de janeiro a dezembro</li>
               <li><CheckSquare2 aria-hidden="true" /> Periodicidade definida por equipamento</li>
-              <li><CheckSquare2 aria-hidden="true" /> Pr?ximas manuten??es vis?veis na opera??o</li>
+              <li><CheckSquare2 aria-hidden="true" /> Próximas manutenções visíveis na operação</li>
             </ul>
           </div>
           <div className="m-month-board" aria-label="Exemplo de cronograma anual">
@@ -169,7 +169,7 @@ export function PmocLandingPage() {
               (month, index) => (
                 <div className={index === 2 || index === 5 || index === 8 || index === 11 ? "is-planned" : ""} key={month}>
                   <span>{month}</span>
-                  <strong>{index === 2 || index === 5 || index === 8 || index === 11 ? "Preventiva" : "?"}</strong>
+                  <strong>{index === 2 || index === 5 || index === 8 || index === 11 ? "Preventiva" : "—"}</strong>
                 </div>
               ),
             )}
@@ -180,27 +180,27 @@ export function PmocLandingPage() {
       <section className="m-section m-section--ink">
         <div className="m-container">
           <SectionHeading
-            eyebrow="Da visita ? valida??o"
-            title="Checklist, evid?ncias e revis?o em quatro etapas"
-            description="A assinatura coletada no sistema ? parte do registro operacional. Ela n?o substitui ART, TRT, laudo ou a an?lise t?cnica exigida para o caso."
+            eyebrow="Da visita à validação"
+            title="Checklist, evidências e revisão em quatro etapas"
+            description="A assinatura coletada no sistema é parte do registro operacional. Ela não substitui ART, TRT, laudo ou a análise técnica exigida para o caso."
           />
           <FlowSteps
             items={[
               {
-                title: "T?cnico executa",
-                description: "Preenche o checklist previsto e descreve as condi??es encontradas.",
+                title: "Técnico executa",
+                description: "Preenche o checklist previsto e descreve as condições encontradas.",
               },
               {
-                title: "Evid?ncias entram no registro",
-                description: "Fotos e assinaturas ficam associadas ?quela execu??o.",
+                title: "Evidências entram no registro",
+                description: "Fotos e assinaturas ficam associadas àquela execução.",
               },
               {
                 title: "Empresa revisa",
-                description: "O respons?vel confere o conte?do antes de liberar o registro.",
+                description: "O responsável confere o conteúdo antes de liberar o registro.",
               },
               {
                 title: "Cliente valida",
-                description: "O cliente pode consultar e validar a manuten??o disponibilizada.",
+                description: "O cliente pode consultar e validar a manutenção disponibilizada.",
               },
             ]}
           />
@@ -211,14 +211,14 @@ export function PmocLandingPage() {
         <div className="m-container m-reading-width">
           <ArticleMeta />
           <SectionHeading
-            eyebrow="PMOC ? rotina e registro"
-            title="O software ajuda a organizar; a responsabilidade t?cnica continua humana"
-            description="A Lei n? 13.589/2018 prev? PMOC para edif?cios de uso p?blico e coletivo com ambientes climatizados artificialmente. O enquadramento, o conte?do e os documentos necess?rios precisam ser validados para cada instala??o."
+            eyebrow="PMOC é rotina e registro"
+            title="O software ajuda a organizar; a responsabilidade técnica continua humana"
+            description="A Lei nº 13.589/2018 prevê PMOC para edifícios de uso público e coletivo com ambientes climatizados artificialmente. O enquadramento, o conteúdo e os documentos necessários precisam ser validados para cada instalação."
           />
           <LegalNote>
-            Conte?do informativo, n?o ? aconselhamento jur?dico ou t?cnico. Requisitos,
+            Conteúdo informativo, não é aconselhamento jurídico ou técnico. Requisitos,
             responsabilidades e documentos do caso devem ser confirmados pelo profissional
-            habilitado. O ClimaPro n?o torna uma empresa regular por si s?.
+            habilitado. O ClimaPro não torna uma empresa regular por si só.
           </LegalNote>
           <SourceLinks sources={officialSources} />
         </div>
@@ -226,7 +226,7 @@ export function PmocLandingPage() {
 
       <section className="m-section m-section--paper">
         <div className="m-container m-reading-width">
-          <SectionHeading eyebrow="D?vidas sobre PMOC" title="Perguntas frequentes" />
+          <SectionHeading eyebrow="Dúvidas sobre PMOC" title="Perguntas frequentes" />
           <FaqList items={pmocFaq} />
         </div>
       </section>
@@ -234,8 +234,8 @@ export function PmocLandingPage() {
       <div className="m-container m-cta-wrap">
         <CtaBand
           title="Organize o primeiro cronograma anual"
-          description="Cadastre um cliente e seus equipamentos para conhecer o fluxo de planejamento e execu??o."
-          primaryLabel="Criar conta e come?ar"
+          description="Cadastre um cliente e seus equipamentos para conhecer o fluxo de planejamento e execução."
+          primaryLabel="Criar conta e começar"
           secondary={{ label: "Baixar checklist de preventiva", href: "/recursos/checklist-manutencao-preventiva-ar-condicionado" }}
         />
       </div>
@@ -247,27 +247,27 @@ const osFaq = [
   {
     question: "Posso anexar fotos?",
     answer:
-      "Sim. O fechamento do chamado aceita fotos e v?deos dentro dos limites configurados no produto.",
+      "Sim. O fechamento do chamado aceita fotos e vídeos dentro dos limites configurados no produto.",
   },
   {
-    question: "H? assinatura do cliente?",
+    question: "Há assinatura do cliente?",
     answer:
-      "Sim. A finaliza??o coleta o nome de quem acompanhou a visita e o registro de assinatura do cliente. Isso documenta o fluxo, sem promessa autom?tica de validade jur?dica.",
+      "Sim. A finalização coleta o nome de quem acompanhou a visita e o registro de assinatura do cliente. Isso documenta o fluxo, sem promessa automática de validade jurídica.",
   },
   {
-    question: "Serve para manuten??o corretiva e preventiva?",
+    question: "Serve para manutenção corretiva e preventiva?",
     answer:
-      "Sim. O chamado registra a solicita??o e o servi?o realizado. Para o plano e a execu??o do PMOC, h? um fluxo espec?fico.",
+      "Sim. O chamado registra a solicitação e o serviço realizado. Para o plano e a execução do PMOC, há um fluxo específico.",
   },
   {
-    question: "A ordem de servi?o gera nota fiscal?",
+    question: "A ordem de serviço gera nota fiscal?",
     answer:
-      "N?o trate a OS como nota fiscal. O ClimaPro ainda n?o anuncia emiss?o fiscal oficial integrada ao fechamento.",
+      "Não trate a OS como nota fiscal. O ClimaPro ainda não anuncia emissão fiscal oficial integrada ao fechamento.",
   },
   {
     question: "O sistema otimiza a rota?",
     answer:
-      "N?o. Ele abre o endere?o cadastrado no Google Maps para ajudar na navega??o, mas n?o faz roteiriza??o autom?tica.",
+      "Não. Ele abre o endereço cadastrado no Google Maps para ajudar na navegação, mas não faz roteirização automática.",
   },
 ];
 
@@ -277,42 +277,42 @@ export function ServiceOrderLandingPage() {
   return (
     <MarketingLayout page={page}>
       <Hero
-        eyebrow="Chamado, agenda e evid?ncias"
-        title="Ordem de servi?o de ar-condicionado que acompanha o atendimento at? a aprova??o"
-        description="Uma OS come?a com a solicita??o, mas o trabalho s? fica documentado quando a equipe registra o que fez. No ClimaPro, o chamado pode ser agendado, atribu?do a um t?cnico e finalizado com fotos, v?deos, nome de quem acompanhou e assinatura do cliente."
+        eyebrow="Chamado, agenda e evidências"
+        title="Ordem de serviço de ar-condicionado que acompanha o atendimento até a aprovação"
+        description="Uma OS começa com a solicitação, mas o trabalho só fica documentado quando a equipe registra o que fez. No ClimaPro, o chamado pode ser agendado, atribuído a um técnico e finalizado com fotos, vídeos, nome de quem acompanhou e assinatura do cliente."
         secondary={{
           label: "Baixar modelo de OS",
           href: "/recursos/modelo-ordem-servico-ar-condicionado",
         }}
-        notes={["Kanban por status", "Agenda ligada ao chamado", "Hist?rico por equipamento"]}
+        notes={["Kanban por status", "Agenda ligada ao chamado", "Histórico por equipamento"]}
         visual={<RecordPreview kind="service-order" />}
       />
 
       <section className="m-section m-section--paper">
         <div className="m-container">
           <SectionHeading
-            eyebrow="Do pedido ? aprova??o"
-            title="Um ?nico registro acompanha todo o atendimento"
-            description="No produto, a ordem de servi?o ? tratada como chamado operacional. Ela re?ne o contexto e as evid?ncias da visita; n?o ? nota fiscal nem laudo t?cnico."
+            eyebrow="Do pedido à aprovação"
+            title="Um único registro acompanha todo o atendimento"
+            description="No produto, a ordem de serviço é tratada como chamado operacional. Ela reúne o contexto e as evidências da visita; não é nota fiscal nem laudo técnico."
             align="center"
           />
           <FlowSteps
             items={[
               {
                 title: "Abra o chamado",
-                description: "Informe cliente, equipamento, solicita??o, prioridade e t?cnico respons?vel.",
+                description: "Informe cliente, equipamento, solicitação, prioridade e técnico responsável.",
               },
               {
                 title: "Agende a visita",
-                description: "Data e hor?rio entram na agenda e o endere?o pode ser aberto no Maps.",
+                description: "Data e horário entram na agenda e o endereço pode ser aberto no Maps.",
               },
               {
                 title: "Finalize em campo",
-                description: "O t?cnico descreve a execu??o, inclui evid?ncias e coleta a assinatura.",
+                description: "O técnico descreve a execução, inclui evidências e coleta a assinatura.",
               },
               {
                 title: "Aprove na empresa",
-                description: "O atendimento conclu?do fica aguardando a revis?o da empresa.",
+                description: "O atendimento concluído fica aguardando a revisão da empresa.",
               },
             ]}
           />
@@ -323,7 +323,7 @@ export function ServiceOrderLandingPage() {
         <div className="m-container">
           <SectionHeading
             eyebrow="Fechamento com contexto"
-            title="Evid?ncias suficientes para entender o que aconteceu"
+            title="Evidências suficientes para entender o que aconteceu"
             description="A equipe consegue retornar ao chamado e consultar quem atendeu, o equipamento envolvido e os registros coletados."
           />
           <FeatureGrid
@@ -331,17 +331,17 @@ export function ServiceOrderLandingPage() {
               {
                 icon: ClipboardList,
                 title: "Cliente e equipamento",
-                description: "O chamado mant?m o v?nculo com o cadastro que deu origem ? visita.",
+                description: "O chamado mantém o vínculo com o cadastro que deu origem à visita.",
               },
               {
                 icon: CalendarCheck2,
-                title: "T?cnico e agenda",
-                description: "Respons?vel, data e hor?rio ajudam a coordenar a execu??o.",
+                title: "Técnico e agenda",
+                description: "Responsável, data e horário ajudam a coordenar a execução.",
               },
               {
                 icon: Camera,
-                title: "Fotos e v?deos",
-                description: "O encerramento aceita at? 10 fotos e at? 2 v?deos no fluxo atual.",
+                title: "Fotos e vídeos",
+                description: "O encerramento aceita até 10 fotos e até 2 vídeos no fluxo atual.",
               },
               {
                 icon: UserCheck,
@@ -350,13 +350,13 @@ export function ServiceOrderLandingPage() {
               },
               {
                 icon: MapPin,
-                title: "Endere?o no Maps",
-                description: "Abra o destino cadastrado no Google Maps, sem promessa de otimiza??o autom?tica.",
+                title: "Endereço no Maps",
+                description: "Abra o destino cadastrado no Google Maps, sem promessa de otimização automática.",
               },
               {
                 icon: FileClock,
-                title: "Hist?rico consult?vel",
-                description: "A empresa preserva a sequ?ncia de atendimentos do cliente e do equipamento.",
+                title: "Histórico consultável",
+                description: "A empresa preserva a sequência de atendimentos do cliente e do equipamento.",
               },
             ]}
           />
@@ -366,11 +366,11 @@ export function ServiceOrderLandingPage() {
       <section className="m-section m-section--ink">
         <div className="m-container m-split m-split--center">
           <div>
-            <span className="m-eyebrow m-eyebrow--light">Um modelo para come?ar hoje</span>
+            <span className="m-eyebrow m-eyebrow--light">Um modelo para começar hoje</span>
             <h2>Prefere testar no papel antes de digitalizar?</h2>
             <p>
-              Preparamos um modelo edit?vel com dados do cliente, equipamento, diagn?stico,
-              servi?o, pe?as, valores, observa??es e assinaturas. Use sem cadastro e adapte ao
+              Preparamos um modelo editável com dados do cliente, equipamento, diagnóstico,
+              serviço, peças, valores, observações e assinaturas. Use sem cadastro e adapte ao
               seu processo.
             </p>
             <Link className="m-button m-button--light" to="/recursos/modelo-ordem-servico-ar-condicionado">
@@ -378,14 +378,14 @@ export function ServiceOrderLandingPage() {
               <ReceiptText aria-hidden="true" />
             </Link>
           </div>
-          <div className="m-document-preview" aria-label="Pr?via do modelo de ordem de servi?o">
-            <span>ORDEM DE SERVI?O ? N? ______</span>
+          <div className="m-document-preview" aria-label="Prévia do modelo de ordem de serviço">
+            <span>ORDEM DE SERVIÇO — Nº ______</span>
             <strong>Cliente e local do atendimento</strong>
             <i />
-            <strong>Equipamento e solicita??o</strong>
+            <strong>Equipamento e solicitação</strong>
             <i />
             <i />
-            <strong>Servi?o executado e aceite</strong>
+            <strong>Serviço executado e aceite</strong>
             <i />
           </div>
         </div>
@@ -393,14 +393,14 @@ export function ServiceOrderLandingPage() {
 
       <section className="m-section">
         <div className="m-container m-reading-width">
-          <SectionHeading eyebrow="Sobre a ordem de servi?o" title="Perguntas frequentes" />
+          <SectionHeading eyebrow="Sobre a ordem de serviço" title="Perguntas frequentes" />
           <FaqList items={osFaq} />
         </div>
       </section>
 
       <div className="m-container m-cta-wrap">
         <CtaBand
-          title="Documente o pr?ximo chamado do come?o ao fim"
+          title="Documente o próximo chamado do começo ao fim"
           description="Crie uma conta gratuita ou baixe o modelo para testar os campos com sua equipe."
           secondary={{ label: "Conhecer o sistema PMOC", href: "/solucoes/sistema-pmoc" }}
         />
@@ -411,29 +411,29 @@ export function ServiceOrderLandingPage() {
 
 const technicianFaq = [
   {
-    question: "D? para usar sozinho?",
+    question: "Dá para usar sozinho?",
     answer:
-      "Sim. O plano Free configurado no produto prev? um t?cnico, um cliente e at? cinco chamados por m?s.",
+      "Sim. O plano Free configurado no produto prevê um técnico, um cliente e até cinco chamados por mês.",
   },
   {
     question: "Posso registrar foto e assinatura no celular?",
     answer:
-      "A interface aceita esses registros pelo navegador. Como c?mera, sistema e navegador variam, vale testar no dispositivo usado em campo antes de padronizar o processo.",
+      "A interface aceita esses registros pelo navegador. Como câmera, sistema e navegador variam, vale testar no dispositivo usado em campo antes de padronizar o processo.",
   },
   {
     question: "Posso controlar gastos?",
     answer:
-      "Sim. O perfil t?cnico possui lan?amento de gastos ligados ? rotina de trabalho.",
+      "Sim. O perfil técnico possui lançamento de gastos ligados à rotina de trabalho.",
   },
   {
     question: "Funciona sem internet?",
     answer:
-      "N?o h? suporte offline verificado. Considere conex?o ativa para abrir, atualizar e enviar os registros.",
+      "Não há suporte offline verificado. Considere conexão ativa para abrir, atualizar e enviar os registros.",
   },
   {
-    question: "O sistema me torna respons?vel t?cnico?",
+    question: "O sistema me torna responsável técnico?",
     answer:
-      "N?o. Usar o software n?o concede atribui??o profissional nem substitui o respons?vel t?cnico habilitado.",
+      "Não. Usar o software não concede atribuição profissional nem substitui o responsável técnico habilitado.",
   },
 ];
 
@@ -445,9 +445,9 @@ export function TechnicianLandingPage() {
       <Hero
         eyebrow="Para quem atende sozinho"
         title="Menos papel na visita, mais controle dos seus atendimentos"
-        description="Para quem trabalha sozinho, uma visita esquecida vira perda de receita. O ClimaPro re?ne seus chamados, agenda e registros para voc? chegar ao cliente com a ordem certa e sair com o servi?o documentado."
+        description="Para quem trabalha sozinho, uma visita esquecida vira perda de receita. O ClimaPro reúne seus chamados, agenda e registros para você chegar ao cliente com a ordem certa e sair com o serviço documentado."
         primary={{
-          label: "Come?ar no plano gratuito",
+          label: "Começar no plano gratuito",
           href: "/InitialChoice",
           external: true,
         }}
@@ -455,7 +455,7 @@ export function TechnicianLandingPage() {
           label: "Baixar modelo de OS",
           href: "/recursos/modelo-ordem-servico-ar-condicionado",
         }}
-        notes={["1 t?cnico no plano Free", "At? 5 chamados por m?s", "Uso pelo navegador"]}
+        notes={["1 técnico no plano Free", "Até 5 chamados por mês", "Uso pelo navegador"]}
         visual={<TechnicianPreview />}
       />
 
@@ -464,7 +464,7 @@ export function TechnicianLandingPage() {
           <SectionHeading
             eyebrow="Seu painel de trabalho"
             title="Chamados, PMOCs e agenda sem carregar uma pilha de papel"
-            description="O painel t?cnico mostra o que est? pendente e o que j? foi finalizado, com acesso aos atendimentos atribu?dos."
+            description="O painel técnico mostra o que está pendente e o que já foi finalizado, com acesso aos atendimentos atribuídos."
             align="center"
           />
           <FeatureGrid
@@ -472,32 +472,32 @@ export function TechnicianLandingPage() {
               {
                 icon: Smartphone,
                 title: "Meus chamados",
-                description: "Veja os atendimentos atribu?dos e atualize a execu??o pelo navegador do celular.",
+                description: "Veja os atendimentos atribuídos e atualize a execução pelo navegador do celular.",
               },
               {
                 icon: CalendarCheck2,
                 title: "Minha agenda",
-                description: "Consulte data, hor?rio e endere?o das pr?ximas visitas em um s? lugar.",
+                description: "Consulte data, horário e endereço das próximas visitas em um só lugar.",
               },
               {
                 icon: CheckSquare2,
                 title: "Meus PMOCs",
-                description: "Acesse as manuten??es previstas e preencha o checklist por equipamento.",
+                description: "Acesse as manutenções previstas e preencha o checklist por equipamento.",
               },
               {
                 icon: Camera,
                 title: "Foto e assinatura",
-                description: "Documente a finaliza??o do chamado com evid?ncias e aceite do cliente.",
+                description: "Documente a finalização do chamado com evidências e aceite do cliente.",
               },
               {
                 icon: CircleDollarSign,
                 title: "Gastos do trabalho",
-                description: "Lance gastos da rotina para manter um registro operacional b?sico.",
+                description: "Lance gastos da rotina para manter um registro operacional básico.",
               },
               {
                 icon: FileClock,
                 title: "Pendentes e finalizados",
-                description: "Separe o que ainda precisa de a??o do trabalho que j? foi entregue.",
+                description: "Separe o que ainda precisa de ação do trabalho que já foi entregue.",
               },
             ]}
           />
@@ -509,14 +509,14 @@ export function TechnicianLandingPage() {
           <div>
             <SectionHeading
               eyebrow="Uma visita bem fechada"
-              title="Registre o que voc? encontrou e o que entregou"
-              description="No chamado, o encerramento pede contexto do servi?o, evid?ncias e aceite. No PMOC, o checklist previsto acompanha cada equipamento."
+              title="Registre o que você encontrou e o que entregou"
+              description="No chamado, o encerramento pede contexto do serviço, evidências e aceite. No PMOC, o checklist previsto acompanha cada equipamento."
             />
             <ul className="m-check-list">
-              <li><CheckSquare2 aria-hidden="true" /> Descri??o do servi?o executado</li>
-              <li><CheckSquare2 aria-hidden="true" /> Fotos e v?deos quando necess?rios</li>
+              <li><CheckSquare2 aria-hidden="true" /> Descrição do serviço executado</li>
+              <li><CheckSquare2 aria-hidden="true" /> Fotos e vídeos quando necessários</li>
               <li><CheckSquare2 aria-hidden="true" /> Nome e assinatura de quem acompanhou</li>
-              <li><CheckSquare2 aria-hidden="true" /> Registro enviado para revis?o da empresa</li>
+              <li><CheckSquare2 aria-hidden="true" /> Registro enviado para revisão da empresa</li>
             </ul>
           </div>
           <RecordPreview kind="service-order" />
@@ -529,9 +529,9 @@ export function TechnicianLandingPage() {
             <span className="m-eyebrow m-eyebrow--light">Plano Free</span>
             <h2>Comece pequeno e confira se o fluxo cabe na sua rotina</h2>
             <p>
-              A configura??o atual do plano gratuito inclui at? 5 chamados por m?s, 1 t?cnico,
-              1 cliente e agenda b?sica. Consulte os planos dentro do sistema quando precisar
-              ampliar a opera??o.
+              A configuração atual do plano gratuito inclui até 5 chamados por mês, 1 técnico,
+              1 cliente e agenda básica. Consulte os planos dentro do sistema quando precisar
+              ampliar a operação.
             </p>
             <a className="m-button m-button--light" href="/InitialChoice">
               Criar conta gratuita
@@ -540,8 +540,8 @@ export function TechnicianLandingPage() {
           </div>
           <div className="m-free-meter">
             <span>CAPACIDADE DO FREE</span>
-            <div><strong>5</strong><small>chamados / m?s</small></div>
-            <div><strong>1</strong><small>t?cnico</small></div>
+            <div><strong>5</strong><small>chamados / mês</small></div>
+            <div><strong>1</strong><small>técnico</small></div>
             <div><strong>1</strong><small>cliente</small></div>
           </div>
         </div>
@@ -549,16 +549,16 @@ export function TechnicianLandingPage() {
 
       <section className="m-section">
         <div className="m-container m-reading-width">
-          <SectionHeading eyebrow="Quem trabalha sozinho pergunta" title="D?vidas frequentes" />
+          <SectionHeading eyebrow="Quem trabalha sozinho pergunta" title="Dúvidas frequentes" />
           <FaqList items={technicianFaq} />
         </div>
       </section>
 
       <div className="m-container m-cta-wrap">
         <CtaBand
-          title="Leve seu pr?ximo atendimento para o ClimaPro"
+          title="Leve seu próximo atendimento para o ClimaPro"
           description="Comece pelo plano gratuito ou use primeiro o modelo de OS para ajustar seu processo."
-          primaryLabel="Come?ar no plano gratuito"
+          primaryLabel="Começar no plano gratuito"
           secondary={{ label: "Baixar modelo de OS", href: "/recursos/modelo-ordem-servico-ar-condicionado" }}
         />
       </div>
@@ -571,13 +571,13 @@ function TechnicianPreview() {
     <div className="m-phone-preview">
       <div className="m-phone-preview__speaker" />
       <div className="m-phone-preview__head">
-        <span>HOJE ? 3 ATENDIMENTOS</span>
-        <strong>Ol?, Rafael</strong>
+        <span>HOJE · 3 ATENDIMENTOS</span>
+        <strong>Olá, Rafael</strong>
       </div>
       {[
-        ["09:00", "Preventiva ? Cl?nica Norte", "Finalizado"],
-        ["14:30", "Corretiva ? Ed. Horizonte", "Em andamento"],
-        ["17:00", "PMOC ? Loja Centro", "Pr?ximo"],
+        ["09:00", "Preventiva · Clínica Norte", "Finalizado"],
+        ["14:30", "Corretiva · Ed. Horizonte", "Em andamento"],
+        ["17:00", "PMOC · Loja Centro", "Próximo"],
       ].map(([time, title, status]) => (
         <div className="m-phone-preview__row" key={time}>
           <span>{time}</span>

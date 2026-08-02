@@ -38,9 +38,9 @@ for (const page of publicPages) {
 }
 
 if (errors.length) {
-  console.error("Valida??o de links falhou:");
+  console.error("Validação de links falhou:");
   errors.forEach((error) => console.error(`- ${error}`));
   process.exit(1);
 }
 
-console.log(`Links internos validados em ${publicPages.length} p?ginas p?blicas.`);
+console.log(`Links internos validados em ${publicPages.length} páginas públicas.`);

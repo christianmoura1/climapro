@@ -45,7 +45,7 @@ export function Hero({
             ) : null}
           </div>
           {notes.length ? (
-            <ul className="m-hero__notes" aria-label="Informa??es do acesso">
+            <ul className="m-hero__notes" aria-label="Informações do acesso">
               {notes.map((note) => (
                 <li key={note}>
                   <Check aria-hidden="true" />
@@ -68,24 +68,24 @@ export function RecordPreview({ kind = "pmoc" }) {
   const rows = isPmoc
     ? [
         ["Equipamento", "Split 36.000 BTU/h"],
-        ["Ambiente", "Recep??o"],
-        ["Pr?xima visita", "18 SET"],
+        ["Ambiente", "Recepção"],
+        ["Próxima visita", "18 SET"],
       ]
     : [
         ["Chamado", "#CP-1048"],
         ["Equipamento", "Cassete 48.000 BTU/h"],
-        ["Agenda", "Hoje ? 14:30"],
+        ["Agenda", "Hoje, 14:30"],
       ];
 
   return (
     <div className="m-record">
       <div className="m-record__top">
-        <span className="m-record__code">{isPmoc ? "PMOC ? 2026" : "ORDEM DE SERVI?O"}</span>
-        <span className="m-status">{isPmoc ? "Em execu??o" : "Aguardando aprova??o"}</span>
+        <span className="m-record__code">{isPmoc ? "PMOC · 2026" : "ORDEM DE SERVIÇO"}</span>
+        <span className="m-status">{isPmoc ? "Em execução" : "Aguardando aprovação"}</span>
       </div>
       <div className="m-record__client">
         <span>CLIENTE</span>
-        <strong>Edif?cio Horizonte</strong>
+        <strong>Edifício Horizonte</strong>
       </div>
       <dl className="m-record__rows">
         {rows.map(([label, value]) => (
@@ -99,7 +99,7 @@ export function RecordPreview({ kind = "pmoc" }) {
         <CheckCircle2 aria-hidden="true" />
         <div>
           <strong>{isPmoc ? "Checklist registrado" : "Atendimento documentado"}</strong>
-          <span>{isPmoc ? "Fotos e assinaturas inclu?das" : "Fotos, v?deo e assinatura do cliente"}</span>
+          <span>{isPmoc ? "Fotos e assinaturas incluídas" : "Fotos, vídeo e assinatura do cliente"}</span>
         </div>
       </div>
       <div className="m-record__timeline" aria-hidden="true">
@@ -188,7 +188,7 @@ export function CtaBand({
   return (
     <section className="m-cta-band">
       <div>
-        <span className="m-eyebrow m-eyebrow--light">Pr?ximo passo</span>
+        <span className="m-eyebrow m-eyebrow--light">Próximo passo</span>
         <h2>{title}</h2>
         <p>{description}</p>
       </div>
@@ -222,12 +222,12 @@ export function LegalNote({ children }) {
 export function ArticleMeta() {
   return (
     <p className="m-article-meta">
-      Conte?do editorial ClimaPro ? Atualizado em 2 de agosto de 2026
+      Conteúdo editorial ClimaPro · Atualizado em 2 de agosto de 2026
     </p>
   );
 }
 
-export function DownloadActions({ editHref, printHref, editLabel = "Baixar arquivo edit?vel" }) {
+export function DownloadActions({ editHref, printHref, editLabel = "Baixar arquivo editável" }) {
   return (
     <div className="m-download-actions">
       <a className="m-button" href={editHref} download>
@@ -236,7 +236,7 @@ export function DownloadActions({ editHref, printHref, editLabel = "Baixar arqui
       </a>
       <a className="m-button m-button--secondary" href={printHref} target="_blank" rel="noreferrer">
         <Printer aria-hidden="true" />
-        Abrir vers?o para imprimir
+        Abrir versão para imprimir
       </a>
     </div>
   );
@@ -247,8 +247,8 @@ export function SourceLinks({ sources }) {
     <div className="m-sources">
       <h2>Fontes oficiais</h2>
       <p>
-        Consulte a reda??o oficial e valide a aplica??o ao seu caso com o respons?vel
-        t?cnico habilitado.
+        Consulte a redação oficial e valide a aplicação ao seu caso com o responsável
+        técnico habilitado.
       </p>
       <ul>
         {sources.map((source) => (

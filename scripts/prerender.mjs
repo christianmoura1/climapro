@@ -83,14 +83,14 @@ const notFoundBody = `
   <main style="min-height:100vh;display:grid;place-items:center;padding:2rem;font-family:system-ui,sans-serif;background:#f3f7fa;color:#0b1d2a">
     <div style="max-width:560px">
       <p style="font:700 12px ui-monospace,monospace;letter-spacing:.12em;color:#1d5fd1">ERRO 404</p>
-      <h1 style="font-size:clamp(2rem,7vw,4rem);line-height:1;margin:.7rem 0 1rem">Esta p?gina n?o existe</h1>
-      <p style="color:#526b78;line-height:1.7">O endere?o pode ter mudado ou sido digitado incorretamente.</p>
-      <a href="/" style="display:inline-block;margin-top:1rem;padding:.8rem 1rem;background:#1d5fd1;color:#fff;text-decoration:none;font-weight:700;border-radius:.5rem">Voltar para o in?cio</a>
+      <h1 style="font-size:clamp(2rem,7vw,4rem);line-height:1;margin:.7rem 0 1rem">Esta página não existe</h1>
+      <p style="color:#526b78;line-height:1.7">O endereço pode ter mudado ou sido digitado incorretamente.</p>
+      <a href="/" style="display:inline-block;margin-top:1rem;padding:.8rem 1rem;background:#1d5fd1;color:#fff;text-decoration:none;font-weight:700;border-radius:.5rem">Voltar para o início</a>
     </div>
   </main>`;
 const notFound = fillTemplate({
   body: notFoundBody,
-  title: "P?gina n?o encontrada | ClimaPro",
+  title: "Página não encontrada | ClimaPro",
   head: '<meta name="robots" content="noindex,nofollow" />',
 }).replace(/\s*<script type="module"[^>]*><\/script>/g, "");
 await writeFile(path.join(distDir, "404.html"), notFound, "utf8");
@@ -107,4 +107,4 @@ const sitemap = [
 ].join("\n");
 await writeFile(path.join(distDir, "sitemap.xml"), sitemap, "utf8");
 
-console.log(`Pr?-render conclu?do: ${publicPages.length} p?ginas p?blicas, app-shell e 404.`);
+console.log(`Pré-render concluído: ${publicPages.length} páginas públicas, app-shell e 404.`);
