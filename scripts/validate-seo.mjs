@@ -112,6 +112,9 @@ const vercel = JSON.parse(await readFile(path.join(root, "vercel.json"), "utf8")
 if (vercel.rewrites?.some((rewrite) => rewrite.source === "/(.*)")) {
   fail("vercel.json: catch-all reintroduz soft 404");
 }
+if (vercel.rewrites?.some((rewrite) => rewrite.destination !== "/__app")) {
+  fail("vercel.json: rotas privadas devem apontar para /__app com cleanUrls ativo");
+}
 if (!vercel.redirects?.some((redirect) => redirect.source === "/LandingPage")) {
   fail("vercel.json: redirect da antiga /LandingPage ausente");
 }
