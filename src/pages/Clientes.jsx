@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowLeft, Search, Building2, Phone, Mail, Cpu, Key } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, Search, Building2, Phone, Mail, Cpu, Key } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 import ClienteForm from "../components/clientes/ClienteForm";
@@ -17,6 +16,7 @@ import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCli
 import { PageLoading } from "@/components/ui/page-loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "@/components/ui/use-toast";
+import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -44,7 +44,7 @@ export default function ClientesPage() {
 
   const empresaId = user?.data?.empresa_id || user?.empresa_id;
 
-  const { data: clientes = [], isLoading } = useQuery({
+  const { data: clientes = [], isLoading, error: clientesError, refetch: refetchClientes } = useQuery({
     queryKey: ['clientes', empresaId],
     queryFn: async () => {
       if (!user) return [];
@@ -383,6 +383,19 @@ ${mensagemParaEnviar}`, variant: "success" });
     );
   }
 
+  if (clientesError) {
+    return (
+      <PageShell>
+        <PageHeader title="Clientes" description="Cadastros, equipamentos e acessos ao portal" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar os clientes"
+          description="Os cadastros continuam salvos. Verifique a conexão e tente novamente."
+          onRetry={refetchClientes}
+        />
+      </PageShell>
+    );
+  }
+
   // Se está editando um chamado, mostrar formulário
   if (editingChamado) {
     return (
@@ -459,33 +472,25 @@ ${mensagemParaEnviar}`, variant: "success" });
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Clientes</h1>
-              <p className="text-muted-foreground mt-1">
-                {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''} · Gerencie seus clientes e acessos ao portal
-              </p>
-            </div>
-          </div>
-          <Button 
-            onClick={() => {
-              setEditingCliente(null); // Ensure no client is being edited when opening for new
-              setShowForm(!showForm);
-            }}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Cliente
-          </Button>
-        </div>
+    <PageShell>
+        <PageHeader
+          title="Clientes"
+          eyebrow="Relacionamento"
+          description={`${clientes.length} cliente${clientes.length !== 1 ? 's' : ''} · equipamentos e acessos ao portal`}
+          backTo={createPageUrl("Dashboard")}
+          actions={
+            <Button
+              onClick={() => {
+                setEditingCliente(null);
+                setShowForm(!showForm);
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 sm:w-auto"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Novo Cliente
+            </Button>
+          }
+        />
 
         {showForm && (
           <ClienteForm
@@ -501,8 +506,10 @@ ${mensagemParaEnviar}`, variant: "success" });
 
         <div className="mb-6">
           <div className="relative">
+            <label htmlFor="busca-clientes" className="sr-only">Buscar clientes</label>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
+              id="busca-clientes"
               placeholder="Buscar por nome ou telefone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -512,10 +519,9 @@ ${mensagemParaEnviar}`, variant: "success" });
         </div>
 
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="text-muted-foreground mt-4">Carregando clientes...</p>
-          </div>
+          <InlineLoading label="Carregando clientes" cards={3} />
+        ) : clientes.length > 0 && filteredClientes.length === 0 ? (
+          <Card className="shadow-sm"><FilterEmptyState onClear={() => setSearchTerm("")} /></Card>
         ) : filteredClientes.length === 0 ? (
           <EmptyState
             icon={Building2}
@@ -535,10 +541,10 @@ ${mensagemParaEnviar}`, variant: "success" });
               return (
                 <Card 
                   key={cliente.id} 
-                  className="shadow-lg border-none hover:shadow-xl transition-shadow cursor-pointer"
-                  onClick={() => setViewingCliente(cliente)} // Changed from setSelectedCliente
+                  className="overflow-hidden border-none shadow-lg transition-shadow hover:shadow-xl"
                 >
                   <CardContent className="p-6">
+                  <button type="button" onClick={() => setViewingCliente(cliente)} className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring" aria-label={`Abrir detalhes de ${cliente.nome}`}>
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <Building2 className="w-6 h-6 text-green-600" />
@@ -573,13 +579,13 @@ ${mensagemParaEnviar}`, variant: "success" });
                         </div>
                       </div>
                     </div>
+                  </button>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 }

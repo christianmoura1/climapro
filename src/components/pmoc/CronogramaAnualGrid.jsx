@@ -1,5 +1,6 @@
 import React from "react";
 import { LABEL_PERIODICIDADE, PERIODICIDADES_PMOC, gerarCronogramaAnual } from "@/lib/pmocChecklist";
+import { ChevronRight } from "lucide-react";
 
 export const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -9,12 +10,27 @@ export const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ag
 // alteração só aparecem ao clicar nele (é um <select> estilizado como chip);
 // escolher um valor reposiciona o calendário do ano inteiro.
 export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento }) {
+  const scrollRef = React.useRef(null);
+  const [showScrollHint, setShowScrollHint] = React.useState(true);
+
+  const handleScroll = () => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const chegouAoFim = element.scrollLeft + element.clientWidth >= element.scrollWidth - 24;
+    setShowScrollHint(!chegouAoFim);
+  };
+
   return (
-    <div className="overflow-x-auto border rounded-lg">
-      <table className="w-full text-sm">
+    <div className="space-y-2">
+      <p className="flex items-center gap-1 text-xs font-medium text-indigo-700 lg:hidden">
+        Deslize para ver os pr&oacute;ximos meses <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </p>
+      <div className="relative rounded-lg border bg-card">
+        <div ref={scrollRef} onScroll={handleScroll} className="scrollbar-thin overflow-x-auto" tabIndex={0} role="region" aria-label={`Cronograma anual de ${ano}. Use a rolagem horizontal para ver os 12 meses.`}>
+          <table className="min-w-[1160px] w-full text-sm">
         <thead>
           <tr className="bg-muted/50 text-left">
-            <th className="p-2 font-medium">Equipamento</th>
+            <th className="sticky left-0 z-20 min-w-[190px] border-r bg-muted p-3 font-semibold shadow-[6px_0_12px_-10px_rgba(15,23,42,0.8)]">Equipamento</th>
             {MESES_ABREV.map((m) => (
               <th key={m} className="p-2 font-medium text-center">{m}</th>
             ))}
@@ -25,7 +41,7 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
             const cronograma = gerarCronogramaAnual(eq, ano);
             return (
               <tr key={eq.id} className="border-t">
-                <td className="p-2">
+                <td className="sticky left-0 z-10 min-w-[190px] border-r bg-card p-3 shadow-[6px_0_12px_-10px_rgba(15,23,42,0.8)]">
                   {renderInfoEquipamento ? renderInfoEquipamento(eq) : (
                     <>
                       <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>
@@ -39,8 +55,9 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
                       value={m.periodicidade}
                       onChange={(e) => onAncorar(eq, idx, e.target.value)}
                       disabled={salvando}
-                      title="Clique para alterar o plano deste mês (reposiciona o calendário inteiro)"
-                      className={`w-full min-w-[76px] appearance-none rounded px-1.5 py-1.5 text-[10px] font-semibold leading-tight capitalize text-center cursor-pointer transition-colors border-0 ${
+                      aria-label={`Planejamento de ${eq.numero_equipamento || 'equipamento'} em ${MESES_ABREV[idx]} de ${ano}. Alterar este valor reposiciona o calend\u00e1rio anual.`}
+                      title="Alterar este mês redefine a âncora e recalcula o calendário inteiro"
+                      className={`h-11 w-full min-w-[80px] cursor-pointer appearance-none rounded-md border border-transparent px-2 text-center text-xs font-semibold leading-tight transition-colors focus-visible:border-primary ${
                         m.cicloProfundo
                           ? 'bg-purple-100 text-purple-800 hover:bg-purple-200'
                           : 'bg-muted text-muted-foreground hover:bg-muted-foreground/10'
@@ -57,6 +74,12 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
           })}
         </tbody>
       </table>
+        </div>
+        {showScrollHint ? <div className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-lg bg-gradient-to-l from-indigo-200/70 to-transparent" aria-hidden="true" /> : null}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Ao trocar a periodicidade de um m&ecirc;s, o sistema usa esse m&ecirc;s como nova &acirc;ncora e recalcula o ano inteiro.
+      </p>
     </div>
   );
 }

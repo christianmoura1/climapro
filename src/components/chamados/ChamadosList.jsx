@@ -15,6 +15,7 @@ const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
   em_andamento: { color: "bg-blue-100 text-blue-800", label: "Em Andamento" },
   aguardando_pecas: { color: "bg-purple-100 text-purple-800", label: "Aguardando Peças" },
+  aguardando_aprovacao_empresa: { color: "bg-amber-100 text-amber-800", label: "Aguardando aprovação" },
   finalizado: { color: "bg-green-100 text-green-800", label: "Finalizado" },
   cancelado: { color: "bg-red-100 text-red-800", label: "Cancelado" }
 };
@@ -119,14 +120,14 @@ ClimaPro`
     <div className="space-y-4">
       {chamados.map((chamado) => {
         const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
-        const status = statusConfig[chamado.status];
+        const status = statusConfig[chamado.status] || { color: "bg-muted text-muted-foreground", label: "Status não informado" };
 
         return (
           <Card key={chamado.id} className="hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
+              <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-semibold text-foreground">
                       {chamado.titulo}
                     </h3>
@@ -181,7 +182,7 @@ ClimaPro`
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2 sm:flex lg:shrink-0">
                   {/* Botão de Agendar */}
                   {!chamado.data_agendamento && chamado.status !== 'finalizado' && chamado.status !== 'cancelado' && (
                     <Button
@@ -221,10 +222,11 @@ ClimaPro`
               {/* Modal de Agendamento Inline */}
               {agendandoChamado === chamado.id && (
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-end gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <div className="flex-1">
-                      <Label>Data e Hora do Agendamento</Label>
+                      <Label htmlFor={`agendamento-${chamado.id}`}>Data e hora do agendamento</Label>
                       <Input
+                        id={`agendamento-${chamado.id}`}
                         type="datetime-local"
                         value={dataAgendamento}
                         onChange={(e) => setDataAgendamento(e.target.value)}
@@ -237,13 +239,14 @@ ClimaPro`
                         dataAgendamento
                       })}
                       disabled={!dataAgendamento || agendarChamadoMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto"
                     >
                       {agendarChamadoMutation.isPending ? 'Agendando...' : 'Confirmar'}
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => {
+                      className="w-full sm:w-auto"
                         setAgendandoChamado(null);
                         setDataAgendamento("");
                       }}

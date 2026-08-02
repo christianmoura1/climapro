@@ -92,3 +92,64 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+@layer base {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+@layer components {
+  .app-page {
+    @apply min-h-screen bg-background px-4 py-5 sm:px-6 sm:py-7 lg:px-8;
+    background-image:
+      radial-gradient(circle at 8% 0%, hsl(var(--primary) / 0.08), transparent 28rem),
+      linear-gradient(180deg, hsl(var(--background)), hsl(210 40% 97%));
+  }
+
+  .app-page-inner {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
+  .field-card {
+    @apply rounded-xl border border-border/80 bg-card shadow-sm;
+  }
+
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

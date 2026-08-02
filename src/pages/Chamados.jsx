@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft, AlertCircle, Search, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, AlertCircle, Search, X, ClipboardList } from "lucide-react";
 import { createPageUrl } from "@/utils";
 // New imports for date formatting
 import { format } from "date-fns";
@@ -21,6 +20,8 @@ import AprovarChamadoEmpresa from "../components/chamados/AprovarChamadoEmpresa"
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingChamado, setEditingChamado] = useState(null);
@@ -77,7 +78,7 @@ export default function ChamadosPage() {
   }, []);
 
   // FILTRAR CHAMADOS POR EMPRESA - mesma lógica do Dashboard
-  const { data: chamados = [], isLoading, error: chamadosError } = useQuery({
+  const { data: chamados = [], isLoading, error: chamadosError, refetch: refetchChamados } = useQuery({
     queryKey: ['chamados', user?.empresa_id, user?.role, forceRender],
     queryFn: async () => {
       if (!user) return [];
@@ -462,26 +463,29 @@ ClimaPro - Sistema de Gestão`
   // Tratamento de erro de query
   if (chamadosError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-muted">
-        <div className="text-center max-w-md p-6">
-          <div className="text-red-600 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">Erro ao Carregar Chamados</h3>
-          <p className="text-muted-foreground mb-4">{chamadosError.message}</p>
-          <Button onClick={() => setForceRender(prev => prev + 1)} className="bg-blue-600 hover:bg-blue-700">
-            Tentar Novamente
-          </Button>
-        </div>
-      </div>
+      <PageShell>
+        <PageHeader title="Chamados" description="Acompanhe cada atendimento do pedido à conclusão" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar os chamados"
+          description="Os registros continuam salvos. Verifique a conexão e tente novamente."
+          onRetry={refetchChamados}
+        />
+      </PageShell>
     );
   }
 
   if (!user) {
     return (
       <PageLoading />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <PageShell>
+        <PageHeader title="Chamados" description="Acompanhe cada atendimento do pedido à conclusão" backTo={createPageUrl("Dashboard")} />
+        <InlineLoading label="Carregando chamados" cards={4} />
+      </PageShell>
     );
   }
 
@@ -501,67 +505,62 @@ ClimaPro - Sistema de Gestão`
   }
 
   return (
-    <div key={`chamados-${forceRender}`} className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Chamados</h1>
-              <p className="text-muted-foreground mt-1">
-                {chamados.length} chamado{chamados.length !== 1 ? 's' : ''} encontrado{chamados.length !== 1 ? 's' : ''} · {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            {/* Botões de visualização */}
-            <div className="flex gap-2 mr-3">
+    <PageShell key={`chamados-${forceRender}`}>
+        <PageHeader
+          title="Chamados"
+          eyebrow="Operação técnica"
+          description={`${chamados.length} chamado${chamados.length !== 1 ? 's' : ''} · ${clientes.length} cliente${clientes.length !== 1 ? 's' : ''}`}
+          backTo={createPageUrl("Dashboard")}
+          actions={
+            <>
+              <div className="grid flex-1 grid-cols-2 gap-2 sm:flex-initial" role="group" aria-label="Visualização dos chamados">
+                <Button
+                  variant={visualizacao === 'kanban' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setVisualizacao('kanban')}
+                  aria-pressed={visualizacao === 'kanban'}
+                >
+                  Kanban
+                </Button>
+                <Button
+                  variant={visualizacao === 'lista' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setVisualizacao('lista')}
+                  aria-pressed={visualizacao === 'lista'}
+                >
+                  Lista
+                </Button>
+              </div>
               <Button
-                variant={visualizacao === 'kanban' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setVisualizacao('kanban')}
+                onClick={() => setShowForm(!showForm)}
+                className="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto"
               >
-                📊 Kanban
+                <Plus className="w-5 h-5 mr-2" />
+                Novo Chamado
               </Button>
-              <Button
-                variant={visualizacao === 'lista' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setVisualizacao('lista')}
-              >
-                📋 Lista
-              </Button>
-            </div>
-            <Button 
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Novo Chamado
-            </Button>
-          </div>
-        </div>
+            </>
+          }
+        />
 
         {/* Barra de Pesquisa e Filtros */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">
+            <label htmlFor="busca-chamados" className="sr-only">Buscar chamados</label>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
+              id="busca-chamados"
               placeholder="Buscar por cliente, técnico, título ou número..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-10"
             />
             {searchTerm && (
-              <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground">
+              <button type="button" onClick={() => setSearchTerm("")} aria-label="Limpar busca" className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {[
               { key: "todos", label: "Todos" },
               { key: "pendente", label: "Pendente" },
@@ -571,8 +570,10 @@ ClimaPro - Sistema de Gestão`
             ].map(({ key, label }) => (
               <button
                 key={key}
+                type="button"
                 onClick={() => setFiltroStatus(key)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                aria-pressed={filtroStatus === key}
+                className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-medium transition-colors ${
                   filtroStatus === key
                     ? "bg-blue-600 text-white"
                     : "bg-white border border-border text-muted-foreground hover:bg-muted"
@@ -596,7 +597,7 @@ ClimaPro - Sistema de Gestão`
         {chamadosAguardandoAprovacao.length > 0 && (
           <Card className="mb-8 shadow-lg border-2 border-orange-200 bg-orange-50">
             <CardHeader className="bg-orange-100 border-b border-orange-200">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-6 h-6 text-orange-600" />
                   <CardTitle className="text-orange-900">
@@ -616,7 +617,7 @@ ClimaPro - Sistema de Gestão`
                   
                   return (
                     <div key={chamado.id} className="p-4 hover:bg-orange-100 transition-colors">
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-foreground">
@@ -637,7 +638,7 @@ ClimaPro - Sistema de Gestão`
                         </div>
                         <Button
                           onClick={() => handleAprovarChamado(chamado)}
-                          className="bg-green-600 hover:bg-green-700 ml-4"
+                          className="w-full bg-green-600 hover:bg-green-700 sm:ml-4 sm:w-auto"
                         >
                           Revisar e Aprovar
                         </Button>
@@ -664,7 +665,18 @@ ClimaPro - Sistema de Gestão`
           />
         )}
 
-        {visualizacao === 'kanban' ? (
+        {chamados.length === 0 ? (
+          <Card className="shadow-sm">
+            <EmptyState
+              icon={ClipboardList}
+              title="Nenhum chamado cadastrado"
+              description="Crie o primeiro chamado para iniciar o acompanhamento do atendimento."
+              action={<Button onClick={() => setShowForm(true)}><Plus className="mr-2 h-4 w-4" />Novo chamado</Button>}
+            />
+          </Card>
+        ) : chamadosFiltrados.length === 0 ? (
+          <Card className="shadow-sm"><FilterEmptyState onClear={() => { setSearchTerm(""); setFiltroStatus("todos"); }} /></Card>
+        ) : visualizacao === 'kanban' ? (
           <KanbanChamados
             chamados={chamadosFiltrados}
             clientes={clientes}
@@ -691,7 +703,6 @@ ClimaPro - Sistema de Gestão`
             }}
           />
         )}
-      </div>
-    </div>
+    </PageShell>
   );
 }

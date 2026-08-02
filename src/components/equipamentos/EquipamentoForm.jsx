@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,33 +29,6 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [estabelecimentosDoCliente, setEstabelecimentosDoCliente] = useState([]);
-  const [buscaCliente, setBuscaCliente] = useState(() => {
-    if (equipamento?.cliente_id) {
-      // será preenchido no useEffect abaixo
-      return "";
-    }
-    return "";
-  });
-  const [showSugestoes, setShowSugestoes] = useState(false);
-  const buscaRef = useRef(null);
-
-  // Preencher nome do cliente quando editando
-  useEffect(() => {
-    if (formData.cliente_id && clientes.length > 0) {
-      const c = clientes.find(cl => cl.id === formData.cliente_id);
-      if (c) setBuscaCliente(c.nome);
-    }
-  }, [clientes]);
-
-  const clientesFiltrados = buscaCliente.trim().length === 0
-    ? clientes
-    : clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()));
-
-  const handleSelecionarCliente = (cliente) => {
-    handleClienteChange(cliente.id);
-    setBuscaCliente(cliente.nome);
-    setShowSugestoes(false);
-  };
 
   // Busca os estabelecimentos do cliente selecionado — tenta via lista local, senão busca via SDK
   useEffect(() => {
@@ -117,47 +90,20 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2" ref={buscaRef}>
-              <Label>Cliente *</Label>
-              <div className="relative">
-                <Input
-                  value={buscaCliente}
-                  onChange={(e) => {
-                    setBuscaCliente(e.target.value);
-                    setShowSugestoes(true);
-                    if (!e.target.value) handleClienteChange("");
-                  }}
-                  onFocus={() => setShowSugestoes(true)}
-                  onBlur={() => setTimeout(() => setShowSugestoes(false), 200)}
-                  placeholder="Digite para buscar cliente..."
-                  required={!formData.cliente_id}
-                />
-                {showSugestoes && clientesFiltrados.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {clientesFiltrados.map((cliente) => (
-                      <div
-                        key={cliente.id}
-                        className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${formData.cliente_id === cliente.id ? 'bg-blue-100 font-semibold' : ''}`}
-                        onMouseDown={() => handleSelecionarCliente(cliente)}
-                      >
-                        {cliente.nome}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {showSugestoes && buscaCliente.trim().length > 0 && clientesFiltrados.length === 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg px-3 py-2 text-sm text-muted-foreground">
-                    Nenhum cliente encontrado
-                  </div>
-                )}
-              </div>
-              {/* campo hidden para garantir validação */}
-              <input type="hidden" value={formData.cliente_id} required />
+            <div className="space-y-2">
+              <Label htmlFor="equipamento-cliente">Cliente *</Label>
+              <select id="equipamento-cliente" value={formData.cliente_id} onChange={(event) => handleClienteChange(event.target.value)} required className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <option value="">Selecione um cliente</option>
+                {clientes.map((cliente) => (
+                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
-              <Label>Número do Equipamento *</Label>
+              <Label htmlFor="numero-equipamento">Número do equipamento *</Label>
               <Input
+                id="numero-equipamento"
                 value={formData.numero_equipamento}
                 onChange={(e) => setFormData({...formData, numero_equipamento: e.target.value})}
                 placeholder="Ex: EQ-001"
@@ -169,12 +115,13 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           {/* Estabelecimento do cliente */}
           {formData.cliente_id && (
             <div className="space-y-2">
-              <Label>Estabelecimento</Label>
+              <Label htmlFor="equipamento-estabelecimento">Estabelecimento</Label>
               {estabelecimentosDoCliente.length > 0 ? (
                 <select
+                  id="equipamento-estabelecimento"
                   value={formData.estabelecimento_nome || ""}
                   onChange={(e) => handleEstabelecimentoChange(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <option value="">— Selecione o estabelecimento (opcional) —</option>
                   {estabelecimentosDoCliente.map((est, idx) => (
@@ -196,11 +143,12 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
           <div className="grid md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Tipo de Equipamento *</Label>
+              <Label htmlFor="tipo-equipamento">Tipo de equipamento *</Label>
               <select
                 value={formData.tipo}
+                id="tipo-equipamento"
                 onChange={(e) => setFormData({...formData, tipo: e.target.value})}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 required
               >
                 <option value="ar_condicionado">Ar Condicionado</option>
@@ -213,8 +161,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             </div>
 
             <div className="space-y-2">
-              <Label>Marca *</Label>
+              <Label htmlFor="marca-equipamento">Marca *</Label>
               <Input
+                id="marca-equipamento"
                 value={formData.marca}
                 onChange={(e) => setFormData({...formData, marca: e.target.value})}
                 placeholder="Ex: Carrier"
@@ -223,8 +172,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             </div>
 
             <div className="space-y-2">
-              <Label>Modelo *</Label>
+              <Label htmlFor="modelo-equipamento">Modelo *</Label>
               <Input
+                id="modelo-equipamento"
                 value={formData.modelo}
                 onChange={(e) => setFormData({...formData, modelo: e.target.value})}
                 placeholder="Ex: 42BQA018515LS"
@@ -235,8 +185,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Capacidade</Label>
+              <Label htmlFor="capacidade-equipamento">Capacidade</Label>
               <Input
+                id="capacidade-equipamento"
                 value={formData.capacidade}
                 onChange={(e) => setFormData({...formData, capacidade: e.target.value})}
                 placeholder="Ex: 18.000 BTUs"
@@ -244,8 +195,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             </div>
 
             <div className="space-y-2">
-              <Label>Localização</Label>
+              <Label htmlFor="localizacao-equipamento">Localização</Label>
               <Input
+                id="localizacao-equipamento"
                 value={formData.localizacao}
                 onChange={(e) => setFormData({...formData, localizacao: e.target.value})}
                 placeholder="Ex: Sala 203"
@@ -255,8 +207,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Data de Instalação</Label>
+              <Label htmlFor="data-instalacao-equipamento">Data de instalação</Label>
               <Input
+                id="data-instalacao-equipamento"
                 type="date"
                 value={formData.data_instalacao}
                 onChange={(e) => setFormData({...formData, data_instalacao: e.target.value})}
@@ -264,8 +217,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             </div>
 
             <div className="space-y-2">
-              <Label>Número de Série</Label>
+              <Label htmlFor="serie-equipamento">Número de série</Label>
               <Input
+                id="serie-equipamento"
                 value={formData.numero_serie}
                 onChange={(e) => setFormData({...formData, numero_serie: e.target.value})}
                 placeholder="Ex: ABC123XYZ"
@@ -276,7 +230,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           <div className="flex items-center justify-between gap-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
             <div className="space-y-1">
               <Label htmlFor="pmoc-ativo">Incluir no PMOC</Label>
-              <p className="text-xs text-muted-foreground">
+              <p id="pmoc-ativo-ajuda" className="text-xs text-muted-foreground">
                 Todo equipamento no PMOC recebe checagem mensal básica (filtros, inspeção, drenos).
                 A periodicidade do ciclo profundo (troca de gás, teste elétrico completo, etc.) se
                 define depois, no Plano Anual de cada cliente — não precisa escolher aqui.
@@ -285,6 +239,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             <Switch
               id="pmoc-ativo"
               checked={!!formData.pmoc_ativo}
+              aria-describedby="pmoc-ativo-ajuda"
               onCheckedChange={(checked) =>
                 setFormData({
                   ...formData,
@@ -296,7 +251,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           </div>
 
           <div className="space-y-2">
-            <Label>Foto do Equipamento</Label>
+            <Label htmlFor="foto-upload">Foto do equipamento</Label>
             <div className="flex gap-4 items-center">
               <input
                 type="file"
@@ -304,11 +259,12 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
                 onChange={handlePhotoUpload}
                 disabled={uploadingPhoto}
                 className="hidden"
+                capture="environment"
                 id="foto-upload"
               />
               <label
                 htmlFor="foto-upload"
-                className="flex items-center gap-2 px-4 py-2 border border-border rounded-md cursor-pointer hover:bg-muted"
+                className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border px-4 py-2 hover:bg-muted"
               >
                 <Upload className="w-4 h-4" />
                 {uploadingPhoto ? 'Enviando...' : 'Selecionar Foto'}
@@ -316,7 +272,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
               {formData.foto_url && (
                 <img
                   src={formData.foto_url}
-                  alt="Preview"
+                  alt="Foto atual do equipamento"
                   className="w-20 h-20 object-cover rounded border-2 border-border"
                 />
               )}
@@ -324,8 +280,9 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           </div>
 
           <div className="space-y-2">
-            <Label>Observações</Label>
+            <Label htmlFor="observacoes-equipamento">Observações</Label>
             <Textarea
+              id="observacoes-equipamento"
               value={formData.observacoes}
               onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
               placeholder="Informações adicionais sobre o equipamento"
@@ -333,7 +290,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             />
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end gap-3">
+        <CardFooter className="grid grid-cols-2 gap-3 sm:flex sm:justify-end">
           <Button type="button" variant="outline" onClick={onCancel}>
             <X className="w-4 h-4 mr-2" />
             Cancelar

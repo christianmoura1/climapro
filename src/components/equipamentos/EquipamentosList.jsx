@@ -160,11 +160,11 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
               )}
 
               {/* New action buttons */}
-              <div className="flex gap-2 mt-4">
+              <div className="mt-4 grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1"
+                  className="col-span-2"
                   onClick={() => onView(equipamento)}
                 >
                   <Eye className="w-4 h-4 mr-2" />
@@ -181,8 +181,9 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onDelete(equipamento.id)} // Changed to pass id
+                  onClick={() => onDelete(equipamento)}
                   className="text-red-600 hover:text-red-700"
+                  aria-label={`Excluir equipamento ${equipamento.numero_equipamento}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

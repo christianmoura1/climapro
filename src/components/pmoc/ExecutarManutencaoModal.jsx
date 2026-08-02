@@ -26,49 +26,40 @@ import { toast } from "@/components/ui/use-toast";
 import { checklistParaEquipamento, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
 
 // Componente de Canvas de Assinatura Nativo
-function SignatureCanvas({ canvasRef, width = 600, height = 200 }) {
+function SignatureCanvas({ canvasRef, width = 600, height = 200, label, onChange }) {
   const [isDrawing, setIsDrawing] = useState(false);
 
-  // Set up canvas context properties
   const setupCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
     }
   }, [canvasRef]);
 
-  useEffect(() => {
-    setupCanvas();
-  }, [setupCanvas]);
+  useEffect(() => setupCanvas(), [setupCanvas]);
 
   const getCoordinates = (event) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    let clientX, clientY;
-
-    if (event.touches && event.touches.length > 0) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else {
-      clientX = event.clientX;
-      clientY = event.clientY;
-    }
-    return { x: clientX - rect.left, y: clientY - rect.top };
+    return {
+      x: (event.clientX - rect.left) * (canvas.width / rect.width),
+      y: (event.clientY - rect.top) * (canvas.height / rect.height),
+    };
   };
 
   const startDrawing = (event) => {
+    event.preventDefault();
     if (!canvasRef.current) return;
+    canvasRef.current.setPointerCapture?.(event.pointerId);
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
-    
-    setupCanvas(); // Ensure canvas properties are set
+    setupCanvas();
     const { x, y } = getCoordinates(event);
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -76,40 +67,39 @@ function SignatureCanvas({ canvasRef, width = 600, height = 200 }) {
   };
 
   const draw = (event) => {
+    event.preventDefault();
     if (!isDrawing || !canvasRef.current) return;
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
-    
     const { x, y } = getCoordinates(event);
     ctx.lineTo(x, y);
     ctx.stroke();
   };
 
-  const stopDrawing = () => {
+  const stopDrawing = (event) => {
+    if (!isDrawing) return;
+    canvasRef.current?.releasePointerCapture?.(event.pointerId);
     setIsDrawing(false);
+    onChange?.(true);
   };
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      onMouseDown={startDrawing}
-      onMouseMove={draw}
-      onMouseUp={stopDrawing}
-      onMouseLeave={stopDrawing}
-      onTouchStart={(e) => {
-        e.preventDefault(); // Prevent scrolling
-        startDrawing(e);
-      }}
-      onTouchMove={(e) => {
-        e.preventDefault(); // Prevent scrolling
-        draw(e);
-      }}
-      onTouchEnd={stopDrawing}
-      className="border-2 border-border rounded-lg bg-white cursor-crosshair"
-      style={{ touchAction: 'none' }} // Disable default touch actions like pan and zoom
-    />
+    <div className="overflow-hidden rounded-xl border-2 border-slate-300 bg-white shadow-inner focus-within:border-primary">
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        onPointerDown={startDrawing}
+        onPointerMove={draw}
+        onPointerUp={stopDrawing}
+        onPointerCancel={stopDrawing}
+        className="block h-auto w-full cursor-crosshair touch-none"
+        style={{ aspectRatio: `${width} / ${height}` }}
+        role="img"
+        tabIndex={0}
+        aria-label={label}
+      />
+    </div>
   );
 }
 
@@ -243,12 +233,13 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }));
   };
 
-  const limparAssinatura = (canvasRef) => {
+  const limparAssinatura = (canvasRef, onClear) => {
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        onClear?.(false);
       }
     }
   };
@@ -634,37 +625,50 @@ ClimaPro`
     );
   }
 
-  const todosEquipamentosConcluidos = equipamentos.every(eq => {
+  const todosEquipamentosConcluidos = equipamentos.length > 0 && equipamentos.every(eq => {
     const checklist = checklists[eq.id] || [];
     return checklist.length > 0 && checklist.every(item => item.concluido);
   });
+  const equipamentosPendentes = equipamentos.filter((eq) => {
+    const checklist = checklists[eq.id] || [];
+    return checklist.length === 0 || checklist.some((item) => !item.concluido);
+  });
+  const requisitosPendentes = [
+    equipamentosPendentes.length > 0 ? `Concluir o checklist de ${equipamentosPendentes.length} equipamento(s)` : null,
+    !nomeTecnico.trim() ? 'Informar o nome do técnico' : null,
+    !assinaturaTecnicoPreenchida ? 'Coletar a assinatura do técnico' : null,
+    !nomeCliente.trim() ? 'Informar o nome do responsável no local' : null,
+    !assinaturaClientePreenchida ? 'Coletar a assinatura do responsável no local' : null,
+  ].filter(Boolean);
+  const prontoParaEnviar = requisitosPendentes.length === 0;
+
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <Card className="w-full max-w-5xl max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Executar manutenção PMOC">
+      <Card className="max-h-[100dvh] w-full max-w-5xl overflow-y-auto rounded-b-none rounded-t-2xl sm:max-h-[95vh] sm:rounded-xl">
         <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50 sticky top-0 z-10">
-          <div className="flex justify-between items-center">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <CardTitle className="text-2xl">🔧 Executar Manutenção PMOC</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{cliente.nome}</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-1 sm:gap-2">
               <Button
                 variant="outline"
                 onClick={gerarRelatorioPDF}
-                disabled={gerandoRelatorio || !todosEquipamentosConcluidos || isCanvasEmpty(sigCanvasTecnico) || !nomeTecnico.trim() || isCanvasEmpty(sigCanvasCliente) || !nomeCliente.trim()}
+                disabled={gerandoRelatorio || !prontoParaEnviar}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Prévia PDF
               </Button>
-              <Button variant="ghost" size="icon" onClick={onClose}>
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar execução do PMOC">
                 <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="space-y-6 p-3 sm:p-6">
           {/* Informações Gerais */}
           <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
             <CardContent className="p-4">
@@ -748,9 +752,12 @@ ClimaPro`
                       }`}
                     >
                       <CardContent className="p-4">
-                        <div 
-                          className="flex justify-between items-center cursor-pointer"
+                        <button
+                          type="button"
+                          className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg text-left focus-visible:ring-2 focus-visible:ring-primary"
                           onClick={() => setEquipamentoExpandido(isExpanded ? null : equipamento.id)}
+                          aria-expanded={isExpanded}
+                          aria-controls={`equipamento-${equipamento.id}-detalhes`}
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2 flex-wrap">
@@ -787,13 +794,13 @@ ClimaPro`
                               </div>
                             )}
                           </div>
-                          <Button variant="ghost" size="icon">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md" aria-hidden="true">
                             {isExpanded ? <ChevronUp /> : <ChevronDown />}
-                          </Button>
-                        </div>
+                          </span>
+                        </button>
 
                         {isExpanded && (
-                          <div className="mt-6 space-y-6 border-t pt-6">
+                          <div id={`equipamento-${equipamento.id}-detalhes`} className="mt-6 space-y-6 border-t pt-6">
                             {/* Checklist */}
                             <div>
                               <h5 className="font-semibold mb-3">✅ Checklist de Manutenção</h5>
@@ -808,14 +815,17 @@ ClimaPro`
                                     <div className="bg-white p-4 rounded-lg border">
                                     <div className="flex items-start gap-3">
                                       <button
+                                        type="button"
                                         onClick={() => toggleChecklistItem(equipamento.id, itemIndex)}
-                                        className={`mt-1 flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center ${
+                                        aria-pressed={item.concluido}
+                                        aria-label={`${item.concluido ? 'Desmarcar' : 'Marcar'}: ${item.descricao}`}
+                                        className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg border-2 ${
                                           item.concluido 
                                             ? 'bg-green-500 border-green-500 text-white' 
                                             : 'border-border'
                                         }`}
                                       >
-                                        {item.concluido && <Check className="w-4 h-4" />}
+                                        {item.concluido && <Check className="h-5 w-5" />}
                                       </button>
                                       <div className="flex-1">
                                         <p className={item.concluido ? 'line-through text-muted-foreground' : ''}>
@@ -823,6 +833,7 @@ ClimaPro`
                                         </p>
                                         <Input
                                           placeholder="Observações adicionais (opcional)"
+                                          aria-label={`Observações para ${item.descricao}`}
                                           value={item.observacao}
                                           onChange={(e) => updateObservacaoItem(equipamento.id, itemIndex, e.target.value)}
                                           className="mt-2 text-sm"
@@ -838,7 +849,7 @@ ClimaPro`
                             {/* Fotos */}
                             <div>
                               <h5 className="font-semibold mb-3">📸 Fotos do Equipamento ({(fotos[equipamento.id] || []).length}/5)</h5>
-                              <div className="grid grid-cols-3 gap-3 mb-3">
+                              <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                                 {(fotos[equipamento.id] || []).map((url, fotoIndex) => (
                                   <div key={fotoIndex} className="relative">
                                     <img 
@@ -847,18 +858,23 @@ ClimaPro`
                                       className="w-full h-32 object-cover rounded-lg border-2 border-border"
                                     />
                                     <button
+                                      type="button"
                                       onClick={() => removerFoto(equipamento.id, fotoIndex)}
-                                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                      aria-label={`Remover foto ${fotoIndex + 1}`}
+                                      className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-white shadow hover:bg-red-700"
                                     >
                                       <X className="w-4 h-4" />
                                     </button>
                                   </div>
                                 ))}
                               </div>
-                              <label className="cursor-pointer">
+                              <label htmlFor={`foto-pmoc-${equipamento.id}`} className="block cursor-pointer">
                                 <input
+                                  id={`foto-pmoc-${equipamento.id}`}
                                   type="file"
                                   accept="image/*"
+                                  capture="environment"
+                                  aria-describedby={`foto-pmoc-${equipamento.id}-ajuda`}
                                   onChange={(e) => handleUploadFoto(equipamento.id, e.target.files[0])}
                                   disabled={uploadingFoto === equipamento.id || (fotos[equipamento.id] || []).length >= 5}
                                   className="hidden"
@@ -886,11 +902,15 @@ ClimaPro`
                                 </Button>
                               </label>
                             </div>
+                              <p id={`foto-pmoc-${equipamento.id}-ajuda`} className="mt-2 text-xs text-muted-foreground">
+                                No celular, a câmera traseira será aberta quando estiver disponível. Limite de 5 fotos.
+                              </p>
 
                             {/* Observações Gerais */}
                             <div>
                               <Label>📝 Observações sobre este Equipamento</Label>
                               <Textarea
+                                aria-label="Observações gerais sobre este equipamento"
                                 value={observacoesPorEquipamento[equipamento.id] || ''}
                                 onChange={(e) => setObservacoesPorEquipamento(prev => ({
                                   ...prev,
@@ -910,9 +930,7 @@ ClimaPro`
             )}
           </div>
 
-          {/* Assinaturas — técnico que executou e cliente que confirma no local,
-              cada um com seu próprio traço, exigido pela norma como
-              comprovação de que a visita realmente aconteceu. */}
+          {/* Assinaturas do técnico que executou e do responsável no local. */}
           <Card className="border-2 border-purple-200 bg-purple-50">
             <CardHeader>
               <CardTitle className="text-lg">✍️ Assinatura do Técnico</CardTitle>
@@ -929,12 +947,13 @@ ClimaPro`
               </div>
               <div>
                 <Label>Assinatura Digital *</Label>
-                <SignatureCanvas canvasRef={sigCanvasTecnico} width={600} height={200} />
+                <p className="mb-2 text-xs text-muted-foreground">Assine com o dedo ou com uma caneta compatível. O traço acompanha o tamanho da tela.</p>
+                <SignatureCanvas canvasRef={sigCanvasTecnico} width={600} height={200} label="Área de assinatura do técnico" onChange={setAssinaturaTecnicoPreenchida} />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => limparAssinatura(sigCanvasTecnico)}
+                  onClick={() => limparAssinatura(sigCanvasTecnico, setAssinaturaTecnicoPreenchida)}
                   className="mt-2"
                 >
                   Limpar Assinatura
@@ -959,12 +978,13 @@ ClimaPro`
               </div>
               <div>
                 <Label>Assinatura Digital *</Label>
-                <SignatureCanvas canvasRef={sigCanvasCliente} width={600} height={200} />
+                <p className="mb-2 text-xs text-muted-foreground">Peça ao responsável no local para assinar dentro da área abaixo.</p>
+                <SignatureCanvas canvasRef={sigCanvasCliente} width={600} height={200} label="Área de assinatura do responsável no local" onChange={setAssinaturaClientePreenchida} />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => limparAssinatura(sigCanvasCliente)}
+                  onClick={() => limparAssinatura(sigCanvasCliente, setAssinaturaClientePreenchida)}
                   className="mt-2"
                 >
                   Limpar Assinatura
@@ -973,8 +993,17 @@ ClimaPro`
             </CardContent>
           </Card>
 
+          {requisitosPendentes.length > 0 && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950" role="status" aria-live="polite">
+              <AlertCircle className="mb-2 h-5 w-5 text-amber-700" aria-hidden="true" />
+              <p className="text-sm font-semibold">Falta concluir antes do envio:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
+                {requisitosPendentes.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+          )}
           {/* Botão Finalizar */}
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="sticky bottom-0 z-10 -mx-3 flex flex-col-reverse gap-2 border-t bg-background/95 px-3 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:gap-3 sm:px-6">
             <Button
               variant="outline"
               onClick={onClose}
@@ -984,8 +1013,8 @@ ClimaPro`
             </Button>
             <Button
               onClick={handleFinalizar}
-              disabled={finalizarManutencaoMutation.isPending || !todosEquipamentosConcluidos}
-              className="flex-1 bg-orange-600 hover:bg-orange-700"
+              disabled={finalizarManutencaoMutation.isPending || !prontoParaEnviar}
+              className="min-h-12 flex-1 whitespace-normal bg-orange-600 hover:bg-orange-700"
             >
               {finalizarManutencaoMutation.isPending ? (
                 <>
@@ -1001,14 +1030,6 @@ ClimaPro`
             </Button>
           </div>
 
-          {!todosEquipamentosConcluidos && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-              <AlertCircle className="w-5 h-5 text-yellow-600 inline mr-2" />
-              <span className="text-sm text-yellow-800">
-                Complete todos os checklists antes de enviar
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

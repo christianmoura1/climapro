@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, TrendingUp, DollarSign, Download, AlertCircle, Calendar, Trash2, Filter } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Plus, TrendingUp, DollarSign, Download, AlertCircle, Calendar, Trash2, Filter } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
@@ -24,6 +24,7 @@ import AprovarMovimentacoes from "../components/financeiro/AprovarMovimentacoes"
 import GastosTecnicosLista from "../components/financeiro/GastosTecnicosLista";
 import DetalheGastosTecnico from "../components/financeiro/DetalheGastosTecnico";
 import { PageLoading } from "@/components/ui/page-loading";
+import { ErrorState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { toast } from "@/components/ui/use-toast";
 
 export default function FinanceiroPage() {
@@ -77,7 +78,7 @@ export default function FinanceiroPage() {
     loadData();
   }, [navigate]);
 
-  const { data: lancamentos = [], isLoading: loadingLancamentos, error: lancamentosError } = useQuery({
+  const { data: lancamentos = [], isLoading: loadingLancamentos, error: lancamentosError, refetch: refetchLancamentos } = useQuery({
     queryKey: ['financeiro', user?.empresa_id, forceRender],
     queryFn: async () => {
       if ((user?.role === 'admin' && !user?.empresa_id)) {
@@ -508,6 +509,28 @@ export default function FinanceiroPage() {
   if (!user) return <PageLoading />;
   if (moduloAtivo === false) return <BloqueioModulo nomeModulo="Financeiro" />;
   if (moduloAtivo === null) return <PageLoading />;
+  if (loadingLancamentos) {
+    return (
+      <PageShell>
+        <PageHeader title="Financeiro" description="Receitas, despesas e saldo do período" backTo={createPageUrl("Dashboard")} />
+        <InlineLoading label="Carregando dados financeiros" cards={4} />
+      </PageShell>
+    );
+  }
+
+  if (lancamentosError) {
+    return (
+      <PageShell>
+        <PageHeader title="Financeiro" description="Receitas, despesas e saldo do período" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar o financeiro"
+          description="Os lançamentos continuam salvos. Verifique a conexão e tente novamente."
+          onRetry={refetchLancamentos}
+        />
+      </PageShell>
+    );
+  }
+
   if (tecnicoSelecionado) return (
     <DetalheGastosTecnico 
       tecnico={tecnicoSelecionado} 
@@ -519,44 +542,36 @@ export default function FinanceiroPage() {
   if (showRelatorio) return <RelatorioFinanceiro lancamentos={lancamentosFiltrados} empresa={empresa} onClose={() => setShowRelatorio(false)} />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Financeiro</h1>
-              <p className="text-muted-foreground mt-1">Controle completo de receitas e despesas</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowRelatorio(true)}>
-              <Download className="w-4 h-4 mr-2" />Relatório
-            </Button>
-            <Button onClick={() => setShowForm(!showForm)} className="bg-orange-600 hover:bg-orange-700">
-              <Plus className="w-5 h-5 mr-2" />Novo Lançamento
-            </Button>
-          </div>
-        </div>
+    <PageShell>
+        <PageHeader
+          title="Financeiro"
+          eyebrow="Saúde do caixa"
+          description="Receitas, despesas e saldo do período selecionado"
+          backTo={createPageUrl("Dashboard")}
+          actions={
+            <>
+              <Button variant="outline" onClick={() => setShowRelatorio(true)} className="flex-1 sm:flex-initial"><Download className="mr-2 h-4 w-4" />Relatório</Button>
+              <Button onClick={() => setShowForm(!showForm)} className="flex-1 bg-orange-600 hover:bg-orange-700 sm:flex-initial"><Plus className="mr-2 h-5 w-5" />Novo lançamento</Button>
+            </>
+          }
+        />
 
         <Card className="shadow-lg border-none mb-6">
           <CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="w-5 h-5" />Filtros de Período</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium mb-2 block">Período Pré-definido:</Label>
+                <Label className="mb-2 block text-sm font-medium">Período predefinido</Label>
                 <div className="flex gap-2 flex-wrap">
-                  <Button variant={periodoSelecionado === 'diario' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('diario'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'diario' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>📅 Diário</Button>
-                  <Button variant={periodoSelecionado === 'semanal' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('semanal'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'semanal' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>📊 Semanal</Button>
-                  <Button variant={periodoSelecionado === 'mensal' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('mensal'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'mensal' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>📈 Mensal</Button>
+                  <Button aria-pressed={periodoSelecionado === 'diario' && !usandoFiltroPersonalizado} variant={periodoSelecionado === 'diario' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('diario'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'diario' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>Diário</Button>
+                  <Button aria-pressed={periodoSelecionado === 'semanal' && !usandoFiltroPersonalizado} variant={periodoSelecionado === 'semanal' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('semanal'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'semanal' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>Semanal</Button>
+                  <Button aria-pressed={periodoSelecionado === 'mensal' && !usandoFiltroPersonalizado} variant={periodoSelecionado === 'mensal' && !usandoFiltroPersonalizado ? 'default' : 'outline'} onClick={() => { setPeriodoSelecionado('mensal'); setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); }} className={periodoSelecionado === 'mensal' && !usandoFiltroPersonalizado ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}>Mensal</Button>
                 </div>
               </div>
               <div className="border-t pt-4">
                 <div className="grid md:grid-cols-3 gap-3">
-                  <div><Label>Data Início</Label><Input type="date" value={dataInicio} onChange={(e) => { setDataInicio(e.target.value); setUsandoFiltroPersonalizado(false); }} /></div>
-                  <div><Label>Data Fim</Label><Input type="date" value={dataFim} onChange={(e) => { setDataFim(e.target.value); setUsandoFiltroPersonalizado(false); }} /></div>
+                  <div><Label htmlFor="financeiro-data-inicio">Data inicial</Label><Input id="financeiro-data-inicio" type="date" value={dataInicio} onChange={(e) => { setDataInicio(e.target.value); setUsandoFiltroPersonalizado(false); }} /></div>
+                  <div><Label htmlFor="financeiro-data-fim">Data final</Label><Input id="financeiro-data-fim" type="date" value={dataFim} onChange={(e) => { setDataFim(e.target.value); setUsandoFiltroPersonalizado(false); }} /></div>
                   <div className="flex items-end gap-2">
                     <Button onClick={() => { if (dataInicio && dataFim) { setUsandoFiltroPersonalizado(true); setPeriodoSelecionado('personalizado'); }}} disabled={!dataInicio || !dataFim || dataInicio > dataFim} className="flex-1 bg-blue-600 hover:bg-blue-700">Aplicar</Button>
                     {usandoFiltroPersonalizado && <Button variant="outline" onClick={() => { setUsandoFiltroPersonalizado(false); setDataInicio(''); setDataFim(''); setPeriodoSelecionado('mensal'); }}>Limpar</Button>}
@@ -570,7 +585,7 @@ export default function FinanceiroPage() {
         {despesasPendentes > 0 && (
           <Card className="shadow-lg border-2 border-yellow-200 mb-6">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <div>
@@ -578,7 +593,7 @@ export default function FinanceiroPage() {
                     <p className="text-sm text-muted-foreground">Escolha se deseja incluí-las no cálculo</p>
                   </div>
                 </div>
-                <Button variant={incluirPendentes ? "default" : "outline"} onClick={() => setIncluirPendentes(!incluirPendentes)}>
+                <Button aria-pressed={incluirPendentes} variant={incluirPendentes ? "default" : "outline"} onClick={() => setIncluirPendentes(!incluirPendentes)} className="w-full sm:w-auto">
                   {incluirPendentes ? "Incluindo" : "Apenas Pagas"}
                 </Button>
               </div>
@@ -586,7 +601,7 @@ export default function FinanceiroPage() {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Receitas</CardTitle></CardHeader>
             <CardContent>
@@ -616,7 +631,7 @@ export default function FinanceiroPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-none">
+          <Card className="order-first col-span-2 border-blue-200 bg-blue-50/40 shadow-lg md:order-none md:col-span-1">
             <CardHeader className="pb-3"><CardTitle className="text-sm font-medium text-muted-foreground">Saldo</CardTitle></CardHeader>
             <CardContent>
               <p className={`text-3xl font-bold ${saldo >= 0 ? 'text-blue-600' : 'text-red-600'}`}>R$ {saldo.toFixed(2)}</p>
@@ -627,12 +642,12 @@ export default function FinanceiroPage() {
         {creditosTecnicos.length > 0 && (
           <Card className="shadow-lg border-none mb-8">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-orange-600"/>Créditos para Técnicos</CardTitle>
                 <div className="flex items-center gap-3">
                   <Filter className="w-4 h-4 text-muted-foreground" />
                   <Select value={filtroTecnicoCreditos} onValueChange={setFiltroTecnicoCreditos}>
-                    <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos os Técnicos</SelectItem>
                       {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
@@ -642,7 +657,7 @@ export default function FinanceiroPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-4 gap-4 mb-6">
+              <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg"><p className="text-sm text-blue-600">Total</p><p className="text-2xl font-bold text-blue-900">R$ {totalCreditosEnviadosFiltrados.toFixed(2)}</p></div>
                 <div className="bg-green-50 p-4 rounded-lg"><p className="text-sm text-green-600">Aprovados</p><p className="text-2xl font-bold text-green-900">{creditosAprovadosFiltrados}</p></div>
                 <div className="bg-yellow-50 p-4 rounded-lg"><p className="text-sm text-yellow-600">Pendentes</p><p className="text-2xl font-bold text-yellow-900">{creditosPendentesFiltrados}</p></div>
@@ -678,7 +693,7 @@ export default function FinanceiroPage() {
                               <Badge className={credito.status === 'aprovado' ? 'bg-green-100 text-green-800' : credito.status === 'rejeitado' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}>{credito.status}</Badge>
                             </td>
                             <td className="px-4 py-2 text-center">
-                              <Button variant="ghost" size="icon" onClick={() => { if (window.confirm('Excluir crédito?')) excluirCreditoMutation.mutate(credito.id); }} className="text-red-600"><Trash2 className="w-4 h-4" /></Button>
+                              <Button variant="ghost" size="icon" onClick={() => { if (window.confirm('Excluir crédito?')) excluirCreditoMutation.mutate(credito.id); }} className="text-red-600" aria-label={`Excluir crédito de ${tec?.nome || 'técnico'}`}><Trash2 className="w-4 h-4" /></Button>
                             </td>
                           </tr>
                         );
@@ -704,7 +719,7 @@ export default function FinanceiroPage() {
         {gastosTecnicos.length > 0 && (
           <Card className="shadow-lg border-none mb-8">
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
                   <CardTitle className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-purple-600" />Gastos dos Técnicos</CardTitle>
                   <Badge className="bg-purple-100 text-purple-800">Total: R$ {totalGastosTecnicosFiltrados.toFixed(2)}</Badge>
@@ -712,7 +727,7 @@ export default function FinanceiroPage() {
                 <div className="flex items-center gap-3">
                   <Filter className="w-4 h-4 text-muted-foreground" />
                   <Select value={filtroTecnicoGastos} onValueChange={setFiltroTecnicoGastos}>
-                    <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos os Técnicos</SelectItem>
                       {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
@@ -797,7 +812,6 @@ export default function FinanceiroPage() {
             <LancamentosList lancamentos={lancamentosFiltrados} tecnicos={tecnicos} onDelete={(id) => { if (window.confirm('Excluir lançamento?')) deleteLancamentoMutation.mutate(id); }} />
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </PageShell>
   );
 }
