@@ -65,6 +65,30 @@ export const publicPages = [
     eyebrow: "Ferramenta gratuita",
     schemaType: "WebApplication",
   },
+  {
+    path: "/pmoc/curitiba",
+    title: "PMOC em Curitiba: guia e sistema para empresas | ClimaPro",
+    description: "Entenda o PMOC em Curitiba e organize clientes, equipamentos, cronograma, checklist, fotos e assinaturas em um sistema para climatização.",
+    eyebrow: "PMOC em Curitiba",
+    schemaType: "WebPage",
+    areaServed: ["Curitiba", "São José dos Pinhais", "Pinhais", "Colombo", "Araucária"],
+  },
+  {
+    path: "/pmoc/sao-paulo",
+    title: "PMOC em São Paulo: guia e sistema de gestão | ClimaPro",
+    description: "Saiba como funciona o PMOC em São Paulo e controle contratos, equipes, equipamentos, cronogramas e evidências de manutenção no ClimaPro.",
+    eyebrow: "PMOC em São Paulo",
+    schemaType: "WebPage",
+    areaServed: ["São Paulo", "Guarulhos", "Osasco", "Santo André", "São Bernardo do Campo"],
+  },
+  {
+    path: "/pmoc/vitoria-vila-velha",
+    title: "PMOC em Vitória e Vila Velha ES: guia e sistema | ClimaPro",
+    description: "Entenda o PMOC em Vitória e Vila Velha e organize equipamentos, agenda, checklist, fotos e assinaturas da equipe de climatização.",
+    eyebrow: "PMOC em Vitória e Vila Velha",
+    schemaType: "WebPage",
+    areaServed: ["Vitória", "Vila Velha", "Serra", "Cariacica", "Viana", "Guarapari"],
+  },
 ];
 
 export const publicPaths = new Set(publicPages.map((page) => page.path));
@@ -97,6 +121,9 @@ const labels = {
   "checklist-manutencao-preventiva-ar-condicionado": "Checklist de preventiva",
   "guia-pmoc": "Guia PMOC",
   "calculadora-preco-pmoc": "Calculadora de preço",
+  curitiba: "PMOC em Curitiba",
+  "sao-paulo": "PMOC em São Paulo",
+  "vitoria-vila-velha": "PMOC em Vitória e Vila Velha",
 };
 
 export function getBreadcrumbs(pathname) {
@@ -150,6 +177,16 @@ export function structuredDataFor(page) {
     isPartOf: { "@id": `${SITE_URL}/#website` },
     publisher: { "@id": `${SITE_URL}/#organization` },
   };
+
+  if (page.areaServed) {
+    pageNode.about = {
+      "@type": "SoftwareApplication",
+      name: "ClimaPro",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web browser",
+      areaServed: page.areaServed.map((name) => ({ "@type": "City", name })),
+    };
+  }
 
   if (page.schemaType === "Article") {
     pageNode.dateModified = "2026-08-02";
