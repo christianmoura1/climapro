@@ -55,9 +55,16 @@ function SignatureCanvas({ canvasRef, width = 600, height = 200, label, onChange
 
   const startDrawing = (event) => {
     event.preventDefault();
-    if (!canvasRef.current) return;
-    canvasRef.current.setPointerCapture?.(event.pointerId);
-    const ctx = canvasRef.current.getContext('2d');
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      if (event.pointerId != null && typeof canvas.setPointerCapture === 'function') {
+        canvas.setPointerCapture(event.pointerId);
+      }
+    } catch {
+      // Alguns WebViews do iOS expõem a API, mas recusam a captura.
+    }
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     setupCanvas();
     const { x, y } = getCoordinates(event);
@@ -78,7 +85,19 @@ function SignatureCanvas({ canvasRef, width = 600, height = 200, label, onChange
 
   const stopDrawing = (event) => {
     if (!isDrawing) return;
-    canvasRef.current?.releasePointerCapture?.(event.pointerId);
+    const canvas = canvasRef.current;
+    try {
+      if (
+        canvas &&
+        event.pointerId != null &&
+        typeof canvas.releasePointerCapture === 'function' &&
+        (typeof canvas.hasPointerCapture !== 'function' || canvas.hasPointerCapture(event.pointerId))
+      ) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // O traço ainda pode ser finalizado sem captura explícita do ponteiro.
+    }
     setIsDrawing(false);
     onChange?.(true);
   };
@@ -118,6 +137,8 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   const [nomeTecnico, setNomeTecnico] = useState("");
   const [nomeCliente, setNomeCliente] = useState("");
   const [uploadingFoto, setUploadingFoto] = useState(null);
+  const [assinaturaTecnicoPreenchida, setAssinaturaTecnicoPreenchida] = useState(false);
+  const [assinaturaClientePreenchida, setAssinaturaClientePreenchida] = useState(false);
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
 
   useEffect(() => {
@@ -625,10 +646,6 @@ ClimaPro`
     );
   }
 
-  const todosEquipamentosConcluidos = equipamentos.length > 0 && equipamentos.every(eq => {
-    const checklist = checklists[eq.id] || [];
-    return checklist.length > 0 && checklist.every(item => item.concluido);
-  });
   const equipamentosPendentes = equipamentos.filter((eq) => {
     const checklist = checklists[eq.id] || [];
     return checklist.length === 0 || checklist.some((item) => !item.concluido);
