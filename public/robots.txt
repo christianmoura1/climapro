@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /Dashboard
+Disallow: /Chamados
+Disallow: /Clientes
+Disallow: /PMOC
+Disallow: /Financeiro
+Disallow: /AdminPanel
+Disallow: /CompanySettings
+Disallow: /NotasFiscais
+Disallow: /TecnicoDashboard
+Disallow: /ClienteDashboard
+
+Sitemap: https://geradordepmoc.com.br/sitemap.xml

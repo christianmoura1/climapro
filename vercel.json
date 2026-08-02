@@ -1,12 +1,59 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/LandingPage",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/Dashboard", "destination": "/__app.html" },
+    { "source": "/Chamados", "destination": "/__app.html" },
+    { "source": "/Clientes", "destination": "/__app.html" },
+    { "source": "/PMOC", "destination": "/__app.html" },
+    { "source": "/Financeiro", "destination": "/__app.html" },
+    { "source": "/Welcome", "destination": "/__app.html" },
+    { "source": "/AdminPanel", "destination": "/__app.html" },
+    { "source": "/SetupInicial", "destination": "/__app.html" },
+    { "source": "/Planos", "destination": "/__app.html" },
+    { "source": "/Equipamentos", "destination": "/__app.html" },
+    { "source": "/TecnicoDashboard", "destination": "/__app.html" },
+    { "source": "/GerenciarTecnicos", "destination": "/__app.html" },
+    { "source": "/ClienteDashboard", "destination": "/__app.html" },
+    { "source": "/CompanySettings", "destination": "/__app.html" },
+    { "source": "/NotasFiscais", "destination": "/__app.html" },
+    { "source": "/LegacyFallback", "destination": "/__app.html" },
+    { "source": "/ValorTecnicos", "destination": "/__app.html" },
+    { "source": "/Agenda", "destination": "/__app.html" },
+    { "source": "/PontoEletronico", "destination": "/__app.html" },
+    { "source": "/EquipamentoDetalhes", "destination": "/__app.html" },
+    { "source": "/AlterarSenha", "destination": "/__app.html" },
+    { "source": "/InitialChoice", "destination": "/__app.html" },
+    { "source": "/Login", "destination": "/__app.html" }
   ],
   "headers": [
     {
-      "source": "/((?!assets/).*)",
+      "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, must-revalidate" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
       ]
     }
   ]

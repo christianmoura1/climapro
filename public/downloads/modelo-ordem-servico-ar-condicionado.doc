@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="utf-8"><title>Modelo de ordem de servi?o para ar-condicionado</title>
+<style>
+body{font-family:Arial,sans-serif;font-size:10pt;color:#172b38}h1{font-size:20pt;margin:0}h2{font-size:11pt;border-bottom:2pt solid #2463d4;padding-bottom:3pt;margin-top:18pt}
+table{width:100%;border-collapse:collapse}td,th{border:1pt solid #84949d;padding:6pt;height:22pt;text-align:left}th{background:#edf3f7;font-size:8pt}
+.label{font-size:8pt;color:#546b78;text-transform:uppercase}.box{height:65pt;border:1pt solid #84949d}.sign{padding-top:40pt;border-bottom:1pt solid #172b38;text-align:center}
+.notice{margin-top:18pt;border-left:3pt solid #d88718;background:#fff7e6;padding:8pt;font-size:8pt}
+</style></head>
+<body>
+<table style="border:0"><tr><td style="border:0"><h1>ORDEM DE SERVI?O</h1><p>Manuten??o de ar-condicionado</p></td><td style="border:0;text-align:right"><b>N?:</b> ________<br><b>Data:</b> ____/____/______</td></tr></table>
+<h2>1. PRESTADORA E ATENDIMENTO</h2>
+<table><tr><td><span class="label">Prestadora</span></td><td><span class="label">CNPJ / CPF</span></td></tr><tr><td><span class="label">T?cnico respons?vel pela visita</span></td><td><span class="label">Contato</span></td></tr><tr><td><span class="label">In?cio</span></td><td><span class="label">T?rmino</span></td></tr></table>
+<h2>2. CLIENTE E LOCAL</h2>
+<table><tr><td><span class="label">Cliente</span></td><td><span class="label">CNPJ / CPF</span></td></tr><tr><td colspan="2"><span class="label">Endere?o do atendimento</span></td></tr><tr><td colspan="2"><span class="label">Respons?vel no local</span></td></tr></table>
+<h2>3. EQUIPAMENTO</h2>
+<table><tr><th>Tipo / ambiente</th><th>Marca e modelo</th><th>N? de s?rie</th><th>Capacidade</th></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr></table>
+<h2>4. SOLICITA??O OU DEFEITO RELATADO</h2><div class="box"></div>
+<h2>5. DIAGN?STICO E SERVI?O EXECUTADO</h2><div class="box"></div>
+<h2>6. PE?AS, MATERIAIS E MEDI??ES APLIC?VEIS</h2>
+<table><tr><th>Descri??o</th><th>Quantidade</th><th>Valor</th><th>Observa??o / condi??o de teste</th></tr><tr><td></td><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td><td></td></tr></table>
+<h2>7. PEND?NCIAS, A??O RECOMENDADA E CONDI??ES COMERCIAIS</h2><div class="box"></div>
+<table style="border:0;margin-top:25pt"><tr><td class="sign" style="border:0">T?cnico / data</td><td style="border:0;width:30pt"></td><td class="sign" style="border:0">Cliente ou respons?vel no local / data</td></tr></table>
+<p class="notice"><b>EXEMPLO DE PREENCHIMENTO ? DADOS FICT?CIOS:</b> Cliente Edif?cio Exemplo; equipamento Split Marca Exemplo, modelo XPTO, s?rie 000000; solicita??o ?equipamento com ru?do?; diagn?stico e servi?o devem ser preenchidos somente pelo profissional que realizou a visita.</p>
+<p class="notice"><b>Modelo de refer?ncia:</b> adapte ao contrato, ao equipamento e ?s orienta??es t?cnica, cont?bil e jur?dica da sua empresa. Esta OS n?o substitui laudo, ART, TRT, nota fiscal ou PMOC.</p>
+</body></html>
