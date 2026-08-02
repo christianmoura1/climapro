@@ -300,7 +300,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Header Admin Global */}
               <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-700 rounded-xl flex items-center justify-center">
                         <Shield className="w-6 h-6 text-white" />
@@ -310,7 +310,7 @@ export default function Layout({ children, currentPageName }) {
                         <p className="text-xs text-gray-500">Painel Administrativo Global</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                       {user && (
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
@@ -451,8 +451,8 @@ export default function Layout({ children, currentPageName }) {
               </Sidebar>
 
               <main className="flex-1 flex flex-col overflow-hidden">
-                <header className="bg-white border-b border-gray-200 px-6 py-4 md:hidden">
-                  <SidebarTrigger className="hover:bg-gray-100 p-2 rounded-lg">
+                <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+                  <SidebarTrigger className="h-11 w-11 rounded-lg hover:bg-gray-100" aria-label="Abrir menu principal">
                     <Menu className="w-6 h-6" />
                   </SidebarTrigger>
                 </header>

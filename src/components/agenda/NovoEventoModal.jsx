@@ -210,12 +210,12 @@ ClimaPro`
 
   // FORMULÁRIO DE CRIAÇÃO DE EVENTO
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Criar evento">
+      <Card className="max-h-[94dvh] w-full max-w-2xl overflow-y-auto rounded-b-none sm:max-h-[90vh] sm:rounded-xl">
         <CardHeader className="border-b">
           <div className="flex items-center justify-between">
             <CardTitle>📅 Novo Evento</CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar novo evento">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -225,8 +225,9 @@ ClimaPro`
           <CardContent className="space-y-4 pt-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Título *</Label>
+                <Label htmlFor="evento-titulo">Título *</Label>
                 <Input
+                  id="evento-titulo"
                   value={evento.titulo}
                   onChange={(e) => setEvento({...evento, titulo: e.target.value})}
                   placeholder="Ex: Manutenção preventiva"
@@ -235,11 +236,12 @@ ClimaPro`
               </div>
 
               <div className="space-y-2">
-                <Label>Tipo de Evento</Label>
+                <Label htmlFor="evento-tipo">Tipo de evento</Label>
                 <select
+                  id="evento-tipo"
                   value={evento.tipo}
                   onChange={(e) => setEvento({...evento, tipo: e.target.value})}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="manual">🗓️ Manual</option>
                   <option value="chamado">🔧 Chamado</option>
@@ -250,8 +252,9 @@ ClimaPro`
             </div>
 
             <div className="space-y-2">
-              <Label>Descrição</Label>
+              <Label htmlFor="evento-descricao">Descrição</Label>
               <Textarea
+                id="evento-descricao"
                 value={evento.descricao}
                 onChange={(e) => setEvento({...evento, descricao: e.target.value})}
                 placeholder="Detalhes do atendimento..."
@@ -261,11 +264,12 @@ ClimaPro`
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Cliente *</Label>
+                <Label htmlFor="evento-cliente">Cliente *</Label>
                 <select
+                  id="evento-cliente"
                   value={evento.cliente_id}
                   onChange={(e) => setEvento({...evento, cliente_id: e.target.value})}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 >
                   <option value="">Selecione o cliente</option>
@@ -278,11 +282,12 @@ ClimaPro`
               </div>
 
               <div className="space-y-2">
-                <Label>Técnico Responsável</Label>
+                <Label htmlFor="evento-tecnico">Técnico responsável</Label>
                 <select
+                  id="evento-tecnico"
                   value={evento.tecnico_id}
                   onChange={(e) => setEvento({...evento, tecnico_id: e.target.value})}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">Selecione o técnico</option>
                   {tecnicos.filter(t => t.status === 'ativo').map((tecnico) => (
@@ -296,8 +301,9 @@ ClimaPro`
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Data de Início *</Label>
+                <Label htmlFor="evento-data-inicio">Data de início *</Label>
                 <Input
+                  id="evento-data-inicio"
                   type="date"
                   value={evento.data_inicio}
                   onChange={(e) => setEvento({...evento, data_inicio: e.target.value})}
@@ -306,8 +312,9 @@ ClimaPro`
               </div>
 
               <div className="space-y-2">
-                <Label>Hora de Início *</Label>
+                <Label htmlFor="evento-hora-inicio">Hora de início *</Label>
                 <Input
+                  id="evento-hora-inicio"
                   type="time"
                   value={evento.hora_inicio}
                   onChange={(e) => setEvento({...evento, hora_inicio: e.target.value})}
@@ -318,8 +325,9 @@ ClimaPro`
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Data de Término</Label>
+                <Label htmlFor="evento-data-fim">Data de término</Label>
                 <Input
+                  id="evento-data-fim"
                   type="date"
                   value={evento.data_fim}
                   onChange={(e) => setEvento({...evento, data_fim: e.target.value})}
@@ -327,8 +335,9 @@ ClimaPro`
               </div>
 
               <div className="space-y-2">
-                <Label>Hora de Término</Label>
+                <Label htmlFor="evento-hora-fim">Hora de término</Label>
                 <Input
+                  id="evento-hora-fim"
                   type="time"
                   value={evento.hora_fim}
                   onChange={(e) => setEvento({...evento, hora_fim: e.target.value})}
@@ -337,8 +346,9 @@ ClimaPro`
             </div>
 
             <div className="space-y-2">
-              <Label>Endereço</Label>
+              <Label htmlFor="evento-endereco">Endereço</Label>
               <Input
+                id="evento-endereco"
                 value={evento.endereco}
                 onChange={(e) => setEvento({...evento, endereco: e.target.value})}
                 placeholder="Será preenchido automaticamente com o endereço do cliente"
@@ -346,14 +356,16 @@ ClimaPro`
             </div>
 
             <div className="space-y-2">
-              <Label>Cor do Evento</Label>
-              <div className="flex gap-2">
+              <Label id="evento-cor-label">Cor do evento</Label>
+              <div className="flex flex-wrap gap-2" role="group" aria-labelledby="evento-cor-label">
                 {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'].map(cor => (
                   <button
                     key={cor}
                     type="button"
                     onClick={() => setEvento({...evento, cor})}
-                    className={`w-8 h-8 rounded-full ${evento.cor === cor ? 'ring-2 ring-offset-2 ring-gray-900' : ''}`}
+                    aria-label={`Selecionar cor ${cor}`}
+                    aria-pressed={evento.cor === cor}
+                    className={`h-11 w-11 rounded-full ${evento.cor === cor ? 'ring-2 ring-offset-2 ring-gray-900' : ''}`}
                     style={{ backgroundColor: cor }}
                   />
                 ))}
@@ -361,7 +373,7 @@ ClimaPro`
             </div>
           </CardContent>
           
-          <CardFooter className="border-t flex justify-end gap-3">
+          <CardFooter className="sticky bottom-0 grid grid-cols-2 gap-3 border-t bg-card py-4 sm:flex sm:justify-end">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>

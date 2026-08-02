@@ -68,10 +68,11 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                         }
                         
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={evento.id}
                             onClick={() => onEventoClick(evento)}
-                            className="border-l-4 pl-4 py-2 rounded-r cursor-pointer hover:shadow-md transition-shadow bg-white"
+                            className="w-full rounded-r border-l-4 bg-white py-2 pl-4 text-left transition-shadow hover:shadow-md"
                             style={{ borderColor }}
                           >
                             <div className="font-semibold text-foreground">
@@ -100,7 +101,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                               <Clock className="w-3 h-3" />
                               {format(new Date(evento.data_inicio), 'HH:mm')} - {format(new Date(evento.data_fim), 'HH:mm')}
                             </div>
-                          </div>
+                          </button>
                         );
                       })
                     )}
@@ -127,7 +128,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
               eventosNoDia.map((evento) => {
                 const tecnico = tecnicos.find(t => t.id === evento.tecnico_id);
                 const cliente = clientes.find(c => c.id === evento.cliente_id);
-                const status = statusConfig[evento.status];
+                const status = statusConfig[evento.status] || { color: 'bg-muted text-muted-foreground', label: 'Status não informado' };
 
                 // Definir cor: verde para concluído, vermelho para pendente, cor original para outros
                 let borderColor;
@@ -140,10 +141,11 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                 }
                 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={evento.id}
                     onClick={() => onEventoClick(evento)}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer bg-white"
+                    className="w-full rounded-lg border bg-white p-4 text-left transition-shadow hover:shadow-md"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="font-semibold text-foreground">
@@ -181,7 +183,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })
             )}

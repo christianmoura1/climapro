@@ -10,12 +10,10 @@ import {
   Plus,
   User,
   Clock,
-  CheckCircle,
-  ArrowLeft
+  CheckCircle
 } from "lucide-react";
 import { format, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
 import CalendarioMensal from "../components/agenda/CalendarioMensal";
@@ -25,6 +23,7 @@ import NovoEventoModal from "../components/agenda/NovoEventoModal";
 import DetalhesEventoModal from "../components/agenda/DetalhesEventoModal";
 import FiltrosAgenda from "../components/agenda/FiltrosAgenda";
 import { PageLoading } from "@/components/ui/page-loading";
+import { ErrorState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 
 export default function AgendaPage() {
   const [user, setUser] = useState(null);
@@ -47,7 +46,7 @@ export default function AgendaPage() {
     loadUser();
   }, []);
 
-  const { data: eventos = [], isLoading } = useQuery({
+  const { data: eventos = [], isLoading, error: eventosError, refetch: refetchEventos } = useQuery({
     queryKey: ['agenda-eventos', user?.empresa_id, dataAtual.getMonth(), dataAtual.getFullYear()],
     queryFn: async () => {
       if ((user?.role === 'admin' && !user?.empresa_id)) {
@@ -156,31 +155,47 @@ export default function AgendaPage() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <PageShell>
+        <PageHeader title="Agenda" description="Atendimentos e manutenções da equipe" backTo={createPageUrl("Dashboard")} />
+        <InlineLoading label="Carregando agenda" cards={4} />
+      </PageShell>
+    );
+  }
+
+  if (eventosError) {
+    return (
+      <PageShell>
+        <PageHeader title="Agenda" description="Atendimentos e manutenções da equipe" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar a agenda"
+          description="Os eventos continuam salvos. Verifique a conexão e tente novamente."
+          onRetry={refetchEventos}
+        />
+      </PageShell>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Agenda</h1>
-              <p className="text-muted-foreground mt-1">Gerenciamento de atendimentos e manutenções</p>
-            </div>
-          </div>
+    <PageShell>
+      <PageHeader
+        title="Agenda"
+        description="Atendimentos e manutenções da equipe"
+        backTo={createPageUrl("Dashboard")}
+        eyebrow="Planejamento de campo"
+        actions={
           <Button
             onClick={() => setShowNovoEvento(true)}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto"
           >
             <Plus className="w-5 h-5 mr-2" />
             Novo Evento
           </Button>
-        </div>
+        }
+      />
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Eventos Hoje</CardTitle>
@@ -231,19 +246,19 @@ export default function AgendaPage() {
         </div>
 
         <Card className="shadow-lg border-none mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="icon" onClick={handleAnterior}>
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="grid grid-cols-[auto_auto_auto] items-center gap-2 sm:flex sm:gap-3">
+                <Button variant="outline" size="icon" onClick={handleAnterior} aria-label="Período anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <Button variant="outline" onClick={handleHoje}>
                   Hoje
                 </Button>
-                <Button variant="outline" size="icon" onClick={handleProximo}>
+                <Button variant="outline" size="icon" onClick={handleProximo} aria-label="Próximo período">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
-                <div className="ml-4">
+                <div className="col-span-3 mt-1 sm:col-span-1 sm:ml-4 sm:mt-0">
                   <h2 className="text-lg font-semibold text-foreground">
                     {visualizacao === 'mes' && format(dataAtual, 'MMMM yyyy', { locale: ptBR })}
                     {visualizacao === 'semana' && `Semana de ${format(startOfWeek(dataAtual), 'd MMM', { locale: ptBR })} - ${format(endOfWeek(dataAtual), 'd MMM', { locale: ptBR })}`}
@@ -252,11 +267,12 @@ export default function AgendaPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Visualização da agenda">
                 <Button
                   variant={visualizacao === 'mes' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setVisualizacao('mes')}
+                  aria-pressed={visualizacao === 'mes'}
                 >
                   Mês
                 </Button>
@@ -264,6 +280,7 @@ export default function AgendaPage() {
                   variant={visualizacao === 'semana' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setVisualizacao('semana')}
+                  aria-pressed={visualizacao === 'semana'}
                 >
                   Semana
                 </Button>
@@ -271,6 +288,7 @@ export default function AgendaPage() {
                   variant={visualizacao === 'dia' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setVisualizacao('dia')}
+                  aria-pressed={visualizacao === 'dia'}
                 >
                   Dia
                 </Button>
@@ -314,7 +332,6 @@ export default function AgendaPage() {
             onEventoClick={setEventoSelecionado}
           />
         )}
-      </div>
 
       {showNovoEvento && (
         <NovoEventoModal
@@ -334,6 +351,6 @@ export default function AgendaPage() {
           onUpdate={handleEventoUpdate}
         />
       )}
-    </div>
+    </PageShell>
   );
 }

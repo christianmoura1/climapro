@@ -28,11 +28,12 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
   };
 
   return (
-    <Card className="shadow-lg border-none overflow-x-auto">
-      <div className="p-6 min-w-[800px]">
+    <Card className="relative overflow-x-auto border-none shadow-lg">
+      <p className="sticky left-0 px-3 pt-3 text-xs font-medium text-blue-700 md:hidden">Deslize para ver os outros dias da semana.</p>
+      <div className="min-w-[800px] p-3 sm:p-6" role="region" tabIndex={0} aria-label="Agenda semanal por horário">
         {/* Header com dias */}
         <div className="grid grid-cols-8 gap-2 mb-4">
-          <div className="font-semibold text-muted-foreground"></div>
+          <div className="sticky left-0 z-10 bg-card font-semibold text-muted-foreground"></div>
           {diasSemana.map((dia) => {
             const isHoje = isSameDay(dia, hoje);
             return (
@@ -48,7 +49,7 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
         <div className="space-y-1">
           {horas.map((hora) => (
             <div key={hora} className="grid grid-cols-8 gap-2">
-              <div className="text-sm font-medium text-muted-foreground py-2">
+              <div className="sticky left-0 z-10 bg-card py-2 text-sm font-medium text-muted-foreground">
                 {hora}:00
               </div>
               {diasSemana.map((dia) => {
@@ -70,10 +71,11 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
                       }
                       
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={evento.id}
                           onClick={() => onEventoClick(evento)}
-                          className="text-xs p-2 rounded cursor-pointer hover:opacity-80 transition-opacity mb-1"
+                          className="mb-1 w-full rounded p-2 text-left text-xs transition-opacity hover:opacity-80"
                           style={{ 
                             backgroundColor: backgroundColor + '20', 
                             borderLeft: `3px solid ${backgroundColor}` 
@@ -81,7 +83,7 @@ export default function CalendarioSemanal({ dataAtual, eventos, tecnicos, client
                         >
                           <div className="font-semibold">{tipoIcons[evento.tipo]} {evento.titulo}</div>
                           <div className="text-muted-foreground">{format(new Date(evento.data_inicio), 'HH:mm')}</div>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>

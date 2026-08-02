@@ -11,8 +11,8 @@ import { LABEL_PERIODICIDADE, gerarCronogramaAnual, ancoraParaEscolha } from "@/
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
 import CronogramaAnualGrid, { MESES_ABREV } from "./CronogramaAnualGrid";
 
-// O Plano Anual de Manutenção exigido pela Portaria GM 3.523 / NBR 16401 —
-// cronograma dos 12 meses do ano-calendário para todos os equipamentos ativos
+// Plano anual de manutenção: cronograma dos 12 meses do ano-calendário
+// para todos os equipamentos ativos
 // no PMOC do cliente. É gerado 100% automaticamente a partir da periodicidade
 // de cada equipamento, mas nada aqui fica travado: dá pra trocar a
 // periodicidade ou forçar/desmarcar o ciclo profundo de um mês específico
@@ -109,29 +109,46 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
 <title>Plano Anual de Manutenção ${ano} — ${cliente.nome}</title>
 <style>
   * { box-sizing: border-box; }
-  body { font-family: Arial, sans-serif; padding: 30px; color: #1f2937; }
-  .header { text-align: center; border-bottom: 3px solid #7c3aed; padding-bottom: 20px; margin-bottom: 30px; }
-  .header h1 { color: #6b21a8; margin: 0 0 6px 0; }
-  .header p { color: #6b7280; font-size: 13px; margin: 2px 0; }
-  table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 12px; }
-  th, td { border: 1px solid #e5e7eb; padding: 8px 6px; text-align: center; }
-  th { background: #f3f4f6; }
+  @page { size: A4 landscape; margin: 14mm 12mm 16mm; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; color: #172033; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .header { display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: center; border-bottom: 3px solid #2563eb; padding-bottom: 14px; margin-bottom: 18px; }
+  .logo-wrap { width: 72px; height: 54px; display: flex; align-items: center; justify-content: center; }
+  .logo { max-width: 72px; max-height: 54px; object-fit: contain; }
+  .logo-fallback { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 12px; background: #2563eb; color: white; font-weight: 800; }
+  .header-copy { text-align: left; }
+  .header h1 { color: #172033; margin: 2px 0 5px; font-size: 22px; }
+  .header p { color: #596579; font-size: 10px; margin: 2px 0; }
+  .kicker { color: #2563eb !important; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+  .doc-code { align-self: start; border: 1px solid #bfdbfe; border-radius: 8px; padding: 7px 9px; color: #1d4ed8; font-size: 9px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 9.5px; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  th, td { border: 1px solid #d7deea; padding: 6px 4px; text-align: center; }
+  th { background: #eaf2ff; color: #24324a; }
   td.equip-nome { text-align: left; font-weight: 600; }
-  td.equip-nome .muted { font-weight: 400; color: #6b7280; font-size: 11px; }
+  td.equip-nome .muted { font-weight: 400; color: #6b7280; font-size: 8.5px; }
   td.ciclo-profundo { color: #6b21a8; font-weight: bold; background: #f3e8ff; }
-  td.mensal { color: #9ca3af; }
-  .legenda { margin-top: 16px; font-size: 12px; color: #4b5563; display: flex; gap: 24px; }
+  td.mensal { color: #64748b; }
+  .legenda { margin-top: 12px; font-size: 9px; color: #4b5563; display: flex; gap: 20px; }
   .legenda span { display: inline-flex; align-items: center; gap: 6px; }
-  .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 16px; }
+  .footer { position: fixed; left: 0; right: 0; bottom: -11mm; display: flex; justify-content: space-between; border-top: 1px solid #d7deea; padding-top: 4px; color: #6b7280; font-size: 8px; }
+  .page-number::after { content: "Página " counter(page); }
+  @media screen { body { padding: 24px; } .footer { position: static; margin-top: 24px; } }
 </style>
 </head>
 <body>
   <div class="header">
-    <h1>📅 Plano Anual de Manutenção ${ano}</h1>
-    ${empresa ? `<p><strong>${empresa.nome}</strong>${empresa.cnpj ? ` — CNPJ ${empresa.cnpj}` : ''}</p>` : ''}
-    <p>Cliente: <strong>${cliente.nome}</strong> — ${cliente.endereco || ''}</p>
-    ${empresa?.responsavel_tecnico_nome ? `<p>Responsável Técnico: <strong>${empresa.responsavel_tecnico_nome}</strong>${empresa.responsavel_tecnico_registro ? ` — ${empresa.responsavel_tecnico_registro}` : ''}</p>` : ''}
-    <p>Documento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })} conforme Portaria GM nº 3.523/98 e NBR 16401.</p>
+    <div class="logo-wrap">${empresa?.logo_url ? `<img src="${empresa.logo_url}" class="logo" alt="Logo da empresa" />` : '<div class="logo-fallback">CP</div>'}</div>
+    <div class="header-copy">
+      <p class="kicker">Plano operacional de manutenção</p>
+      <h1>Plano Anual de Manutenção ${ano}</h1>
+      ${empresa ? `<p><strong>${empresa.nome}</strong>${empresa.cnpj ? ` · CNPJ ${empresa.cnpj}` : ''}</p>` : ''}
+      <p>Cliente: <strong>${cliente.nome}</strong>${cliente.endereco ? ` · ${cliente.endereco}` : ''}</p>
+      ${empresa?.responsavel_tecnico_nome ? `<p>Responsável técnico informado: <strong>${empresa.responsavel_tecnico_nome}</strong>${empresa.responsavel_tecnico_registro ? ` · ${empresa.responsavel_tecnico_registro}` : ''}</p>` : ''}
+      <p>Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}. O conteúdo reflete os dados cadastrados no ClimaPro.</p>
+    </div>
+    <div class="doc-code">PLANO ${ano}</div>
   </div>
 
   <table>
@@ -145,12 +162,12 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   </table>
 
   <div class="legenda">
-    <span>Destacado = ciclo profundo daquele mês (troca de gás, teste elétrico, etc.)</span>
+    <span>Destacado = ciclo com atividades adicionais naquele mês</span>
     <span>Mensal = checagem básica (filtros, inspeção, drenos)</span>
   </div>
 
   <div class="footer">
-    Documento gerado automaticamente pelo ClimaPro — Sistema de Gestão de Manutenção
+    <span>ClimaPro · Plano Anual de Manutenção · ${cliente.nome}</span><span class="page-number"></span>
   </div>
 </body>
 </html>`;
@@ -162,8 +179,13 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         printWindow.onload = () => {
           setTimeout(() => printWindow.print(), 500);
         };
+        printWindow.onafterprint = () => URL.revokeObjectURL(url);
+        toast({ description: 'Documento aberto. Na caixa de impressão, escolha “Salvar como PDF”.', variant: "success" });
+      } else {
+        URL.revokeObjectURL(url);
+        toast({ description: 'O navegador bloqueou a janela de impressão. Libere pop-ups e tente novamente.', variant: "destructive" });
+        return;
       }
-      toast({ description: '✅ Plano Anual gerado! Use Ctrl+P para salvar como PDF.', variant: "success" });
     } catch (error) {
       console.error("Erro ao gerar plano anual:", error);
       toast({ description: "❌ Erro ao gerar o plano. Tente novamente.", variant: "destructive" });
@@ -173,20 +195,20 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-6xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="plano-anual-title">
+      <Card className="flex max-h-[100dvh] w-full max-w-6xl flex-col rounded-b-none rounded-t-2xl sm:max-h-[90vh] sm:rounded-xl">
         <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50 shrink-0">
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle id="plano-anual-title" className="flex items-start gap-2 text-lg sm:text-xl">
               <CalendarRange className="w-5 h-5 text-purple-600" />
               Plano Anual de Manutenção {ano} — {cliente.nome}
             </CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar plano anual">
               <X className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="p-6 space-y-4 overflow-y-auto">
+        <CardContent className="space-y-4 overflow-y-auto p-4 sm:p-6">
           <p className="text-sm text-muted-foreground">
             Plano completo gerado automaticamente: mensal todo mês, trimestral a cada 3, semestral
             a cada 6 e anual 1x/ano — cada mês já vem pré-preenchido com o ciclo mais profundo que
@@ -194,7 +216,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
             sozinho a partir dali.
           </p>
 
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="text-foreground">
               {statusAgenda === 'sincronizando' && 'Sincronizando a Agenda com as próximas 12 visitas...'}
               {statusAgenda.startsWith('ok:') && `✅ Agenda sincronizada (${statusAgenda.split(':')[1]} evento(s) novo(s)).`}
@@ -214,12 +236,12 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           />
 
           <Button
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="min-h-12 w-full bg-purple-600 hover:bg-purple-700"
             onClick={gerarDocumento}
             disabled={gerando}
           >
             <Download className="w-4 h-4 mr-2" />
-            {gerando ? 'Gerando...' : 'Gerar e Baixar PDF'}
+            {gerando ? 'Preparando documento...' : 'Abrir versão para impressão'}
           </Button>
         </CardContent>
       </Card>

@@ -66,7 +66,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
   const renderInfoEquipamento = (eq) => {
     const status = statusManutencao(eq.proxima_manutencao, eq.ultima_manutencao);
     return (
-      <div className="min-w-[140px]">
+      <div className="min-w-[166px]">
         <p className="font-medium text-foreground">{eq.numero_equipamento || '—'}</p>
         <p className="text-xs text-muted-foreground">{eq.marca} {eq.modelo}</p>
         <Badge variant="outline" className={`mt-1 text-[10px] ${STATUS_MANUTENCAO_CONFIG[status].cor}`}>
@@ -84,7 +84,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
   return (
     <Card className="mb-8 shadow-lg border-none">
       <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Cpu className="w-5 h-5 text-purple-600" />
@@ -94,19 +94,20 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
               {equipamentos.length} equipamento(s) no plano de manutenção — cronograma anual de {ano}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onVerPlanoAnual(cliente)} disabled={equipamentos.length === 0}>
+          <div className="grid w-full gap-2 sm:grid-cols-3 lg:w-auto">
+            <Button variant="outline" className="w-full whitespace-normal" onClick={() => onVerPlanoAnual(cliente)} disabled={equipamentos.length === 0}>
               <CalendarRange className="w-4 h-4 mr-2" />
-              Baixar Plano Anual (PDF)
+              Abrir plano anual
             </Button>
-            <Button variant="outline" onClick={() => onGerarCaderno(cliente)} disabled={equipamentos.length === 0}>
+            <Button variant="outline" className="w-full whitespace-normal" onClick={() => onGerarCaderno(cliente)} disabled={equipamentos.length === 0}>
               <BookOpen className="w-4 h-4 mr-2" />
-              Gerar Caderno de Manutenção
+              Abrir caderno
             </Button>
             <Button
-              className="bg-purple-600 hover:bg-purple-700"
+              className="w-full bg-purple-600 hover:bg-purple-700"
               onClick={() => onExecutarRodada(cliente)}
               disabled={equipamentos.length === 0}
+              aria-label={`Executar PMOC de ${cliente.nome}`}
             >
               <PlayCircle className="w-4 h-4 mr-2" />
               Executar PMOC
@@ -149,7 +150,7 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-purple-100 inline-block border border-purple-300" /> Ciclo profundo</span>
                 <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted inline-block border" /> Checagem mensal</span>
-                <span>Clique num mês para alterar o plano — o calendário se reposiciona sozinho a partir dali.</span>
+                <span>Alterar um mês cria uma nova âncora e recalcula o calendário anual.</span>
               </div>
             </div>
           </>

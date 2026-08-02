@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Save, Building2, Upload, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Save, Building2, Upload, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
+import { ErrorState, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { toast } from "@/components/ui/use-toast";
 
 export default function CompanySettings() {
@@ -24,7 +25,7 @@ export default function CompanySettings() {
     loadUser();
   }, []);
 
-  const { data: empresa, isLoading } = useQuery({
+  const { data: empresa, isLoading, error: empresaError, refetch: refetchEmpresa } = useQuery({
     queryKey: ['minha-empresa', user?.empresa_id],
     queryFn: async () => {
       const empresas = await base44.entities.Empresa.list();
@@ -113,20 +114,22 @@ export default function CompanySettings() {
     );
   }
 
+  if (empresaError) {
+    return (
+      <PageShell innerClassName="max-w-4xl">
+        <PageHeader title="Configurações da empresa" description="Dados exibidos nos documentos e contatos" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar os dados da empresa"
+          description="As informações continuam salvas. Verifique a conexão e tente novamente."
+          onRetry={refetchEmpresa}
+        />
+      </PageShell>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl("Dashboard")}>
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Configurações da Empresa</h1>
-            <p className="text-muted-foreground mt-1">Gerencie os dados da sua empresa</p>
-          </div>
-        </div>
+    <PageShell innerClassName="max-w-4xl">
+        <PageHeader title="Configurações da empresa" eyebrow="Identidade operacional" description="Dados usados nos contatos e documentos" backTo={createPageUrl("Dashboard")} />
 
         <Card className="shadow-lg border-none">
           <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-purple-50">
@@ -139,7 +142,7 @@ export default function CompanySettings() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Logo Upload Section - Simplificado */}
               <div className="space-y-2">
-                <Label>Logo da Empresa (para documentos e relatórios)</Label>
+                <Label htmlFor="empresa-logo">Logo da empresa (documentos e relatórios)</Label>
                 <div className="flex flex-col gap-4">
                   {formData.logo_url && (
                     <div className="relative w-48 h-32 border-2 border-border rounded-lg flex items-center justify-center bg-white overflow-hidden">
@@ -155,7 +158,8 @@ export default function CompanySettings() {
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, logo_url: '' })}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        aria-label="Remover logo"
+                        className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -163,15 +167,16 @@ export default function CompanySettings() {
                   )}
                   
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer">
+                    <label htmlFor="empresa-logo" className="cursor-pointer">
                       <input
                         type="file"
+                        id="empresa-logo"
                         accept="image/*"
                         onChange={handleLogoChange}
                         disabled={uploadingLogo}
                         className="hidden"
                       />
-                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                      <span className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
                         {uploadingLogo ? (
                           <>
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -194,8 +199,9 @@ export default function CompanySettings() {
               </div>
 
               <div className="space-y-2">
-                <Label>Nome da Empresa *</Label>
+                <Label htmlFor="empresa-nome">Nome da empresa *</Label>
                 <Input
+                  id="empresa-nome"
                   value={formData.nome}
                   onChange={(e) => setFormData({...formData, nome: e.target.value})}
                   required
@@ -205,8 +211,9 @@ export default function CompanySettings() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>CNPJ *</Label>
+                  <Label htmlFor="empresa-cnpj">CNPJ *</Label>
                   <Input
+                    id="empresa-cnpj"
                     value={formData.cnpj}
                     onChange={(e) => setFormData({...formData, cnpj: e.target.value})}
                     required
@@ -215,8 +222,9 @@ export default function CompanySettings() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Telefone/WhatsApp *</Label>
+                  <Label htmlFor="empresa-telefone">Telefone/WhatsApp *</Label>
                   <Input
+                    id="empresa-telefone"
                     value={formData.telefone}
                     onChange={(e) => setFormData({...formData, telefone: e.target.value})}
                     placeholder="(00) 00000-0000"
@@ -230,8 +238,9 @@ export default function CompanySettings() {
               </div>
 
               <div className="space-y-2">
-                <Label>Email de Contato</Label>
+                <Label htmlFor="empresa-email">Email de contato</Label>
                 <Input
+                  id="empresa-email"
                   type="email"
                   value={formData.email_contato}
                   onChange={(e) => setFormData({...formData, email_contato: e.target.value})}
@@ -241,8 +250,9 @@ export default function CompanySettings() {
               </div>
 
               <div className="space-y-2">
-                <Label>Endereço</Label>
+                <Label htmlFor="empresa-endereco">Endereço</Label>
                 <Input
+                  id="empresa-endereco"
                   value={formData.endereco}
                   onChange={(e) => setFormData({...formData, endereco: e.target.value})}
                   placeholder="Rua, número, bairro, cidade - UF"
@@ -254,14 +264,14 @@ export default function CompanySettings() {
                 <div>
                   <Label className="text-purple-900 font-semibold">Responsável Técnico (PMOC)</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    A Portaria GM nº 3.523/98 exige identificar o responsável técnico habilitado nos
-                    documentos do PMOC — sai impresso no Plano Anual e no Caderno de Manutenção.
+                    Os dados informados serão exibidos no Plano Anual e no Caderno de Manutenção.
                   </p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Nome do Responsável Técnico</Label>
+                    <Label htmlFor="responsavel-tecnico-nome">Nome do responsável técnico</Label>
                     <Input
+                      id="responsavel-tecnico-nome"
                       value={formData.responsavel_tecnico_nome}
                       onChange={(e) => setFormData({...formData, responsavel_tecnico_nome: e.target.value})}
                       placeholder="Ex: João da Silva"
@@ -269,8 +279,9 @@ export default function CompanySettings() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Registro Profissional (CREA/CFT)</Label>
+                    <Label htmlFor="responsavel-tecnico-registro">Registro profissional (CREA/CFT)</Label>
                     <Input
+                      id="responsavel-tecnico-registro"
                       value={formData.responsavel_tecnico_registro}
                       onChange={(e) => setFormData({...formData, responsavel_tecnico_registro: e.target.value})}
                       placeholder="Ex: CREA-SP 123456789"
@@ -280,7 +291,7 @@ export default function CompanySettings() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <div className="sticky bottom-0 z-10 -mx-6 grid grid-cols-2 gap-3 border-t bg-card px-6 py-4 sm:flex sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
@@ -322,7 +333,6 @@ export default function CompanySettings() {
             </ul>
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </PageShell>
   );
 }

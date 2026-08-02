@@ -307,8 +307,9 @@ export default function KanbanChamados({
 
   return (
     <>
+      <p className="mb-2 text-xs font-medium text-blue-700 md:hidden">Deslize para o lado para ver todas as etapas.</p>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="scrollbar-thin -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 md:mx-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-0 md:pb-0">
           {colunas.map((coluna) => {
             const chamadosColuna = getChamadosPorStatus(coluna.id);
             
@@ -316,7 +317,7 @@ export default function KanbanChamados({
               <Droppable key={coluna.id} droppableId={coluna.id}>
                 {(provided, snapshot) => (
                   <Card
-                    className={`rounded-xl shadow-sm border-t-4 bg-muted/40 transition-colors ${coluna.corBorda} ${
+                    className={`w-[84vw] max-w-[22rem] shrink-0 snap-start rounded-xl border-t-4 bg-muted/40 shadow-sm transition-colors md:w-auto md:max-w-none ${coluna.corBorda} ${
                       snapshot.isDraggingOver ? 'bg-primary/5' : ''
                     }`}
                   >
@@ -440,14 +441,30 @@ export default function KanbanChamados({
                                       </div>
                                     )}
 
+                                    {mostrarBotoes && onStatusChange && chamado.status !== 'aguardando_aprovacao_empresa' && (
+                                      <div className="mt-3 md:hidden">
+                                        <label className="sr-only" htmlFor={`status-kanban-${chamado.id}`}>Etapa de {chamado.titulo}</label>
+                                        <select
+                                          id={`status-kanban-${chamado.id}`}
+                                          value={chamado.status}
+                                          onChange={(event) => onStatusChange(chamado.id, event.target.value)}
+                                          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                        >
+                                          <option value="pendente">Pendente</option>
+                                          <option value="em_andamento">Em andamento</option>
+                                          <option value="finalizado">Concluído</option>
+                                        </select>
+                                      </div>
+                                    )}
+
                                     {mostrarBotoes && (
-                                      <div className="flex gap-1 mt-3 flex-wrap">
+                                      <div className="mt-3 grid grid-cols-2 gap-2">
                                         {onView && (
                                           <Button
                                             size="sm"
                                             variant="outline"
                                             onClick={() => onView(chamado)}
-                                            className="text-xs h-7 flex-1"
+                                            className="min-h-11 text-xs"
                                           >
                                             <Eye className="w-3 h-3 mr-1" />
                                             Ver
@@ -459,7 +476,7 @@ export default function KanbanChamados({
                                             size="sm"
                                             variant="outline"
                                             onClick={() => setAgendandoChamado(chamado)}
-                                            className="text-xs h-7 text-blue-600 hover:text-blue-700 flex-1"
+                                            className="min-h-11 text-xs text-blue-600 hover:text-blue-700"
                                           >
                                             <Calendar className="w-3 h-3 mr-1" />
                                             Agendar
@@ -470,7 +487,7 @@ export default function KanbanChamados({
                                           <Button
                                             size="sm"
                                             onClick={() => onAprovar(chamado)}
-                                            className="text-xs h-7 bg-orange-600 hover:bg-orange-700 w-full"
+                                            className="col-span-2 min-h-11 text-xs bg-orange-600 hover:bg-orange-700"
                                           >
                                             <CheckCircle className="w-3 h-3 mr-1" />
                                             Revisar
@@ -483,7 +500,7 @@ export default function KanbanChamados({
                                             variant="outline"
                                             onClick={() => handleBaixarPDF(chamado)}
                                             disabled={baixandoPDF === chamado.id}
-                                            className="text-xs h-7 text-green-600 hover:text-green-700 flex-1"
+                                            className="min-h-11 text-xs text-green-600 hover:text-green-700"
                                           >
                                             <Download className="w-3 h-3 mr-1" />
                                             PDF
@@ -495,7 +512,7 @@ export default function KanbanChamados({
                                             size="sm"
                                             variant="outline"
                                             onClick={() => onEdit(chamado)}
-                                            className="text-xs h-7 flex-1"
+                                            className="min-h-11 text-xs"
                                           >
                                             <Edit className="w-3 h-3 mr-1" />
                                             Editar
@@ -506,7 +523,7 @@ export default function KanbanChamados({
                                           <Button
                                             size="sm"
                                             onClick={() => onFecharChamado(chamado)}
-                                            className="text-xs h-7 bg-green-600 hover:bg-green-700 flex-1"
+                                            className="min-h-11 text-xs bg-green-600 hover:bg-green-700"
                                           >
                                             <CheckCircle className="w-3 h-3 mr-1" />
                                             Fechar
@@ -518,7 +535,8 @@ export default function KanbanChamados({
                                             size="sm"
                                             variant="outline"
                                             onClick={() => onDelete(chamado.id)}
-                                            className="text-xs h-7 text-red-600 hover:text-red-700"
+                                            className="min-h-11 text-xs text-red-600 hover:text-red-700"
+                                            aria-label={`Excluir chamado ${chamado.titulo}`}
                                           >
                                             <Trash2 className="w-3 h-3" />
                                           </Button>

@@ -3,8 +3,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, AlertCircle, Filter, Download } from "lucide-react";
-import { Link } from "react-router-dom";
+import { AlertCircle, Filter, Download } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,8 @@ import ExecutarManutencaoModal from "../components/pmoc/ExecutarManutencaoModal"
 import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
 import { toast } from "@/components/ui/use-toast";
+import { PageLoading } from "@/components/ui/page-loading";
+import { ErrorState, PageHeader, PageShell } from "@/components/ui/page-shell";
 
 export default function PMOCPage() {
   const [aprovandoManutencao, setAprovandoManutencao] = useState(null);
@@ -40,7 +41,7 @@ export default function PMOCPage() {
   }, []);
 
   // FILTRAR PMOCS POR EMPRESA E CLIENTE
-  const { data: pmocs = [] } = useQuery({
+  const { data: pmocs = [], isLoading: isLoadingPmocs, error: pmocsError, refetch: refetchPmocs } = useQuery({
     queryKey: ['pmocs', user?.empresa_id, filtroCliente],
     queryFn: async () => {
       if (!user) return [];
@@ -252,6 +253,21 @@ export default function PMOCPage() {
     }
   };
 
+  if (!user || isLoadingPmocs) return <PageLoading />;
+
+  if (pmocsError) {
+    return (
+      <PageShell>
+        <PageHeader title="PMOC" description="Planos de Manutenção, Operação e Controle" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar os dados de PMOC"
+          description="Os registros não foram alterados. Tente carregar a página novamente."
+          onRetry={refetchPmocs}
+        />
+      </PageShell>
+    );
+  }
+
   if (executandoRodada) {
     return (
       <ExecutarManutencaoModal
@@ -324,19 +340,8 @@ export default function PMOCPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl("Dashboard")}>
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">PMOC</h1>
-            <p className="text-muted-foreground mt-1">Planos de Manutenção, Operação e Controle</p>
-          </div>
-        </div>
+    <PageShell>
+      <PageHeader title="PMOC" description="Planos de Manutenção, Operação e Controle" backTo={createPageUrl("Dashboard")} eyebrow="Rotina preventiva" />
 
         {/* Painel dinâmico por cliente — todos os equipamentos, cada um com sua
             própria periodicidade, sem precisar recriar PMOCs manualmente */}
@@ -344,10 +349,12 @@ export default function PMOCPage() {
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-indigo-50">
             <CardTitle>🏢 Painel de Equipamentos por Cliente</CardTitle>
             <div className="mt-2 max-w-md">
+              <Label htmlFor="cliente-painel-pmoc">Cliente</Label>
               <select
+                id="cliente-painel-pmoc"
                 value={clientePainelId}
                 onChange={(e) => setClientePainelId(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm"
+                className="flex h-11 w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm"
               >
                 <option value="">Selecione um cliente para ver o plano de PMOC</option>
                 {clientes.map((cliente) => (
@@ -392,7 +399,7 @@ export default function PMOCPage() {
 
                   return (
                     <div key={manutencao.id} className="p-4 hover:bg-orange-100 transition-colors">
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-foreground">
@@ -407,7 +414,7 @@ export default function PMOCPage() {
                         </div>
                         <Button
                           onClick={() => handleAprovarManutencao(manutencao)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="w-full bg-green-600 hover:bg-green-700 sm:w-auto"
                         >
                           Revisar e Aprovar
                         </Button>
@@ -423,18 +430,20 @@ export default function PMOCPage() {
         {/* Seção de Histórico de PMOCs Concluídos */}
         <Card className="mb-8 shadow-lg border-none">
           <CardHeader className="border-b bg-gradient-to-r from-green-50 to-blue-50">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="flex items-center gap-2">
                 📋 Histórico de PMOCs Concluídos
               </CardTitle>
-              <div className="flex items-center gap-3">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 <Filter className="w-4 h-4 text-muted-foreground" />
-                <div className="w-64">
-                  <Label className="sr-only">Filtrar por Cliente</Label>
+                <div className="w-full sm:w-64">
+                  <Label htmlFor="filtro-cliente-historico" className="sr-only">Filtrar por cliente</Label>
                   <select
+                    id="filtro-cliente-historico"
+                    aria-label="Filtrar histórico por cliente"
                     value={filtroCliente}
                     onChange={(e) => setFiltroCliente(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className="flex h-11 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors"
                   >
                     <option value="">Todos os Clientes</option>
                     {clientes.map((cliente) => (
@@ -462,7 +471,7 @@ export default function PMOCPage() {
 
                   return (
                     <div key={manutencao.id} className="p-4 hover:bg-muted transition-colors">
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-foreground">
@@ -481,7 +490,7 @@ export default function PMOCPage() {
                             )}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
                           <Button
                             onClick={() => handleVisualizarManutencao(manutencao)}
                             variant="outline"
@@ -521,7 +530,6 @@ export default function PMOCPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, ArrowLeft, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 import EquipamentoForm from "../components/equipamentos/EquipamentoForm";
@@ -12,15 +11,15 @@ import EquipamentosList from "../components/equipamentos/EquipamentosList";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { ErrorState, FilterEmptyState, PageHeader, PageShell } from "@/components/ui/page-shell";
 
 export default function EquipamentosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingEquipamento, setEditingEquipamento] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroCliente, setFiltroCliente] = useState("");
-  const [buscaCliente, setBuscaCliente] = useState("");
-  const [showClienteSugestoes, setShowClienteSugestoes] = useState(false);
-  const buscaClienteRef = useRef(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
@@ -33,7 +32,7 @@ export default function EquipamentosPage() {
     loadUser();
   }, []);
 
-  const { data: equipamentos = [], isLoading } = useQuery({
+  const { data: equipamentos = [], isLoading, error: equipamentosError, refetch: refetchEquipamentos } = useQuery({
     queryKey: ['equipamentos', user?.empresa_id],
     queryFn: async () => {
       if (!user) return [];
@@ -191,10 +190,6 @@ export default function EquipamentosPage() {
     setVisualizandoEquipamento(equipamento);
   };
 
-  // Filtrar clientes pela busca
-  const clientesFiltrados = clientes.filter(cliente => 
-    cliente.nome.toLowerCase().includes(buscaCliente.toLowerCase())
-  );
 
   const filteredEquipamentos = equipamentos.filter(equip => {
     const matchSearch = equip.numero_equipamento?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -210,6 +205,19 @@ export default function EquipamentosPage() {
   if (!user) {
     return (
       <PageLoading />
+    );
+  }
+
+  if (equipamentosError) {
+    return (
+      <PageShell>
+        <PageHeader title="Equipamentos" description="Parque instalado e histórico técnico" backTo={createPageUrl("Dashboard")} />
+        <ErrorState
+          title="Não foi possível carregar os equipamentos"
+          description="Os cadastros continuam salvos. Verifique a conexão e tente novamente."
+          onRetry={refetchEquipamentos}
+        />
+      </PageShell>
     );
   }
 
@@ -248,31 +256,25 @@ export default function EquipamentosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Equipamentos</h1>
-              <p className="text-muted-foreground mt-1">Gerencie todos os equipamentos</p>
-            </div>
-          </div>
-          <Button 
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditingEquipamento(null); // Clear editing state when opening form for new item
-            }}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Equipamento
-          </Button>
-        </div>
+    <PageShell>
+        <PageHeader
+          title="Equipamentos"
+          eyebrow="Parque instalado"
+          description={`${equipamentos.length} equipamento${equipamentos.length !== 1 ? 's' : ''} em acompanhamento`}
+          backTo={createPageUrl("Dashboard")}
+          actions={
+            <Button
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditingEquipamento(null);
+              }}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Novo Equipamento
+            </Button>
+          }
+        />
 
         {showForm && (
           <EquipamentoForm
@@ -289,58 +291,24 @@ export default function EquipamentosPage() {
 
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <div className="relative">
+            <label htmlFor="busca-equipamentos" className="sr-only">Buscar equipamentos</label>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
+              id="busca-equipamentos"
               placeholder="Buscar por número, marca ou modelo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          <div className="relative" ref={buscaClienteRef}>
-            <Input
-              type="text"
-              placeholder="Filtrar por cliente..."
-              value={buscaCliente}
-              onChange={(e) => {
-                setBuscaCliente(e.target.value);
-                setShowClienteSugestoes(true);
-                if (!e.target.value) setFiltroCliente("");
-              }}
-              onFocus={() => setShowClienteSugestoes(true)}
-              onBlur={() => setTimeout(() => setShowClienteSugestoes(false), 200)}
-            />
-            {buscaCliente && (
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
-                onMouseDown={() => { setBuscaCliente(""); setFiltroCliente(""); }}
-              >
-                ✕
-              </button>
-            )}
-            {showClienteSugestoes && (
-              <div className="absolute z-50 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                <div
-                  className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${filtroCliente === "" ? 'bg-blue-100 font-semibold' : ''}`}
-                  onMouseDown={() => { setFiltroCliente(""); setBuscaCliente(""); setShowClienteSugestoes(false); }}
-                >
-                  Todos os Clientes
-                </div>
-                {clientesFiltrados.map((cliente) => (
-                  <div
-                    key={cliente.id}
-                    className={`px-3 py-2 cursor-pointer text-sm hover:bg-blue-50 ${filtroCliente === cliente.id ? 'bg-blue-100 font-semibold' : ''}`}
-                    onMouseDown={() => { setFiltroCliente(cliente.id); setBuscaCliente(cliente.nome); setShowClienteSugestoes(false); }}
-                  >
-                    {cliente.nome}
-                  </div>
-                ))}
-                {buscaCliente && clientesFiltrados.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum cliente encontrado</div>
-                )}
-              </div>
-            )}
+          <div className="space-y-1.5">
+            <Label htmlFor="filtro-cliente-equipamentos">Cliente</Label>
+            <select id="filtro-cliente-equipamentos" value={filtroCliente} onChange={(event) => setFiltroCliente(event.target.value)} className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <option value="">Todos os clientes</option>
+              {clientes.map((cliente) => (
+                <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -348,7 +316,10 @@ export default function EquipamentosPage() {
           Exibindo {filteredEquipamentos.length} de {equipamentos.length} equipamentos
         </div>
 
-        <EquipamentosList
+        {!isLoading && equipamentos.length > 0 && filteredEquipamentos.length === 0 ? (
+          <Card className="shadow-sm"><FilterEmptyState onClear={() => { setSearchTerm(""); setFiltroCliente(""); }} /></Card>
+        ) : (
+          <EquipamentosList
           equipamentos={filteredEquipamentos}
           clientes={clientes}
           isLoading={isLoading}
@@ -359,7 +330,7 @@ export default function EquipamentosPage() {
           onDelete={handleDelete}
           onView={handleVisualizarEquipamento}
         />
-      </div>
-    </div>
+        )}
+    </PageShell>
   );
 }
