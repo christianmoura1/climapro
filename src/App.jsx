@@ -2,11 +2,17 @@ import React from "react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import MarketingRoutes from "@/marketing/MarketingRoutes";
 import { isMarketingPath } from "@/marketing/site-config";
+import PublicRoutes from "@/public/PublicRoutes";
+import { isPublicEquipmentPath } from "@/public/site-config";
 
 const PrivateApplication = React.lazy(() => import("@/PrivateApplication"));
 
 export function RoutedApp() {
   const { pathname } = useLocation();
+
+  if (isPublicEquipmentPath(pathname)) {
+    return <PublicRoutes />;
+  }
 
   if (isMarketingPath(pathname)) {
     return <MarketingRoutes />;

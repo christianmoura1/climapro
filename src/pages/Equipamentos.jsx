@@ -9,6 +9,7 @@ import { createPageUrl } from "@/utils";
 import EquipamentoForm from "../components/equipamentos/EquipamentoForm";
 import EquipamentosList from "../components/equipamentos/EquipamentosList";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
+import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ export default function EquipamentosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroCliente, setFiltroCliente] = useState("");
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
+  const [gerandoQrPara, setGerandoQrPara] = useState(null);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -329,7 +331,16 @@ export default function EquipamentosPage() {
           }}
           onDelete={handleDelete}
           onView={handleVisualizarEquipamento}
+          onQrCode={setGerandoQrPara}
         />
+        )}
+
+        {gerandoQrPara && (
+          <QRCodeEquipamentoModal
+            equipamento={gerandoQrPara}
+            cliente={clientes.find((c) => c.id === gerandoQrPara.cliente_id)}
+            onClose={() => setGerandoQrPara(null)}
+          />
         )}
     </PageShell>
   );

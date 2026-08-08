@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Cpu, MapPin, Calendar, Trash2, Eye } from "lucide-react"; // Import Eye icon
+import { Edit, Cpu, MapPin, Calendar, Trash2, Eye, QrCode } from "lucide-react"; // Import Eye icon
 import { format } from "date-fns";
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,7 +32,7 @@ const tipoConfig = {
   outro: { label: "Outro", color: "bg-muted text-foreground" }
 };
 
-export default function EquipamentosList({ equipamentos, clientes, isLoading, onEdit, onDelete, onView }) {
+export default function EquipamentosList({ equipamentos, clientes, isLoading, onEdit, onDelete, onView, onQrCode }) {
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   if (isLoading) {
@@ -160,7 +160,7 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
               )}
 
               {/* New action buttons */}
-              <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -177,6 +177,14 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Editar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQrCode(equipamento)}
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  QR Code
                 </Button>
                 <Button
                   variant="outline"
