@@ -121,3 +121,46 @@ export const ITENS_ORCAMENTO = [...new Set([
   ...MATERIAIS,
   ...OUTROS,
 ])];
+
+const SERVICOS = [
+  ...SERVICOS_LIMPEZA,
+  ...SERVICOS_MANUTENCAO,
+  ...SERVICOS_INSTALACAO,
+  ...SERVICOS_CARGA_GAS,
+  ...SERVICOS_TROCA,
+];
+
+const normalizar = (texto) => (texto || '')
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .trim();
+
+const indexar = (lista) => new Set(lista.map(normalizar));
+
+const INDICE_SERVICOS = indexar(SERVICOS);
+const INDICE_PECAS = indexar(PECAS);
+const INDICE_MATERIAIS = indexar(MATERIAIS);
+
+// Palavras que denunciam a natureza do item quando ele não veio do catálogo
+// (o campo aceita texto livre, então a maioria dos orçamentos reais terá
+// descrições que não batem exatamente com nenhuma entrada).
+const PISTAS_SERVICO = ['instalacao', 'instalar', 'manutencao', 'limpeza', 'higienizacao', 'troca', 'carga', 'visita', 'reparo', 'conserto', 'mao de obra', 'servico', 'laudo', 'vistoria', 'diagnostico', 'solda', 'remanejamento', 'desinstalacao', 'hora tecnica', 'deslocamento'];
+const PISTAS_MATERIAL = ['metro', 'kg', 'cabo', 'tubo', 'fita', 'gas ', 'isolamento', 'mangueira', 'canaleta', 'material', 'nitrogenio', 'suporte'];
+
+// Classifica um item em servico | peca | material | outro. Usado para montar o
+// resumo do escopo no texto automático da proposta.
+export function classificarItem(descricao) {
+  const alvo = normalizar(descricao);
+  if (!alvo) return 'outro';
+
+  if (INDICE_SERVICOS.has(alvo)) return 'servico';
+  if (INDICE_PECAS.has(alvo)) return 'peca';
+  if (INDICE_MATERIAIS.has(alvo)) return 'material';
+
+  if (PISTAS_SERVICO.some((p) => alvo.includes(p))) return 'servico';
+  if (PISTAS_MATERIAL.some((p) => alvo.includes(p))) return 'material';
+  if ([...INDICE_PECAS].some((p) => alvo.includes(p))) return 'peca';
+
+  return 'outro';
+}

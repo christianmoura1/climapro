@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X, Plus, Trash2, FileText } from "lucide-react";
 import { ITENS_ORCAMENTO } from "@/lib/itensOrcamento";
+import { gerarTextoProposta } from "@/lib/propostaTexto";
 
 const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -17,7 +18,7 @@ function dataDaquiA(dias) {
   return d.toISOString().split('T')[0];
 }
 
-export default function OrcamentoForm({ orcamento, clientes, onSubmit, onCancel, isLoading }) {
+export default function OrcamentoForm({ orcamento, clientes, empresaNome, onSubmit, onCancel, isLoading }) {
   const [form, setForm] = useState(() => ({
     cliente_id: orcamento?.cliente_id || "",
     titulo: orcamento?.titulo || "",
@@ -233,6 +234,32 @@ export default function OrcamentoForm({ orcamento, clientes, onSubmit, onCancel,
               onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
               placeholder="Ex: Valor não inclui alvenaria. Pagamento em até 2x."
             />
+          </div>
+
+          {/* O cliente não vê os campos crus: a proposta que chega até ele é
+              montada a partir deles. Mostrar aqui evita surpresa. */}
+          <div className="border-t pt-4">
+            <h3 className="font-semibold text-foreground mb-1">Como o cliente vai ver</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Texto gerado automaticamente com o que você preencheu. Muda sozinho conforme você edita.
+            </p>
+            <div className="rounded-lg border bg-muted/40 p-4 space-y-2 text-sm text-foreground">
+              <p className="font-medium">Prezados,</p>
+              {gerarTextoProposta({
+                empresa: { nome: empresaNome },
+                cliente: { nome: clientes.find((c) => c.id === form.cliente_id)?.nome },
+                orcamento: {
+                  titulo: form.titulo || 'este serviço',
+                  descricao: form.descricao,
+                  itens: itens.filter((i) => i.descricao.trim()),
+                  valor_total: total,
+                  desconto: Number(form.desconto) || 0,
+                  validade_ate: form.validade_ate,
+                },
+              }).map((paragrafo, idx) => (
+                <p key={idx} className="whitespace-pre-wrap leading-relaxed">{paragrafo}</p>
+              ))}
+            </div>
           </div>
 
           {erro && <p className="text-sm text-red-600">{erro}</p>}

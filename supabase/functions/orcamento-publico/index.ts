@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
 
     const [{ data: cliente }, { data: empresa }] = await Promise.all([
       supabaseAdmin.from('cliente').select('nome').eq('id', orcamento.cliente_id).maybeSingle(),
-      supabaseAdmin.from('empresa').select('nome, logo_url, telefone, email_contato').eq('id', orcamento.empresa_id).maybeSingle(),
+      supabaseAdmin.from('empresa').select('nome, logo_url, telefone, email_contato, cnpj, endereco').eq('id', orcamento.empresa_id).maybeSingle(),
     ]);
 
     const hoje = new Date().toISOString().split('T')[0];
@@ -73,6 +73,10 @@ Deno.serve(async (req) => {
         logo_url: empresa?.logo_url ?? null,
         telefone: empresa?.telefone ?? null,
         email_contato: empresa?.email_contato ?? null,
+        // Cabeçalho da proposta: a página só mostra estes se vierem
+        // preenchidos, então a versão antiga da function continua funcionando.
+        cnpj: empresa?.cnpj ?? null,
+        endereco: empresa?.endereco ?? null,
       },
       podeResponder: statusEfetivo === 'enviado',
     });
