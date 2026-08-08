@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Upload, Image, Video, Trash2, CheckCircle } from "lucide-react"; // Added CheckCircle
-import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 
 export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isLoading }) {
@@ -15,7 +14,6 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     fotos_finalizacao: [],
     videos_finalizacao: []
   });
-  const [uploadingFile, setUploadingFile] = useState(false);
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
@@ -36,95 +34,62 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     ctx.lineJoin = 'round';
   }, []);
 
-  const handlePhotoUpload = async (e) => {
+  // Os arquivos ficam no aparelho até o técnico confirmar; o upload acontece
+  // no envio. Antes subiam na hora da seleção, o que impedia montar o
+  // formulário sem rede — justamente onde o técnico costuma estar.
+  const adicionarArquivos = (e, campo, { limite, tipoPrefixo, tamanhoMaxMB, rotulo }) => {
     const files = Array.from(e.target.files);
-    
-    if (formData.fotos_finalizacao.length + files.length > 10) {
-      toast({ description: '⚠️ Você pode adicionar no máximo 10 fotos', variant: "warning" });
+    e.target.value = '';
+
+    if (formData[campo].length + files.length > limite) {
+      toast({ description: `⚠️ Você pode adicionar no máximo ${limite} ${rotulo}`, variant: "warning" });
       return;
     }
 
+    const aceitos = [];
     for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        toast({ description: `⚠️ ${file.name} não é uma imagem válida`, variant: "warning" });
+      if (!file.type.startsWith(tipoPrefixo)) {
+        toast({ description: `⚠️ ${file.name} não é um arquivo válido`, variant: "warning" });
         continue;
       }
-
-      if (file.size > 10 * 1024 * 1024) {
-        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 10MB`, variant: "warning" });
+      if (file.size > tamanhoMaxMB * 1024 * 1024) {
+        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: ${tamanhoMaxMB}MB`, variant: "warning" });
         continue;
       }
-
-      setUploadingFile(true);
-      try {
-        const result = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({
-          ...prev,
-          fotos_finalizacao: [...prev.fotos_finalizacao, result.file_url]
-        }));
-      } catch (error) {
-        console.error('Erro ao fazer upload da foto:', error);
-        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
-      } finally {
-        setUploadingFile(false);
-      }
-    }
-    
-    // Limpar input
-    e.target.value = '';
-  };
-
-  const handleVideoUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    
-    if (formData.videos_finalizacao.length + files.length > 2) {
-      toast({ description: '⚠️ Você pode adicionar no máximo 2 vídeos', variant: "warning" });
-      return;
+      aceitos.push({ file, preview: URL.createObjectURL(file) });
     }
 
-    for (const file of files) {
-      if (!file.type.startsWith('video/')) {
-        toast({ description: `⚠️ ${file.name} não é um vídeo válido`, variant: "warning" });
-        continue;
-      }
-
-      if (file.size > 50 * 1024 * 1024) {
-        toast({ description: `⚠️ ${file.name} é muito grande. Tamanho máximo: 50MB`, variant: "warning" });
-        continue;
-      }
-
-      setUploadingFile(true);
-      try {
-        const result = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({
-          ...prev,
-          videos_finalizacao: [...prev.videos_finalizacao, result.file_url]
-        }));
-      } catch (error) {
-        console.error('Erro ao fazer upload do vídeo:', error);
-        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
-      } finally {
-        setUploadingFile(false);
-      }
+    if (aceitos.length > 0) {
+      setFormData(prev => ({ ...prev, [campo]: [...prev[campo], ...aceitos] }));
     }
-    
-    // Limpar input
-    e.target.value = '';
   };
 
-  const removePhoto = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      fotos_finalizacao: prev.fotos_finalizacao.filter((_, i) => i !== index)
-    }));
+  const handlePhotoUpload = (e) => adicionarArquivos(e, 'fotos_finalizacao', {
+    limite: 10, tipoPrefixo: 'image/', tamanhoMaxMB: 10, rotulo: 'fotos',
+  });
+
+  const handleVideoUpload = (e) => adicionarArquivos(e, 'videos_finalizacao', {
+    limite: 2, tipoPrefixo: 'video/', tamanhoMaxMB: 50, rotulo: 'vídeos',
+  });
+
+  const removerArquivo = (campo, index) => {
+    setFormData(prev => {
+      const alvo = prev[campo][index];
+      if (alvo?.preview) URL.revokeObjectURL(alvo.preview);
+      return { ...prev, [campo]: prev[campo].filter((_, i) => i !== index) };
+    });
   };
 
-  const removeVideo = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      videos_finalizacao: prev.videos_finalizacao.filter((_, i) => i !== index)
-    }));
-  };
+  const removePhoto = (index) => removerArquivo('fotos_finalizacao', index);
+  const removeVideo = (index) => removerArquivo('videos_finalizacao', index);
+
+  // Libera as URLs de preview ao desmontar, senão os blobs ficam presos na
+  // memória da aba até o reload.
+  useEffect(() => () => {
+    [...formData.fotos_finalizacao, ...formData.videos_finalizacao]
+      .forEach((a) => a?.preview && URL.revokeObjectURL(a.preview));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getCanvasCoordinates = (e) => {
     const canvas = canvasRef.current;
@@ -206,17 +171,17 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
     try {
       const canvas = canvasRef.current;
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const file = new File([blob], 'assinatura.png', { type: 'image/png' });
-      const result = await base44.integrations.Core.UploadFile({ file });
 
       onConfirm({
-        ...formData,
-        assinatura_cliente: result.file_url,
-        status: 'aguardando_aprovacao_empresa'
+        nome_cliente_confirmacao: formData.nome_cliente_confirmacao,
+        observacoes_finalizacao: formData.observacoes_finalizacao,
+        fotos: formData.fotos_finalizacao.map((a) => a.file),
+        videos: formData.videos_finalizacao.map((a) => a.file),
+        assinatura: new File([blob], 'assinatura.png', { type: 'image/png' }),
       });
     } catch (error) {
-      console.error('Erro ao salvar assinatura:', error);
-      toast({ description: "❌ Erro ao salvar assinatura. Tente novamente.", variant: "destructive" });
+      console.error('Erro ao preparar a assinatura:', error);
+      toast({ description: "❌ Erro ao preparar a assinatura. Tente novamente.", variant: "destructive" });
     } finally {
       setUploadingSignature(false);
     }
@@ -296,7 +261,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   accept="image/*"
                   multiple
                   onChange={handlePhotoUpload}
-                  disabled={uploadingFile || formData.fotos_finalizacao.length >= 10}
+                  disabled={formData.fotos_finalizacao.length >= 10}
                   className="hidden"
                   id="photos-finalizacao"
                 />
@@ -306,9 +271,9 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 >
                   <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                   <span className="text-sm text-muted-foreground">
-                    {uploadingFile ? 'Fazendo upload...' : 
-                     formData.fotos_finalizacao.length >= 10 ? 'Limite de 10 fotos atingido' :
-                     `Clique para adicionar fotos (${formData.fotos_finalizacao.length}/10)`}
+                    {formData.fotos_finalizacao.length >= 10
+                      ? 'Limite de 10 fotos atingido'
+                      : `Clique para adicionar fotos (${formData.fotos_finalizacao.length}/10)`}
                   </span>
                   <span className="text-xs text-muted-foreground mt-1">PNG, JPG até 10MB cada</span>
                 </label>
@@ -316,10 +281,10 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
 
               {formData.fotos_finalizacao.length > 0 && (
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mt-3">
-                  {formData.fotos_finalizacao.map((url, index) => (
+                  {formData.fotos_finalizacao.map((arquivo, index) => (
                     <div key={index} className="relative group">
                       <img
-                        src={url}
+                        src={arquivo.preview}
                         alt={`Foto ${index + 1}`}
                         className="w-full h-24 object-cover rounded-lg border-2 border-border"
                       />
@@ -351,7 +316,7 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                   accept="video/*"
                   multiple
                   onChange={handleVideoUpload}
-                  disabled={uploadingFile || formData.videos_finalizacao.length >= 2}
+                  disabled={formData.videos_finalizacao.length >= 2}
                   className="hidden"
                   id="videos-finalizacao"
                 />
@@ -361,9 +326,9 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 >
                   <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                   <span className="text-sm text-muted-foreground">
-                    {uploadingFile ? 'Fazendo upload...' : 
-                     formData.videos_finalizacao.length >= 2 ? 'Limite de 2 vídeos atingido' :
-                     `Clique para adicionar vídeos (${formData.videos_finalizacao.length}/2)`}
+                    {formData.videos_finalizacao.length >= 2
+                      ? 'Limite de 2 vídeos atingido'
+                      : `Clique para adicionar vídeos (${formData.videos_finalizacao.length}/2)`}
                   </span>
                   <span className="text-xs text-muted-foreground mt-1">MP4, MOV até 50MB cada</span>
                 </label>
@@ -371,10 +336,10 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
 
               {formData.videos_finalizacao.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  {formData.videos_finalizacao.map((url, index) => (
+                  {formData.videos_finalizacao.map((arquivo, index) => (
                     <div key={index} className="relative group">
                       <video
-                        src={url}
+                        src={arquivo.preview}
                         className="w-full h-32 object-cover rounded-lg border-2 border-border"
                         controls
                       />
@@ -430,14 +395,14 @@ export default function FinalizarChamadoModal({ chamado, onClose, onConfirm, isL
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isLoading || uploadingFile}
+                disabled={isLoading}
                 className="flex-1"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || uploadingFile || uploadingSignature}
+                disabled={isLoading || uploadingSignature}
                 className="flex-1 bg-green-600 hover:bg-green-700"
               >
                 {(isLoading || uploadingSignature) ? (

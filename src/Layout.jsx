@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import CompatibilityCheck from "@/components/CompatibilityCheck";
 import BootDiagnostics from "@/components/BootDiagnostics";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import StatusConexao from "@/components/ui/status-conexao";
 
 const navigationItems = [
   {
@@ -470,6 +471,8 @@ export default function Layout({ children, currentPageName }) {
                   </ErrorBoundary>
                 </div>
               </main>
+
+              <StatusConexao />
             </div>
           </SidebarProvider>
         </ErrorBoundary>

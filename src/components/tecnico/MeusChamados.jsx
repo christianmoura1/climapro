@@ -12,6 +12,8 @@ import FinalizarChamadoModal from "./FinalizarChamadoModal";
 import DetalhesChamadoTecnico from "./DetalhesChamadoTecnico";
 import KanbanChamados from "../chamados/KanbanChamados"; // New import
 import { toast } from "@/components/ui/use-toast";
+import { enfileirar, estaOnline, ehFalhaDeRede } from "@/lib/outbox";
+import { finalizarChamado, ACAO_FINALIZAR_CHAMADO } from "@/lib/sincronizacaoChamado";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -52,37 +54,44 @@ export default function MeusChamados({ chamados, clientes, user, tecnico }) {
 
   const finalizarChamadoMutation = useMutation({
     mutationFn: async ({ chamadoId, dadosFinalizacao }) => {
-      const updateData = {
-        status: 'aguardando_aprovacao_empresa', // Alterado de 'finalizado' para 'aguardando_aprovacao_empresa'
-        data_finalizacao: new Date().toISOString(),
-        fotos_finalizacao: dadosFinalizacao.fotos_finalizacao || [],
-        videos_finalizacao: dadosFinalizacao.videos_finalizacao || [],
-        nome_cliente_confirmacao: dadosFinalizacao.nome_cliente_confirmacao,
-        assinatura_cliente: dadosFinalizacao.assinatura_cliente,
-        observacoes_tecnico: dadosFinalizacao.observacoes_finalizacao
-      };
-      
-      await base44.entities.Chamado.update(chamadoId, updateData);
-      
-      // Registrar log
-      await base44.entities.LogAcao.create({
+      const payload = {
+        chamadoId,
         empresa_id: user.empresa_id,
         user_id: user.id,
         user_email: user.email,
-        tipo_usuario: 'tecnico',
-        acao: `Finalizou o chamado com ${dadosFinalizacao.fotos_finalizacao?.length || 0} foto(s) e ${dadosFinalizacao.videos_finalizacao?.length || 0} vídeo(s). Cliente confirmou: ${dadosFinalizacao.nome_cliente_confirmacao}. Aguardando aprovação da empresa.`,
-        entidade_afetada: 'Chamado',
-        entidade_id: chamadoId,
-        data_hora: new Date().toISOString()
-      });
+        nome_cliente_confirmacao: dadosFinalizacao.nome_cliente_confirmacao,
+        observacoes_finalizacao: dadosFinalizacao.observacoes_finalizacao,
+        fotos: dadosFinalizacao.fotos || [],
+        videos: dadosFinalizacao.videos || [],
+        assinatura: dadosFinalizacao.assinatura || null,
+        data_finalizacao: new Date().toISOString(),
+      };
 
-      // Enviar notificação para a EMPRESA (não para o cliente)
+      // Sem rede, a finalização inteira (fotos, vídeo e assinatura) vai para a
+      // fila no aparelho e sobe sozinha quando o sinal voltar. Sem isso o
+      // técnico perderia a assinatura, que exige o cliente presente de novo.
+      if (!estaOnline()) {
+        await enfileirar(ACAO_FINALIZAR_CHAMADO, payload);
+        return { enfileirado: true };
+      }
+
+      try {
+        await finalizarChamado(payload);
+      } catch (erro) {
+        if (ehFalhaDeRede(erro)) {
+          await enfileirar(ACAO_FINALIZAR_CHAMADO, payload);
+          return { enfileirado: true };
+        }
+        throw erro;
+      }
+
+      // Aviso à empresa é acessório: se falhar, o chamado já está finalizado.
       try {
         const empresas = await base44.entities.Empresa.list();
         const empresa = empresas.find(e => e.id === user.empresa_id);
         const chamado = chamados.find(c => c.id === chamadoId);
-        
-        if (empresa?.email_contato) {
+
+        if (empresa?.email_contato && chamado) {
           await base44.integrations.Core.SendEmail({
             to: empresa.email_contato,
             subject: `✅ Chamado Finalizado - Aguardando Aprovação #${chamado.numero_chamado}`,
@@ -95,8 +104,8 @@ Técnico: ${tecnico.nome}
 Cliente Confirmou: ${dadosFinalizacao.nome_cliente_confirmacao}
 Data/Hora Finalização: ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })}
 
-📸 Fotos anexadas: ${dadosFinalizacao.fotos_finalizacao?.length || 0}
-🎥 Vídeos anexados: ${dadosFinalizacao.videos_finalizacao?.length || 0}
+📸 Fotos anexadas: ${payload.fotos.length}
+🎥 Vídeos anexados: ${payload.videos.length}
 
 Observações: ${dadosFinalizacao.observacoes_finalizacao || 'Nenhuma'}
 
@@ -109,12 +118,18 @@ ClimaPro - Sistema de Gestão`
       } catch (emailError) {
         console.error("Erro ao enviar email:", emailError);
       }
+
+      return { enfileirado: false };
     },
-    onSuccess: () => {
+    onSuccess: (resultado) => {
       queryClient.invalidateQueries(['meus-chamados']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
       setChamadoFinalizando(null);
-      alert("✅ Chamado enviado para aprovação da empresa!\n\nA empresa irá revisar antes de enviar ao cliente.");
+      if (resultado?.enfileirado) {
+        alert("📴 Sem conexão agora.\n\nO chamado, as fotos e a assinatura ficaram salvos no aparelho e serão enviados sozinhos quando o sinal voltar. Pode fechar o app.");
+      } else {
+        alert("✅ Chamado enviado para aprovação da empresa!\n\nA empresa irá revisar antes de enviar ao cliente.");
+      }
     },
     onError: (error) => {
       console.error("Erro ao finalizar chamado:", error);
