@@ -3,13 +3,14 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Printer } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 import EquipamentoForm from "../components/equipamentos/EquipamentoForm";
 import EquipamentosList from "../components/equipamentos/EquipamentosList";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
+import ImprimirQRCodesEquipamentos from "../components/equipamentos/ImprimirQRCodesEquipamentos";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export default function EquipamentosPage() {
   const [filtroCliente, setFiltroCliente] = useState("");
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [gerandoQrPara, setGerandoQrPara] = useState(null);
+  const [imprimindoTodosQr, setImprimindoTodosQr] = useState(false);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -265,16 +267,27 @@ export default function EquipamentosPage() {
           description={`${equipamentos.length} equipamento${equipamentos.length !== 1 ? 's' : ''} em acompanhamento`}
           backTo={createPageUrl("Dashboard")}
           actions={
-            <Button
-              onClick={() => {
-                setShowForm(!showForm);
-                setEditingEquipamento(null);
-              }}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Novo Equipamento
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setImprimindoTodosQr(true)}
+                disabled={filteredEquipamentos.length === 0}
+                className="w-full sm:w-auto"
+              >
+                <Printer className="w-5 h-5 mr-2" />
+                Imprimir QR Codes
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowForm(!showForm);
+                  setEditingEquipamento(null);
+                }}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Novo Equipamento
+              </Button>
+            </>
           }
         />
 
@@ -340,6 +353,14 @@ export default function EquipamentosPage() {
             equipamento={gerandoQrPara}
             cliente={clientes.find((c) => c.id === gerandoQrPara.cliente_id)}
             onClose={() => setGerandoQrPara(null)}
+          />
+        )}
+
+        {imprimindoTodosQr && (
+          <ImprimirQRCodesEquipamentos
+            equipamentos={filteredEquipamentos}
+            clientes={clientes}
+            onDone={() => setImprimindoTodosQr(false)}
           />
         )}
     </PageShell>
