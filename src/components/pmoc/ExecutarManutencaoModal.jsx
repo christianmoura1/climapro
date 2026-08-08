@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,103 +24,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { checklistParaEquipamento, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
-
-// Componente de Canvas de Assinatura Nativo
-function SignatureCanvas({ canvasRef, width = 600, height = 200, label, onChange }) {
-  const [isDrawing, setIsDrawing] = useState(false);
-
-  const setupCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-    }
-  }, [canvasRef]);
-
-  useEffect(() => setupCanvas(), [setupCanvas]);
-
-  const getCoordinates = (event) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: (event.clientX - rect.left) * (canvas.width / rect.width),
-      y: (event.clientY - rect.top) * (canvas.height / rect.height),
-    };
-  };
-
-  const startDrawing = (event) => {
-    event.preventDefault();
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    try {
-      if (event.pointerId != null && typeof canvas.setPointerCapture === 'function') {
-        canvas.setPointerCapture(event.pointerId);
-      }
-    } catch {
-      // Alguns WebViews do iOS expõem a API, mas recusam a captura.
-    }
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    setupCanvas();
-    const { x, y } = getCoordinates(event);
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
-  };
-
-  const draw = (event) => {
-    event.preventDefault();
-    if (!isDrawing || !canvasRef.current) return;
-    const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
-    const { x, y } = getCoordinates(event);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  };
-
-  const stopDrawing = (event) => {
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    try {
-      if (
-        canvas &&
-        event.pointerId != null &&
-        typeof canvas.releasePointerCapture === 'function' &&
-        (typeof canvas.hasPointerCapture !== 'function' || canvas.hasPointerCapture(event.pointerId))
-      ) {
-        canvas.releasePointerCapture(event.pointerId);
-      }
-    } catch {
-      // O traço ainda pode ser finalizado sem captura explícita do ponteiro.
-    }
-    setIsDrawing(false);
-    onChange?.(true);
-  };
-
-  return (
-    <div className="overflow-hidden rounded-xl border-2 border-slate-300 bg-white shadow-inner focus-within:border-primary">
-      <canvas
-        ref={canvasRef}
-        width={width}
-        height={height}
-        onPointerDown={startDrawing}
-        onPointerMove={draw}
-        onPointerUp={stopDrawing}
-        onPointerCancel={stopDrawing}
-        className="block h-auto w-full cursor-crosshair touch-none"
-        style={{ aspectRatio: `${width} / ${height}` }}
-        role="img"
-        tabIndex={0}
-        aria-label={label}
-      />
-    </div>
-  );
-}
+import { SignatureCanvas, limparAssinatura, isCanvasEmpty, getCanvasDataURL } from "@/components/ui/signature-canvas";
 
 export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   const [user, setUser] = useState(null);
@@ -252,35 +156,6 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       ...prev,
       [equipamentoId]: prev[equipamentoId].filter((_, i) => i !== index)
     }));
-  };
-
-  const limparAssinatura = (canvasRef, onClear) => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        onClear?.(false);
-      }
-    }
-  };
-
-  const isCanvasEmpty = (canvasRef) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return true;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return true;
-
-    const pixelBuffer = new Uint32Array(
-      ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer
-    );
-
-    return !pixelBuffer.some(color => color !== 0);
-  };
-
-  const getCanvasDataURL = (canvasRef) => {
-    return canvasRef.current ? canvasRef.current.toDataURL() : '';
   };
 
   const validarFormulario = () => {

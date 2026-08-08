@@ -73,6 +73,7 @@ export const PAGES = {
     "ClienteDashboard": lazyWithRetry(() => import('./pages/ClienteDashboard')),
     "CompanySettings": lazyWithRetry(() => import('./pages/CompanySettings')),
     "NotasFiscais": lazyWithRetry(() => import('./pages/NotasFiscais')),
+    "Orcamentos": lazyWithRetry(() => import('./pages/Orcamentos')),
     "LegacyFallback": lazyWithRetry(() => import('./pages/LegacyFallback')),
     "ValorTecnicos": lazyWithRetry(() => import('./pages/ValorTecnicos')),
     "Agenda": lazyWithRetry(() => import('./pages/Agenda')),
