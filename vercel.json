@@ -32,7 +32,9 @@
     { "source": "/AlterarSenha", "destination": "/__app" },
     { "source": "/InitialChoice", "destination": "/__app" },
     { "source": "/Login", "destination": "/__app" },
-    { "source": "/e/:id", "destination": "/__app" }
+    { "source": "/Orcamentos", "destination": "/__app" },
+    { "source": "/e/:id", "destination": "/__app" },
+    { "source": "/orcamento/:token", "destination": "/__app" }
   ],
   "headers": [
     {

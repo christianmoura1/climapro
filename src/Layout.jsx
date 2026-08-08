@@ -18,7 +18,8 @@ import {
   Settings,
   Shield,
   Clock,
-  Lock // Added Lock icon for password change
+  Lock, // Added Lock icon for password change
+  FileSignature
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,6 +51,12 @@ const navigationItems = [
     title: "Chamados",
     url: createPageUrl("Chamados"),
     icon: ClipboardList,
+    modulo: "chamados"
+  },
+  {
+    title: "Orçamentos",
+    url: createPageUrl("Orcamentos"),
+    icon: FileSignature,
     modulo: "chamados"
   },
   {

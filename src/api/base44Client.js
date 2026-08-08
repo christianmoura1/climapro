@@ -21,6 +21,7 @@ const ENTITY_TABLE_MAP = {
   ManutencaoPMOC: 'manutencao_pmoc',
   MovimentacaoTecnico: 'movimentacao_tecnico',
   NotaFiscal: 'nota_fiscal',
+  Orcamento: 'orcamento',
   OrcamentoTecnico: 'orcamento_tecnico',
   PMOC: 'pmoc',
   PontoEletronico: 'ponto_eletronico',
