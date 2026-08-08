@@ -267,13 +267,21 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
   // Modal para nomear novo estabelecimento
   const [modalNome, setModalNome] = useState(null); // { opcao, nomeInput }
 
+  // Código de acesso ao histórico público (QR code) — campo write-only: nunca
+  // mostramos o hash já salvo, só grava se o usuário digitar algo novo.
+  const [novoCodigoAcesso, setNovoCodigoAcesso] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    const dadosFinal = { ...formData, estabelecimentos };
+    const { senha_acesso_publico_hash, ...formDataSemSenha } = formData;
+    const dadosFinal = { ...formDataSemSenha, estabelecimentos };
     if (estabelecimentos.length > 0) {
       dadosFinal.endereco = estabelecimentos[0].endereco || formData.endereco;
       dadosFinal.latitude = estabelecimentos[0].latitude || formData.latitude;
       dadosFinal.longitude = estabelecimentos[0].longitude || formData.longitude;
+    }
+    if (novoCodigoAcesso.trim()) {
+      dadosFinal.senha_acesso_publico_hash = novoCodigoAcesso.trim();
     }
     onSubmit(dadosFinal);
   };
@@ -519,6 +527,20 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="border-t pt-4 space-y-2">
+            <Label htmlFor="codigo_acesso_publico">Código de acesso ao histórico público (QR Code)</Label>
+            <Input
+              id="codigo_acesso_publico"
+              type="text"
+              value={novoCodigoAcesso}
+              onChange={(e) => setNovoCodigoAcesso(e.target.value)}
+              placeholder={cliente?.senha_acesso_publico_hash ? "•••••• deixe em branco para manter o código atual" : "Ex: 1234 (deixe em branco para não exigir código)"}
+            />
+            <p className="text-xs text-muted-foreground">
+              Entregue esse código a quem administra o local (síndico, gestor) para que ele consulte, sem login, o histórico completo de manutenção dos equipamentos deste cliente ao escanear o QR Code.
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end gap-3">
