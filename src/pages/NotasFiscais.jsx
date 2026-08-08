@@ -33,8 +33,11 @@ export default function NotasFiscaisPage() {
     loadData();
   }, []);
 
-  // Verificar se tem acesso ao módulo de notas fiscais (plano avançado ou admin)
-  const temAcesso = empresa?.plano === 'avancado' || (user?.role === 'admin' && !user?.empresa_id);
+  // Mesma regra do menu lateral (Layout.jsx): o módulo é liberado pelo flag em
+  // modulos_ativos, não por nome de plano — 'avancado' nem existe na lista de
+  // planos do banco, então essa checagem nunca era verdadeira.
+  const temAcesso = empresa?.modulos_ativos?.notas_fiscais === true
+    || (user?.role === 'admin' && !user?.empresa_id);
 
   const { data: configuracaoFiscal } = useQuery({
     queryKey: ['configuracao-fiscal', user?.empresa_id],
@@ -99,7 +102,7 @@ export default function NotasFiscaisPage() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
-              <p className="text-muted-foreground mt-1">Emissão e gerenciamento de NFS-e</p>
+              <p className="text-muted-foreground mt-1">Controle das NFS-e já emitidas</p>
             </div>
           </div>
 
@@ -107,58 +110,17 @@ export default function NotasFiscaisPage() {
             <CardContent className="p-12 text-center">
               <FileText className="w-20 h-20 text-indigo-500 mx-auto mb-6" />
               <h2 className="text-2xl font-bold text-foreground mb-4">
-                Recurso disponível apenas no Plano Avançado
+                Módulo de Notas Fiscais não está ativo
               </h2>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                O módulo de Emissão de Notas Fiscais Eletrônicas (NFS-e) está disponível 
-                apenas para assinantes do plano Avançado.
+                O controle de NFS-e está desativado para a sua empresa. Fale com o suporte para liberar
+                o módulo ou veja os planos disponíveis.
               </p>
               <Link to={createPageUrl("Planos")}>
                 <Button className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-6">
                   Ver Planos e Fazer Upgrade
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Verificar se configuração fiscal está completa
-  if (!configuracaoFiscal && !showConfig) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
-            <Link to={createPageUrl("Dashboard")}>
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
-              <p className="text-muted-foreground mt-1">Configure seus dados fiscais primeiro</p>
-            </div>
-          </div>
-
-          <Card className="shadow-lg border-none">
-            <CardContent className="p-12 text-center">
-              <Settings className="w-16 h-16 text-indigo-500 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-foreground mb-4">
-                Configure seus Dados Fiscais
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Antes de emitir notas fiscais, você precisa configurar os dados fiscais 
-                da sua empresa (CNPJ, Inscrição Municipal, Token API, etc.).
-              </p>
-              <Button
-                onClick={() => setShowConfig(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-lg px-8 py-4"
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                Configurar Agora
-              </Button>
             </CardContent>
           </Card>
         </div>
@@ -189,7 +151,7 @@ export default function NotasFiscaisPage() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold text-foreground">Notas Fiscais</h1>
-              <p className="text-muted-foreground mt-1">Emissão e gerenciamento de NFS-e</p>
+              <p className="text-muted-foreground mt-1">Controle das NFS-e já emitidas</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -205,7 +167,7 @@ export default function NotasFiscaisPage() {
               className="bg-indigo-600 hover:bg-indigo-700"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Emitir Nota
+              Registrar Nota
             </Button>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import React from "react";
+import { base44 } from "@/api/base44Client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,13 +17,32 @@ const statusConfig = {
 };
 
 export default function ListaNotasFiscais({ notas, clientes }) {
+  const queryClient = useQueryClient();
+
+  // Baixa apenas o registro aqui no ClimaPro. O cancelamento junto à
+  // prefeitura continua sendo feito no portal dela — não há integração.
+  const cancelarMutation = useMutation({
+    mutationFn: ({ id, motivo }) => base44.entities.NotaFiscal.update(id, {
+      status: 'cancelada',
+      motivo_cancelamento: motivo,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['notas-fiscais']);
+      toast({ description: "Nota marcada como cancelada no ClimaPro.", variant: "default" });
+    },
+    onError: (error) => {
+      console.error("Erro ao cancelar nota:", error);
+      toast({ description: `Erro ao cancelar: ${error.message || 'tente novamente.'}`, variant: "destructive" });
+    },
+  });
+
   if (notas.length === 0) {
     return (
       <Card className="shadow-lg border-none">
         <CardContent className="p-12 text-center">
           <FileText className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
-          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhuma nota fiscal emitida ainda</p>
-          <p className="text-muted-foreground text-sm">Clique em "Emitir Nota" para começar</p>
+          <p className="text-muted-foreground text-lg font-medium mb-2">Nenhuma nota fiscal registrada ainda</p>
+          <p className="text-muted-foreground text-sm">Clique em "Registrar Nota" para começar</p>
         </CardContent>
       </Card>
     );
@@ -91,10 +112,13 @@ export default function ListaNotasFiscais({ notas, clientes }) {
                             size="sm"
                             variant="outline"
                             className="text-red-600 hover:text-red-700"
+                            disabled={cancelarMutation.isPending}
                             onClick={() => {
-                              if (confirm("Tem certeza que deseja cancelar esta nota fiscal?")) {
-                                toast({ description: "Função de cancelamento será implementada", variant: "default" });
-                              }
+                              const motivo = window.prompt(
+                                "Cancele a nota primeiro no portal da prefeitura.\n\nQual o motivo do cancelamento? (fica registrado aqui)"
+                              );
+                              if (motivo === null) return;
+                              cancelarMutation.mutate({ id: nota.id, motivo: motivo.trim() || 'Não informado' });
                             }}
                           >
                             <XCircle className="w-4 h-4" />
