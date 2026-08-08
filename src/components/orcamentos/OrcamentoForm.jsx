@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X, Plus, Trash2, FileText } from "lucide-react";
+import { ITENS_ORCAMENTO } from "@/lib/itensOrcamento";
 
 const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -134,15 +135,28 @@ export default function OrcamentoForm({ orcamento, clientes, onSubmit, onCancel,
               </Button>
             </div>
 
+            <p className="text-xs text-muted-foreground mb-3">
+              Comece a digitar na descrição para ver os serviços e peças de refrigeração mais comuns, ou escreva o
+              seu próprio.
+            </p>
+
+            {/* Sugestões compartilhadas por todas as linhas de item */}
+            <datalist id="catalogo-itens-orcamento">
+              {ITENS_ORCAMENTO.map((nome) => (
+                <option key={nome} value={nome} />
+              ))}
+            </datalist>
+
             <div className="space-y-3">
               {itens.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-12 gap-2 items-end">
                   <div className="col-span-12 sm:col-span-6 space-y-1">
                     <Label className="text-xs">Descrição</Label>
                     <Input
+                      list="catalogo-itens-orcamento"
                       value={item.descricao}
                       onChange={(e) => atualizarItem(idx, "descricao", e.target.value)}
-                      placeholder="Peça ou serviço"
+                      placeholder="Escolha da lista ou digite"
                     />
                   </div>
                   <div className="col-span-4 sm:col-span-2 space-y-1">
