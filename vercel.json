@@ -33,6 +33,7 @@
     { "source": "/InitialChoice", "destination": "/__app" },
     { "source": "/Login", "destination": "/__app" },
     { "source": "/Orcamentos", "destination": "/__app" },
+    { "source": "/Estoque", "destination": "/__app" },
     { "source": "/e/:id", "destination": "/__app" },
     { "source": "/orcamento/:token", "destination": "/__app" }
   ],

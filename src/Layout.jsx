@@ -19,7 +19,8 @@ import {
   Shield,
   Clock,
   Lock, // Added Lock icon for password change
-  FileSignature
+  FileSignature,
+  Package
 } from "lucide-react";
 import {
   Sidebar,
@@ -95,6 +96,12 @@ const navigationItems = [
     url: createPageUrl("PMOC"),
     icon: Calendar,
     modulo: "pmoc"
+  },
+  {
+    title: "Estoque",
+    url: createPageUrl("Estoque"),
+    icon: Package,
+    modulo: "equipamentos"
   },
   {
     title: "Financeiro",
