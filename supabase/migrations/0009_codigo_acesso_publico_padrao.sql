@@ -17,8 +17,15 @@ end;
 $$;
 
 -- Backfill: clientes que já existiam antes desta mudança e nunca tiveram
--- código cadastrado também recebem o padrão "123".
+-- código cadastrado também recebem o padrão "123". Desliga o trigger antes:
+-- ele dispara em qualquer UPDATE da coluna e re-hashearia o valor que a
+-- gente já está gravando hasheado aqui, gerando um "hash do hash" que não
+-- bate com "123" nunca mais.
+alter table cliente disable trigger trg_cliente_hash_senha;
+
 update cliente set senha_acesso_publico_hash = crypt('123', gen_salt('bf'))
   where senha_acesso_publico_hash is null;
+
+alter table cliente enable trigger trg_cliente_hash_senha;
 
 notify pgrst, 'reload schema';
