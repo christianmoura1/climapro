@@ -119,7 +119,8 @@ export default function ClientesPage() {
         observacoes: clienteData.observacoes,
         tem_acesso_portal: clienteData.tem_acesso_portal,
         estabelecimentos: clienteData.estabelecimentos || [],
-        empresa_id: empresaId
+        empresa_id: empresaId,
+        ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
       });
 
       return { cliente, temAcessoPortal: clienteData.tem_acesso_portal };
@@ -240,7 +241,8 @@ ${mensagemParaEnviar}`, variant: "success" });
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
         tem_acesso_portal: clienteData.tem_acesso_portal,
-        estabelecimentos: clienteData.estabelecimentos || []
+        estabelecimentos: clienteData.estabelecimentos || [],
+        ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
       });
     },
     onSuccess: () => {

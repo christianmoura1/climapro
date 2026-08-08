@@ -536,10 +536,10 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
               type="text"
               value={novoCodigoAcesso}
               onChange={(e) => setNovoCodigoAcesso(e.target.value)}
-              placeholder={cliente?.senha_acesso_publico_hash ? "•••••• deixe em branco para manter o código atual" : "Ex: 1234 (deixe em branco para não exigir código)"}
+              placeholder={cliente ? "•••••• deixe em branco para manter o código atual" : "Padrão: 123 (deixe em branco pra usar o padrão)"}
             />
             <p className="text-xs text-muted-foreground">
-              Entregue esse código a quem administra o local (síndico, gestor) para que ele consulte, sem login, o histórico completo de manutenção dos equipamentos deste cliente ao escanear o QR Code.
+              O código padrão de todo cliente é <strong>123</strong>. Digite um código próprio aqui se quiser trocar. Entregue-o a quem administra o local (síndico, gestor) para que ele consulte, sem login, o histórico completo de manutenção dos equipamentos deste cliente ao escanear o QR Code.
             </p>
           </div>
         </CardContent>
