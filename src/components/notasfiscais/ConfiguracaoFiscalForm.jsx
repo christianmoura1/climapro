@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, Building2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -192,64 +191,12 @@ export default function ConfiguracaoFiscalForm({ configuracao, empresa, user, on
               </div>
 
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold mb-4">Integração com Provedor de NFS-e</h3>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Provedor *</Label>
-                    <Select
-                      value={formData.provedor_nfse}
-                      onValueChange={(value) => setFormData({...formData, provedor_nfse: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="nfeio">NFe.io</SelectItem>
-                        <SelectItem value="plugnotas">PlugNotas</SelectItem>
-                        <SelectItem value="enotas">eNotas</SelectItem>
-                        <SelectItem value="prefeitura">Prefeitura (ABRASF)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Token API *</Label>
-                    <Input
-                      type="password"
-                      value={formData.token_api_nfse}
-                      onChange={(e) => setFormData({...formData, token_api_nfse: e.target.value})}
-                      placeholder="Cole o token fornecido pelo provedor"
-                      required
-                    />
-                  </div>
+                <h3 className="text-lg font-semibold mb-2">Emissão automática</h3>
+                <div className="p-4 bg-muted rounded-lg text-sm text-muted-foreground">
+                  O ClimaPro ainda não emite NFS-e. Emita a nota no portal da sua prefeitura ou com o seu
+                  contador e registre o número aqui, na tela de Notas Fiscais. Os dados acima servem para o
+                  seu controle e para preencher os relatórios.
                 </div>
-
-                {empresa?.plano === 'avancado' && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="emissao_automatica"
-                        checked={formData.emissao_automatica}
-                        onCheckedChange={(checked) => setFormData({
-                          ...formData, 
-                          emissao_automatica: checked
-                        })}
-                      />
-                      <div>
-                        <label
-                          htmlFor="emissao_automatica"
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          Ativar Emissão Automática
-                        </label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          As notas fiscais serão emitidas automaticamente quando um serviço for finalizado e pago.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
