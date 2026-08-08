@@ -44,6 +44,15 @@ export default function OrcamentosPage() {
     enabled: !!user,
   });
 
+  const { data: empresa } = useQuery({
+    queryKey: ['empresa', user?.empresa_id],
+    queryFn: async () => {
+      const empresas = await base44.entities.Empresa.list();
+      return empresas.find((e) => e.id === user.empresa_id) || null;
+    },
+    enabled: !!user?.empresa_id,
+  });
+
   const invalidar = () => queryClient.invalidateQueries({ queryKey: ['orcamentos'] });
 
   const createMutation = useMutation({
@@ -188,6 +197,7 @@ export default function OrcamentosPage() {
         <OrcamentoForm
           orcamento={editando}
           clientes={clientes}
+          empresaNome={empresa?.nome}
           onSubmit={handleSubmit}
           onCancel={() => { setShowForm(false); setEditando(null); }}
           isLoading={createMutation.isPending || updateMutation.isPending}
