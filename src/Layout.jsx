@@ -41,6 +41,7 @@ import CompatibilityCheck from "@/components/CompatibilityCheck";
 import BootDiagnostics from "@/components/BootDiagnostics";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import StatusConexao from "@/components/ui/status-conexao";
+import AvisoPagamento from "@/components/ui/aviso-pagamento";
 
 const navigationItems = [
   {
@@ -466,6 +467,7 @@ export default function Layout({ children, currentPageName }) {
               </Sidebar>
 
               <main className="flex-1 flex flex-col overflow-hidden">
+                <AvisoPagamento />
                 <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
                   <SidebarTrigger className="h-11 w-11 rounded-lg hover:bg-gray-100" aria-label="Abrir menu principal">
                     <Menu className="w-6 h-6" />
