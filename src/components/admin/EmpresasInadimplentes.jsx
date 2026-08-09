@@ -5,14 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, MessageSquare, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { PLANOS } from "@/lib/planos";
 
 export default function EmpresasInadimplentes({ empresas, onEnviarLembrete, onConfirmarPagamento }) {
   if (empresas.length === 0) return null;
 
-  const precos = {
-    intermediario: 59.90,
-    avancado: 99.90
-  };
+  const precos = Object.fromEntries(PLANOS.map((plano) => [plano.id, plano.valor]));
 
   return (
     <Card className="shadow-lg border-2 border-red-200 bg-red-50 mb-8">

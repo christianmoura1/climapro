@@ -2,7 +2,7 @@
 // IMPORTANTE: no dashboard do Supabase, desative "Enforce JWT" para esta
 // function — o Stripe chama sem token; a segurança vem da assinatura HMAC.
 import { supabaseAdmin } from '../_shared/clients.ts';
-import { stripeGet, planoDoPrice, LIMITES_POR_PLANO, verificarAssinaturaWebhook, limparSecret } from '../_shared/stripe.ts';
+import { stripeGet, planoDoPrice, LIMITES_POR_PLANO, MODULOS_POR_PLANO, verificarAssinaturaWebhook, limparSecret } from '../_shared/stripe.ts';
 
 const WEBHOOK_SECRET = limparSecret(Deno.env.get('STRIPE_WEBHOOK_SECRET'));
 
@@ -19,11 +19,19 @@ function dataVencimento(periodEndUnix: number | null | undefined): string | null
   return new Date(periodEndUnix * 1000).toISOString().slice(0, 10);
 }
 
+// Aplica plano, limites numéricos E módulos. Antes só os limites eram
+// gravados: quem assinava um plano pago continuava com modulos_ativos no
+// default da tabela, ou seja, pagava e não recebia recurso nenhum.
 async function aplicarPlano(empresaId: string, plano: string, extra: Record<string, unknown> = {}) {
   const limites = LIMITES_POR_PLANO[plano] ?? {};
+  const modulos = MODULOS_POR_PLANO[plano];
+
+  const atualizacao: Record<string, unknown> = { plano, ...limites, ...extra };
+  if (modulos) atualizacao.modulos_ativos = modulos;
+
   const { error } = await supabaseAdmin
     .from('empresa')
-    .update({ plano, ...limites, ...extra })
+    .update(atualizacao)
     .eq('id', empresaId);
   if (error) throw error;
 }
