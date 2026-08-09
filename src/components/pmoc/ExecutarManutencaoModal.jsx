@@ -17,6 +17,7 @@ import {
   AlertCircle,
   CheckCircle,
   Download,
+  Save,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -44,6 +45,8 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   const [assinaturaTecnicoPreenchida, setAssinaturaTecnicoPreenchida] = useState(false);
   const [assinaturaClientePreenchida, setAssinaturaClientePreenchida] = useState(false);
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
+  // id do rascunho quando a execução foi retomada (ou salva ao menos uma vez)
+  const [rascunhoId, setRascunhoId] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -71,6 +74,22 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     enabled: !!cliente?.id
   });
 
+  // Execução já iniciada e não enviada. Uma rodada com vários equipamentos
+  // dificilmente fecha numa visita só, então o que o técnico marcou fica
+  // guardado como 'em_andamento' até ele enviar para aprovação.
+  const { data: rascunho, isLoading: carregandoRascunho } = useQuery({
+    queryKey: ['rascunho-manutencao', pmoc?.id],
+    queryFn: async () => {
+      const lista = await base44.entities.ManutencaoPMOC.filter(
+        { pmoc_id: pmoc.id, status: 'em_andamento' },
+        '-created_date'
+      );
+      return lista[0] || null;
+    },
+    enabled: !!pmoc?.id,
+    staleTime: 0,
+  });
+
   // Quais equipamentos têm o ciclo profundo vencendo nesta rodada (calculado
   // uma vez, na carga, pelo mês corrente do Plano Anual) — usado para montar
   // o checklist e, na aprovação, para saber de quais equipamentos avançar a
@@ -79,8 +98,17 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
 
   // Inicializar checklists quando equipamentos carregarem — o checklist de
   // cada equipamento segue o que o Plano Anual prevê para o MÊS ATUAL.
+  //
+  // Se houver rascunho, o que já foi marcado volta como estava. Equipamento
+  // que entrou no cadastro depois do rascunho não aparece lá, então recebe um
+  // checklist novo em folha — assim ninguém fica de fora da rodada.
   useEffect(() => {
+    if (carregandoRascunho) return;
     if (equipamentos.length > 0 && Object.keys(checklists).length === 0) {
+      const checklistsSalvos = rascunho?.checklists_por_equipamento || {};
+      const fotosSalvas = rascunho?.fotos_por_equipamento || {};
+      const observacoesSalvas = rascunho?.observacoes_por_equipamento || {};
+
       const checklistsIniciais = {};
       const fotosIniciais = {};
       const observacoesIniciais = {};
@@ -88,21 +116,25 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
 
       equipamentos.forEach(eq => {
         const { itensMensal, itensCicloProfundo, cicloProfundoDevido: devido } = checklistParaEquipamento(eq);
-        checklistsIniciais[eq.id] = [
-          ...itensMensal.map((item) => ({ ...item, tier: 'mensal' })),
-          ...itensCicloProfundo.map((item) => ({ ...item, tier: 'profundo' })),
-        ];
+        const salvo = checklistsSalvos[eq.id];
+        checklistsIniciais[eq.id] = Array.isArray(salvo) && salvo.length > 0
+          ? salvo
+          : [
+              ...itensMensal.map((item) => ({ ...item, tier: 'mensal' })),
+              ...itensCicloProfundo.map((item) => ({ ...item, tier: 'profundo' })),
+            ];
         devidoIniciais[eq.id] = devido;
-        fotosIniciais[eq.id] = [];
-        observacoesIniciais[eq.id] = "";
+        fotosIniciais[eq.id] = fotosSalvas[eq.id] || [];
+        observacoesIniciais[eq.id] = observacoesSalvas[eq.id] || "";
       });
 
       setChecklists(checklistsIniciais);
       setCicloProfundoDevido(devidoIniciais);
       setFotos(fotosIniciais);
       setObservacoesPorEquipamento(observacoesIniciais);
+      setRascunhoId(rascunho?.id || null);
     }
-  }, [equipamentos, checklists]);
+  }, [equipamentos, checklists, rascunho, carregandoRascunho]);
 
   const toggleChecklistItem = (equipamentoId, index) => {
     setChecklists(prev => ({
@@ -158,6 +190,20 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }));
   };
 
+  // Fechar sem salvar joga fora o que foi marcado — e agora que existe onde
+  // guardar, perder por um toque errado no X seria pior do que antes.
+  const temProgresso = () =>
+    Object.values(checklists).some((lista) => lista?.some((item) => item.concluido)) ||
+    Object.values(fotos).some((lista) => lista?.length > 0) ||
+    Object.values(observacoesPorEquipamento).some((obs) => obs?.trim());
+
+  const fecharComAviso = () => {
+    if (temProgresso() && !window.confirm('Sair sem salvar? O que você marcou nesta visita será perdido.\n\nUse "Salvar e continuar depois" para retomar de onde parou.')) {
+      return;
+    }
+    onClose();
+  };
+
   const validarFormulario = () => {
     // Verificar se todos os equipamentos têm checklist preenchido
     for (const equipamentoId of Object.keys(checklists)) {
@@ -196,14 +242,86 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }
   };
 
+  // Parte da execução que rascunho e envio final têm em comum. As assinaturas,
+  // a data de execução e o GPS ficam de fora: são o fechamento com o cliente
+  // presente, e só fazem sentido no envio.
+  const montarDadosExecucao = () => ({
+    empresa_id: user.empresa_id,
+    pmoc_id: pmoc.id,
+    cliente_id: cliente.id,
+    tecnico_id: tecnico?.id || null,
+    equipamentos_ids: equipamentos.map((eq) => eq.id),
+    equipamentos_ciclo_profundo: equipamentos.filter((eq) => cicloProfundoDevido[eq.id]).map((eq) => eq.id),
+    data_programada: pmoc.data_execucao_programada,
+    checklists_por_equipamento: checklists,
+    fotos_por_equipamento: fotos,
+    observacoes_por_equipamento: observacoesPorEquipamento,
+    observacoes_tecnico: Object.entries(observacoesPorEquipamento)
+      .filter(([, obs]) => obs.trim())
+      .map(([eqId, obs]) => {
+        const eq = equipamentos.find(e => e.id === eqId);
+        return `${eq?.modelo || 'Equipamento'}: ${obs}`;
+      })
+      .join('\n\n'),
+    nome_responsavel_local: nomeTecnico,
+  });
+
+  // Salvar e continuar depois. Uma rodada com vários equipamentos raramente
+  // fecha numa visita só; sem isso, o técnico que parasse no meio perdia o
+  // checklist e as fotos e recomeçava do zero no dia seguinte.
+  const salvarRascunhoMutation = useMutation({
+    mutationFn: async () => {
+      const dados = montarDadosExecucao();
+
+      if (rascunhoId) {
+        await base44.entities.ManutencaoPMOC.update(rascunhoId, dados);
+        return rascunhoId;
+      }
+
+      const criado = await base44.entities.ManutencaoPMOC.create({
+        ...dados,
+        status: 'em_andamento',
+      });
+
+      // O PMOC sai de 'agendado' para 'em_execucao' na primeira gravação: quem
+      // olha a lista precisa ver que a visita começou e não terminou.
+      if (pmoc.status !== 'em_execucao') {
+        await base44.entities.PMOC.update(pmoc.id, { status: 'em_execucao' });
+      }
+
+      return criado.id;
+    },
+    onSuccess: (id) => {
+      setRascunhoId(id);
+      queryClient.invalidateQueries(['rascunho-manutencao', pmoc.id]);
+      queryClient.invalidateQueries(['meus-pmocs']);
+      queryClient.invalidateQueries(['pmocs']);
+      toast({ description: '💾 Execução salva. Você pode continuar depois de onde parou.' });
+    },
+    onError: (error) => {
+      console.error('Erro ao salvar rascunho:', error);
+      toast({
+        description: '❌ Não foi possível salvar. Verifique a conexão e tente de novo antes de fechar.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const finalizarManutencaoMutation = useMutation({
     mutationFn: async (data) => {
-      // 1. Criar registro de manutenção com status "aguardando_aprovacao_empresa"
-      const manutencao = await base44.entities.ManutencaoPMOC.create({
-        ...data,
-        status: 'aguardando_aprovacao_empresa'
-      });
-      
+      // 1. Registro de manutenção "aguardando_aprovacao_empresa". Se a execução
+      //    veio de um rascunho, ele vira o registro final — criar um novo
+      //    deixaria a rodada duplicada no caderno de manutenção.
+      const manutencao = rascunhoId
+        ? await base44.entities.ManutencaoPMOC.update(rascunhoId, {
+            ...data,
+            status: 'aguardando_aprovacao_empresa'
+          })
+        : await base44.entities.ManutencaoPMOC.create({
+            ...data,
+            status: 'aguardando_aprovacao_empresa'
+          });
+
       // 2. Atualizar status do PMOC para "aguardando_aprovacao_empresa"
       await base44.entities.PMOC.update(pmoc.id, {
         status: 'aguardando_aprovacao_empresa'
@@ -289,26 +407,10 @@ ClimaPro`
     const assinaturaClienteBase64 = getCanvasDataURL(sigCanvasCliente);
 
     const dadosManutencao = {
-      empresa_id: user.empresa_id,
-      pmoc_id: pmoc.id,
-      cliente_id: cliente.id,
-      tecnico_id: tecnico?.id || null,
-      equipamentos_ids: equipamentos.map((eq) => eq.id),
-      equipamentos_ciclo_profundo: equipamentos.filter((eq) => cicloProfundoDevido[eq.id]).map((eq) => eq.id),
-      data_programada: pmoc.data_execucao_programada,
+      ...montarDadosExecucao(),
       data_execucao: new Date().toISOString(),
-      checklists_por_equipamento: checklists,
-      fotos_por_equipamento: fotos,
-      observacoes_tecnico: Object.entries(observacoesPorEquipamento)
-        .filter(([_, obs]) => obs.trim())
-        .map(([eqId, obs]) => {
-          const eq = equipamentos.find(e => e.id === eqId);
-          return `${eq?.modelo || 'Equipamento'}: ${obs}`;
-        })
-        .join('\n\n'),
       assinatura_tecnico: assinaturaTecnicoBase64,
       assinatura_cliente: assinaturaClienteBase64,
-      nome_responsavel_local: nomeTecnico,
       nome_cliente_confirmacao: nomeCliente,
       latitude,
       longitude,
@@ -553,7 +655,7 @@ ClimaPro`
                 <Download className="w-4 h-4 mr-2" />
                 Prévia PDF
               </Button>
-              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Fechar execução do PMOC">
+              <Button variant="ghost" size="icon" onClick={fecharComAviso} aria-label="Fechar execução do PMOC">
                 <X className="w-4 h-4" />
               </Button>
             </div>
@@ -561,6 +663,18 @@ ClimaPro`
         </CardHeader>
 
         <CardContent className="space-y-6 p-3 sm:p-6">
+          {rascunho && (
+            <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-950" role="status">
+              <p className="text-sm font-semibold">Execução retomada</p>
+              <p className="mt-1 text-sm">
+                {(rascunho.updated_at || rascunho.created_at)
+                  ? `O que você marcou em ${format(new Date(rascunho.updated_at || rascunho.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })} continua aqui.`
+                  : 'O que você já tinha marcado continua aqui.'}
+                {' '}Termine o que falta e envie para aprovação.
+              </p>
+            </div>
+          )}
+
           {/* Informações Gerais */}
           <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
             <CardContent className="p-4">
@@ -898,10 +1012,28 @@ ClimaPro`
           <div className="sticky bottom-0 z-10 -mx-3 flex flex-col-reverse gap-2 border-t bg-background/95 px-3 py-3 backdrop-blur sm:-mx-6 sm:flex-row sm:gap-3 sm:px-6">
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={fecharComAviso}
               className="flex-1"
             >
               Cancelar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => salvarRascunhoMutation.mutate()}
+              disabled={salvarRascunhoMutation.isPending || equipamentos.length === 0}
+              className="min-h-12 flex-1 whitespace-normal border-purple-300 text-purple-700 hover:bg-purple-50 hover:text-purple-800"
+            >
+              {salvarRascunhoMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar e continuar depois
+                </>
+              )}
             </Button>
             <Button
               onClick={handleFinalizar}
