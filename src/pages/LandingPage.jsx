@@ -27,6 +27,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import { PLANOS } from "@/lib/planos";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -130,44 +131,16 @@ export default function LandingPage() {
     }
   ];
 
-  const plans = [
-    {
-      name: "Free",
-      price: "Gratuito",
-      description: "Ideal para começar",
-      features: ["Até 5 chamados/mês", "1 técnico", "1 cliente", "Agenda básica", "Suporte por email"],
-      highlighted: false
-    },
-    {
-      name: "Essencial",
-      price: "R$ 49,90/mês",
-      description: "Para pequenas empresas",
-      features: ["Chamados ilimitados", "Até 2 técnicos", "Até 3 clientes", "Agenda avançada", "Suporte prioritário"],
-      highlighted: false
-    },
-    {
-      name: "Profissional",
-      price: "R$ 99,90/mês",
-      description: "Para empresas em crescimento",
-      features: ["Chamados ilimitados", "Até 5 técnicos", "Até 10 clientes", "PMOC completo", "Controle financeiro", "Relatórios avançados"],
-      highlighted: true
-    },
-    {
-      name: "Corporativo",
-      price: "R$ 149,90/mês",
-      description: "Solução completa multiempresa",
-      features: ["Chamados ilimitados", "Até 15 técnicos", "Até 30 clientes", "Até 3 empresas", "Controle financeiro", "Suporte da equipe ClimaPro"],
-      highlighted: false
-    },
-    {
-      name: "Enterprise",
-      price: "Sob consulta",
-      description: "Recursos ilimitados",
-      features: ["Recursos ilimitados", "Técnicos ilimitados", "Clientes ilimitados", "Empresas ilimitadas", "API completa", "Gestão multiempresa", "Suporte dedicado"],
-      highlighted: false,
-      premium: true
-    }
-  ];
+  // Vem de src/lib/planos.js, a mesma fonte da página de Planos do app. A
+  // landing tinha a tabela duplicada e ficou meses anunciando planos que não
+  // existiam mais no banco.
+  const plans = PLANOS.map((plano) => ({
+    name: plano.nome,
+    price: plano.preco,
+    description: plano.resumo,
+    features: plano.inclui,
+    highlighted: plano.destaque,
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -383,7 +356,7 @@ export default function LandingPage() {
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
-            className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5"
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
           >
             {plans.map((plan) => (
               <motion.div key={plan.name} variants={fadeUp}>
@@ -391,17 +364,12 @@ export default function LandingPage() {
                   className={`h-full rounded-2xl transition-all duration-300 hover:-translate-y-1 ${
                     plan.highlighted
                       ? "border-2 border-blue-600 shadow-xl scale-[1.03]"
-                      : plan.premium
-                      ? "border-2 border-purple-700 shadow-sm"
                       : "border border-border shadow-sm hover:shadow-md"
                   }`}
                 >
                   <CardContent className="p-6 flex flex-col h-full">
                     {plan.highlighted && (
                       <Badge className="mb-4 w-fit bg-blue-600 rounded-full">Mais Popular</Badge>
-                    )}
-                    {plan.premium && (
-                      <Badge className="mb-4 w-fit bg-purple-700 rounded-full">Premium</Badge>
                     )}
                     <h4 className="text-lg font-bold text-foreground mb-1">{plan.name}</h4>
                     <p className="text-muted-foreground mb-4 text-sm">{plan.description}</p>
@@ -417,10 +385,8 @@ export default function LandingPage() {
                       ))}
                     </ul>
                     <Button
-                      className={`w-full rounded-full ${
-                        plan.highlighted ? "" : plan.premium ? "bg-purple-700 hover:bg-purple-800" : ""
-                      }`}
-                      variant={plan.highlighted || plan.premium ? "default" : "outline"}
+                      className="w-full rounded-full"
+                      variant={plan.highlighted ? "default" : "outline"}
                       onClick={handleComecarAgora}
                       disabled={isLoading}
                     >
@@ -431,6 +397,19 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </motion.div>
+
+          <p className="text-center text-sm text-muted-foreground mt-10">
+            Cada técnico além do que o plano inclui custa R$ 29/mês. Precisa de mais de 10 técnicos?{" "}
+            <a
+              href="https://wa.me/5541992572743?text=Ol%C3%A1!%20Queria%20falar%20sobre%20um%20plano%20maior%20para%20a%20minha%20empresa."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 underline"
+            >
+              Fale com a gente
+            </a>
+            .
+          </p>
         </div>
       </section>
 
