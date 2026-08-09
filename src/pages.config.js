@@ -75,6 +75,7 @@ export const PAGES = {
     "NotasFiscais": lazyWithRetry(() => import('./pages/NotasFiscais')),
     "Orcamentos": lazyWithRetry(() => import('./pages/Orcamentos')),
     "Estoque": lazyWithRetry(() => import('./pages/Estoque')),
+    "Alertas": lazyWithRetry(() => import('./pages/Alertas')),
     "LegacyFallback": lazyWithRetry(() => import('./pages/LegacyFallback')),
     "ValorTecnicos": lazyWithRetry(() => import('./pages/ValorTecnicos')),
     "Agenda": lazyWithRetry(() => import('./pages/Agenda')),

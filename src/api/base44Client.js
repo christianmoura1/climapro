@@ -7,6 +7,7 @@ import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 
 const ENTITY_TABLE_MAP = {
   AgendaEvento: 'agenda_evento',
+  Alerta: 'alerta',
   Chamado: 'chamado',
   Cliente: 'cliente',
   ConfiguracaoFiscal: 'configuracao_fiscal',
