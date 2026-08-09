@@ -20,8 +20,8 @@ const STATUS_CHAMADO = {
   cancelado: { color: "bg-muted text-foreground", label: "Cancelado" },
 };
 
-export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onCancel }) {
-  const [currentChamado, setCurrentChamado] = useState(chamado || {
+export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onCancel, tecnicoFixo = null }) {
+  const [currentChamado, setCurrentChamado] = useState({
     titulo: "",
     descricao: "",
     local: "",
@@ -35,7 +35,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     videos_finalizacao: [],
     data_agendamento: "",
     nome_cliente_confirmacao: "",
-    observacoes_tecnico: ""
+    observacoes_tecnico: "",
+    ...chamado
   });
 
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -600,18 +601,22 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
 
             <div className="space-y-2">
               <Label>Técnico Responsável</Label>
-              <select
-                value={currentChamado.tecnico_id}
-                onChange={(e) => setCurrentChamado({...currentChamado, tecnico_id: e.target.value})}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="">Selecione o técnico</option>
-                {tecnicos.filter(t => t.status === 'ativo' && ['Fred Santana', 'Danyel Farias', 'Warner', 'ALEX MOURA'].some(nome => t.nome.includes(nome))).map((tecnico) => (
-                  <option key={tecnico.id} value={tecnico.id}>
-                    {tecnico.nome}
-                  </option>
-                ))}
-              </select>
+              {tecnicoFixo ? (
+                <div className="flex h-10 items-center rounded-md border border-input bg-muted px-3 text-sm font-medium text-foreground">
+                  {tecnicoFixo.nome}
+                </div>
+              ) : (
+                <select
+                  value={currentChamado.tecnico_id}
+                  onChange={(e) => setCurrentChamado({...currentChamado, tecnico_id: e.target.value})}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Selecione o técnico</option>
+                  {tecnicos.filter(t => t.status === 'ativo').map((tecnico) => (
+                    <option key={tecnico.id} value={tecnico.id}>{tecnico.nome}</option>
+                  ))}
+                </select>
+              )}
             </div>
           </div>
 
