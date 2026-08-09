@@ -13,10 +13,7 @@ import {
   AlertCircle,
   Snowflake,
   Lock,
-  Cpu,
-  MapPin,
-  ChevronDown,
-  ChevronUp
+  FileText
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link import
 import { format } from "date-fns";
@@ -25,7 +22,10 @@ import { ptBR } from "date-fns/locale";
 import ChamadoClienteForm from "../components/cliente/ChamadoClienteForm";
 import KanbanChamados from "../components/chamados/KanbanChamados"; // Added import
 import VisualizarChamadoCliente from "../components/cliente/VisualizarChamadoCliente";
-import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente"; // New import
+import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipamentoCliente";
+import OrcamentosClientePortal from "../components/cliente/OrcamentosClientePortal";
+import EquipamentosClientePortal from "../components/cliente/EquipamentosClientePortal";
+import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 
@@ -38,7 +38,7 @@ export default function ClienteDashboard() {
   const [visualizacao, setVisualizacao] = useState('kanban'); // Added state for view type
   const [visualizandoChamado, setVisualizandoChamado] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
-  const [estabelecimentoAberto, setEstabelecimentoAberto] = useState(null);
+  const [qrEquipamento, setQrEquipamento] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -128,17 +128,23 @@ export default function ClienteDashboard() {
     enabled: !!cliente
   });
 
-  // Buscar chamados do equipamento selecionado
-  const { data: chamadosEquipamento = [] } = useQuery({
-    queryKey: ['chamados-equipamento', visualizandoEquipamento?.id],
-    queryFn: async () => {
-      if (!visualizandoEquipamento) return [];
-      return base44.entities.Chamado.filter({
-        equipamento_id: visualizandoEquipamento.id
-      }, '-data_finalizacao');
-    },
-    enabled: !!visualizandoEquipamento
+  const { data: orcamentos = [], isLoading: orcamentosLoading } = useQuery({
+    queryKey: ['orcamentos-cliente', cliente?.id],
+    queryFn: () => base44.entities.Orcamento.filter({ cliente_id: cliente.id }, '-created_date'),
+    enabled: !!cliente
   });
+
+  const { data: manutencoes = [] } = useQuery({
+    queryKey: ['manutencoes-cliente', cliente?.id],
+    queryFn: () => base44.entities.ManutencaoPMOC.filter({ cliente_id: cliente.id }, '-data_execucao'),
+    enabled: !!cliente
+  });
+
+  const orcamentosVisiveis = orcamentos.filter((item) => !['rascunho', 'cancelado'].includes(item.status));
+  // Inclui chamados antigos com equipamento_id e rodadas com equipamentos_ids.
+  const chamadosEquipamento = visualizandoEquipamento
+    ? meusChamados.filter((item) => item.equipamento_id === visualizandoEquipamento.id || item.equipamentos_ids?.includes(visualizandoEquipamento.id))
+    : [];
 
   // Buscar empresa
   const { data: empresa } = useQuery({
@@ -280,6 +286,7 @@ ${mensagem}
         chamados={chamadosEquipamento}
         tecnicos={tecnicos}
         empresa={empresa}
+        manutencoes={manutencoes.filter((item) => item.equipamentos_ids?.includes(visualizandoEquipamento.id))}
         onVoltar={() => setVisualizandoEquipamento(null)}
       />
     );
@@ -300,7 +307,7 @@ ${mensagem}
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                 <Snowflake className="w-6 h-6 text-white" />
@@ -312,7 +319,7 @@ ${mensagem}
                 <p className="text-sm text-muted-foreground mt-1">Portal do Cliente</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <Link to="/alterar-senha">
                 <Button variant="outline">
                   <Lock className="w-4 h-4 mr-2" />
@@ -372,7 +379,7 @@ ${mensagem}
         {/* Botão Abrir Chamado */}
         <Card className="shadow-lg border-none mb-8">
           <CardHeader className="border-b">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Abrir Novo Chamado</CardTitle>
               <Button
                 onClick={() => setShowChamadoForm(!showChamadoForm)}
@@ -475,193 +482,33 @@ ${mensagem}
           </CardContent>
         </Card>
 
-        {/* Meus Estabelecimentos */}
-        {(() => {
-          const estabelecimentos = cliente.estabelecimentos || [];
-          // Equipamentos sem estabelecimento vinculado
-          const equipSemEstabelecimento = equipamentos.filter(e => !e.estabelecimento_nome);
-          // Todos os estabelecimentos para mostrar (incluindo os que têm equipamentos mesmo sem estar cadastrados)
-          const nomesEstabelecimentosEquip = [...new Set(equipamentos.filter(e => e.estabelecimento_nome).map(e => e.estabelecimento_nome))];
-          const todoEstabelecimentos = [
-            ...estabelecimentos,
-            ...nomesEstabelecimentosEquip.filter(nome => !estabelecimentos.find(e => e.nome === nome)).map(nome => ({ nome, endereco: '' }))
-          ];
+        {/* Orçamentos enviados pela empresa */}
+        <Card id="orcamentos" className="mb-8 border-none shadow-lg scroll-mt-6">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              Meus Orçamentos ({orcamentosVisiveis.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <OrcamentosClientePortal orcamentos={orcamentosVisiveis} isLoading={orcamentosLoading} />
+          </CardContent>
+        </Card>
 
-          if (todoEstabelecimentos.length === 0 && equipamentos.length === 0) return null;
-
-          return (
-            <Card className="shadow-lg border-none mb-8">
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-blue-600" />
-                  Meus Estabelecimentos ({todoEstabelecimentos.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {todoEstabelecimentos.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">Nenhum estabelecimento cadastrado</div>
-                ) : (
-                  <div className="divide-y">
-                    {todoEstabelecimentos.map((est, idx) => {
-                      const equipsEst = equipamentos.filter(e => e.estabelecimento_nome === est.nome);
-                      const chamadosEst = meusChamados.filter(c => {
-                        // Se o estabelecimento tem endereço, filtrar chamados pelo mesmo endereço
-                        if (est.endereco && est.endereco.trim() && c.local && c.local.trim()) {
-                          const enderecoBase = est.endereco.toLowerCase().split(',')[0].trim();
-                          const localBase = c.local.toLowerCase().split(',')[0].trim();
-                          return localBase.includes(enderecoBase) || enderecoBase.includes(localBase);
-                        }
-                        // Sem endereço no estabelecimento: filtrar por equipamento
-                        return equipsEst.some(e => e.id === c.equipamento_id || c.equipamentos_ids?.includes(e.id));
-                      });
-                      const isOpen = estabelecimentoAberto === est.nome;
-
-                      return (
-                        <div key={idx}>
-                          <button
-                            type="button"
-                            className="w-full flex items-center justify-between p-4 hover:bg-muted text-left"
-                            onClick={() => setEstabelecimentoAberto(isOpen ? null : est.nome)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <MapPin className="w-5 h-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-foreground">{est.nome}</p>
-                                {est.endereco && <p className="text-sm text-muted-foreground">{est.endereco}</p>}
-                                <p className="text-xs text-muted-foreground">{equipsEst.length} equipamento(s) · {chamadosEst.length} chamado(s)</p>
-                              </div>
-                            </div>
-                            {isOpen ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
-                          </button>
-
-                          {isOpen && (
-                            <div className="bg-muted px-4 pb-4">
-                              {/* Equipamentos do estabelecimento */}
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-3 mb-2">Equipamentos</p>
-                              {equipsEst.length === 0 ? (
-                                <p className="text-sm text-muted-foreground italic mb-3">Nenhum equipamento vinculado a este estabelecimento.</p>
-                              ) : (
-                                <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                                  {equipsEst.map((equip) => (
-                                    <div
-                                      key={equip.id}
-                                      className="bg-white rounded-lg border p-3 flex items-center gap-3 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all"
-                                      onClick={() => handleVisualizarEquipamento(equip)}
-                                    >
-                                      {equip.foto_url ? (
-                                        <img src={equip.foto_url} alt={equip.modelo} className="w-12 h-12 object-cover rounded border" />
-                                      ) : (
-                                        <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center shrink-0">
-                                          <Cpu className="w-6 h-6 text-blue-600" />
-                                        </div>
-                                      )}
-                                      <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-sm text-foreground truncate">{equip.marca} {equip.modelo}</p>
-                                        <div className="flex gap-1 mt-1 flex-wrap">
-                                          <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
-                                          {equip.capacidade && <Badge variant="outline" className="text-xs">{equip.capacidade}</Badge>}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Chamados do estabelecimento */}
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Histórico de Chamados</p>
-                              {chamadosEst.length === 0 ? (
-                                <p className="text-sm text-muted-foreground italic">Nenhum chamado registrado para este estabelecimento.</p>
-                              ) : (
-                                <div className="space-y-2">
-                                  {chamadosEst.slice(0, 5).map((c) => {
-                                    const statusCfg = {
-                                      pendente: "bg-orange-100 text-orange-800",
-                                      em_andamento: "bg-blue-100 text-blue-800",
-                                      finalizado: "bg-green-100 text-green-800",
-                                      cancelado: "bg-muted text-foreground"
-                                    };
-                                    const isFinalizado = c.status === 'finalizado';
-                                    return (
-                                      <div
-                                        key={c.id}
-                                        className={`bg-white rounded border p-3 flex items-start justify-between gap-2 text-sm ${isFinalizado ? 'cursor-pointer hover:bg-blue-50 transition-colors' : ''}`}
-                                        onClick={() => isFinalizado && handleVisualizarChamado(c)}
-                                      >
-                                        <div>
-                                          <p className="font-medium text-foreground">{c.numero_chamado} — {c.titulo}</p>
-                                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                            <Clock className="w-3 h-3" />
-                                            {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : 'N/A'}
-                                          </p>
-                                        </div>
-                                        <Badge className={statusCfg[c.status] || "bg-muted text-foreground"}>
-                                          {c.status?.replace('_', ' ')}
-                                        </Badge>
-                                      </div>
-                                    );
-                                  })}
-                                  {chamadosEst.length > 5 && (
-                                    <p className="text-xs text-muted-foreground text-center">+{chamadosEst.length - 5} chamado(s) mais antigos</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    {/* Equipamentos sem estabelecimento */}
-                    {equipSemEstabelecimento.length > 0 && (
-                      <div>
-                        <button
-                          type="button"
-                          className="w-full flex items-center justify-between p-4 hover:bg-muted text-left"
-                          onClick={() => setEstabelecimentoAberto(estabelecimentoAberto === '__sem_local__' ? null : '__sem_local__')}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                              <Cpu className="w-5 h-5 text-muted-foreground" />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-foreground">Sem local definido</p>
-                              <p className="text-xs text-muted-foreground">{equipSemEstabelecimento.length} equipamento(s)</p>
-                            </div>
-                          </div>
-                          {estabelecimentoAberto === '__sem_local__' ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
-                        </button>
-                        {estabelecimentoAberto === '__sem_local__' && (
-                          <div className="bg-muted px-4 pb-4 grid sm:grid-cols-2 gap-3 pt-2">
-                            {equipSemEstabelecimento.map((equip) => (
-                              <div
-                                key={equip.id}
-                                className="bg-white rounded-lg border p-3 flex items-center gap-3 cursor-pointer hover:border-blue-400 hover:shadow-sm transition-all"
-                                onClick={() => handleVisualizarEquipamento(equip)}
-                              >
-                                <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center shrink-0">
-                                  <Cpu className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-sm text-foreground truncate">{equip.marca} {equip.modelo}</p>
-                                  <div className="flex gap-1 mt-1">
-                                    <Badge variant="outline" className="text-xs">{equip.tipo?.replace('_', ' ')}</Badge>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })()}
-
+        {/* Cadastro, histórico e QR Code dos ativos */}
+        <Card id="equipamentos" className="mb-8 border-none shadow-lg scroll-mt-6">
+          <CardHeader className="border-b">
+            <CardTitle>Meus Equipamentos ({equipamentos.length})</CardTitle>
+            <p className="text-sm text-muted-foreground">Consulte os dados, o histórico de manutenção e o QR Code de cada ativo.</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            <EquipamentosClientePortal
+              equipamentos={equipamentos}
+              onHistorico={handleVisualizarEquipamento}
+              onQrCode={setQrEquipamento}
+            />
+          </CardContent>
+        </Card>
         {/* Meus PMOCs */}
         <Card className="shadow-lg border-none">
           <CardHeader className="border-b">
@@ -699,6 +546,12 @@ ${mensagem}
           </CardContent>
         </Card>
       </div>
-    </div>
+    {qrEquipamento && (
+      <QRCodeEquipamentoModal
+        equipamento={qrEquipamento}
+        cliente={cliente}
+        onClose={() => setQrEquipamento(null)}
+      />
+    )}    </div>
   );
 }

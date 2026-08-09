@@ -22,6 +22,7 @@ export default function HistoricoEquipamentoCliente({
   chamados, 
   tecnicos,
   empresa,
+  manutencoes = [],
   onVoltar
 }) {
   const [visualizandoChamado, setVisualizandoChamado] = useState(null);
@@ -237,6 +238,40 @@ export default function HistoricoEquipamentoCliente({
           </CardContent>
         </Card>
 
+        {/* Histórico de PMOC */}
+        <Card className="mb-8 border-none shadow-lg">
+          <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-blue-50">
+            <CardTitle className="flex items-center gap-2">
+              🧰 Histórico de Manutenções PMOC ({manutencoes.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {manutencoes.length === 0 ? (
+              <p className="p-8 text-center text-muted-foreground">Nenhuma manutenção PMOC registrada para este equipamento.</p>
+            ) : (
+              <div className="divide-y">
+                {manutencoes.map((item) => (
+                  <div key={item.id} className="p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          Manutenção de {format(new Date(item.data_execucao || `${item.data_programada}T12:00:00`), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                        {item.observacoes_tecnico && <p className="mt-1 text-sm text-muted-foreground">{item.observacoes_tecnico}</p>}
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Técnico: {tecnicos?.find((tecnico) => tecnico.id === item.tecnico_id)?.nome || "Não informado"}
+                        </p>
+                      </div>
+                      <Badge className={item.status === "concluida" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}>
+                        {item.status?.replaceAll("_", " ")}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         {/* Histórico de Chamados */}
         <Card className="shadow-lg border-none">
           <CardHeader className="border-b bg-gradient-to-r from-green-50 to-blue-50">
