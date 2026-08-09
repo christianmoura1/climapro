@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
+  CalendarRange,
+  BookOpen,
   LogOut,
   Plus,
   Clock,
@@ -26,6 +28,8 @@ import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipame
 import OrcamentosClientePortal from "../components/cliente/OrcamentosClientePortal";
 import EquipamentosClientePortal from "../components/cliente/EquipamentosClientePortal";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
+import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
+import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
@@ -40,6 +44,8 @@ export default function ClienteDashboard() {
   const [visualizandoChamado, setVisualizandoChamado] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [qrEquipamento, setQrEquipamento] = useState(null);
+  const [verPlanoAnual, setVerPlanoAnual] = useState(false);
+  const [verCaderno, setVerCaderno] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -536,7 +542,21 @@ ${mensagem}
         {/* Meus PMOCs */}
         <Card className="shadow-lg border-none">
           <CardHeader className="border-b">
-            <CardTitle>Programação de Manutenções (PMOC)</CardTitle>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>Programação de Manutenções (PMOC)</CardTitle>
+              {equipamentosNoPlano.length > 0 && (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button variant="outline" className="w-full whitespace-normal" onClick={() => setVerPlanoAnual(true)}>
+                    <CalendarRange className="w-4 h-4 mr-2" />
+                    Abrir plano anual
+                  </Button>
+                  <Button variant="outline" className="w-full whitespace-normal" onClick={() => setVerCaderno(true)}>
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Abrir caderno
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {equipamentosNoPlano.length === 0 ? (
@@ -593,6 +613,23 @@ ${mensagem}
           </CardContent>
         </Card>
       </div>
+    {verPlanoAnual && (
+      <PlanoAnualPMOC
+        cliente={cliente}
+        equipamentos={equipamentosNoPlano}
+        empresaId={empresaId}
+        pmocId={meusPMOCs[0]?.id || null}
+        somenteLeitura
+        onClose={() => setVerPlanoAnual(false)}
+      />
+    )}
+    {verCaderno && (
+      <CadernoManutencaoPDF
+        cliente={cliente}
+        equipamentos={equipamentosNoPlano}
+        onClose={() => setVerCaderno(false)}
+      />
+    )}
     {qrEquipamento && (
       <QRCodeEquipamentoModal
         equipamento={qrEquipamento}
