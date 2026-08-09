@@ -5,40 +5,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calendar, AlertCircle, User, Wrench, List, CalendarDays, Filter, ChevronLeft, ChevronRight, Cpu } from "lucide-react";
+import { Calendar, AlertCircle, CheckCircle, User, Wrench, List, CalendarDays, Filter, ChevronLeft, ChevronRight, Cpu } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isSameMonth, isWithinInterval, startOfWeek as getStartOfWeek, endOfWeek as getEndOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 
 import ExecutarManutencaoModal from "../pmoc/ExecutarManutencaoModal";
+import VisualizarPMOCCliente from "../pmoc/VisualizarPMOCCliente";
 import { montarProgramacaoPMOC } from "@/lib/pmocDataVisita";
 
+// Situação da rodada do mês, vinda do registro da execução. Os nomes são os do
+// enum de manutencao_pmoc, não os do cabeçalho `pmoc`.
 const LABEL_STATUS = {
   aguardando_execucao: 'Aguardando Execução',
-  em_execucao: 'Em Execução',
-  aguardando_aprovacao_empresa: 'Aguardando Aprovação',
-  aguardando_validacao_cliente: 'Aguardando Cliente',
-  reaberto: 'Reaberto - Necessita Correção',
-  concluido: 'Concluído',
-  cancelado: 'Cancelado',
-  pausado: 'Pausado',
+  em_andamento: 'Execução salva — falta enviar',
+  aguardando_aprovacao_empresa: 'Executado — aguardando aprovação',
+  aguardando_validacao_cliente: 'Aguardando o cliente',
+  reaberta: 'Reaberta — precisa de correção',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada',
 };
 
 const COR_STATUS = {
   aguardando_execucao: 'bg-blue-100 text-blue-800',
-  em_execucao: 'bg-amber-100 text-amber-800',
+  em_andamento: 'bg-amber-100 text-amber-800',
   aguardando_aprovacao_empresa: 'bg-orange-100 text-orange-800',
   aguardando_validacao_cliente: 'bg-yellow-100 text-yellow-800',
-  reaberto: 'bg-red-100 text-red-800',
-  concluido: 'bg-emerald-100 text-emerald-800',
-  pausado: 'bg-muted text-foreground',
+  reaberta: 'bg-red-100 text-red-800',
+  concluida: 'bg-emerald-100 text-emerald-800',
+  cancelada: 'bg-muted text-foreground',
 };
 
 const COR_CALENDARIO = {
   aguardando_execucao: 'bg-yellow-100 border-yellow-400 text-yellow-800',
-  em_execucao: 'bg-purple-100 border-purple-400 text-purple-800',
-  reaberto: 'bg-red-100 border-red-400 text-red-800',
-  concluido: 'bg-green-100 border-green-400 text-green-800',
+  em_andamento: 'bg-purple-100 border-purple-400 text-purple-800',
+  aguardando_aprovacao_empresa: 'bg-orange-100 border-orange-400 text-orange-800',
+  reaberta: 'bg-red-100 border-red-400 text-red-800',
+  concluida: 'bg-green-100 border-green-400 text-green-800',
 };
 
 // Agenda de PMOC do técnico.
@@ -52,6 +55,7 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
   const queryClient = useQueryClient();
   const [pmocSelecionado, setPmocSelecionado] = useState(null);
   const [abrindoRodada, setAbrindoRodada] = useState(null);
+  const [vendoExecucao, setVendoExecucao] = useState(null);
   const [visualizacao, setVisualizacao] = useState('lista');
   const [dataAtual, setDataAtual] = useState(new Date());
 
@@ -79,9 +83,19 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
     enabled: !!empresaId,
   });
 
-  const programacao = montarProgramacaoPMOC({ clientes, equipamentos, pmocs, agendamentos });
+  const { data: manutencoes = [] } = useQuery({
+    queryKey: ['manutencoes-empresa', empresaId],
+    queryFn: () => base44.entities.ManutencaoPMOC.filter({ empresa_id: empresaId }, '-data_execucao'),
+    enabled: !!empresaId,
+  });
 
-  const statusDe = (item) => item.pmoc?.status || 'aguardando_execucao';
+  // As execuções são a fonte da situação. O status do cabeçalho `pmoc` volta
+  // para 'aguardando_execucao' assim que a empresa aprova, para o ciclo
+  // seguinte — por isso uma rodada já entregue continuava aparecendo como
+  // "Aguardando Execução".
+  const programacao = montarProgramacaoPMOC({ clientes, equipamentos, pmocs, agendamentos, manutencoes });
+
+  const statusDe = (item) => item.situacao;
 
   // Enquanto ninguém atribui um responsável, a rodada é de quem chegar — some
   // só o que já está no nome de outro técnico.
@@ -96,9 +110,9 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
     if (filtros.status !== 'todos') {
       const status = statusDe(item);
       if (filtros.status === 'aguardando' && status !== 'aguardando_execucao') return false;
-      if (filtros.status === 'em_andamento' && status !== 'em_execucao') return false;
-      if (filtros.status === 'concluido' && status !== 'concluido') return false;
-      if (filtros.status === 'reaberto' && status !== 'reaberto') return false;
+      if (filtros.status === 'em_andamento' && status !== 'em_andamento') return false;
+      if (filtros.status === 'executado' && !['aguardando_aprovacao_empresa', 'aguardando_validacao_cliente', 'concluida'].includes(status)) return false;
+      if (filtros.status === 'reaberto' && status !== 'reaberta') return false;
     }
 
     const data = item.visita?.data;
@@ -261,7 +275,8 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
           <div className="divide-y">
             {filtrados.map((item) => {
               const status = statusDe(item);
-              const podeExecutar = status === 'aguardando_execucao' || status === 'em_execucao' || status === 'reaberto';
+              const podeExecutar = ['aguardando_execucao', 'em_andamento', 'reaberta'].includes(status);
+              const jaExecutada = item.execucaoDoMes || item.ultimaExecucao;
 
               return (
                 <div key={item.cliente.id} className="p-4 hover:bg-muted">
@@ -277,9 +292,8 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          {status === 'reaberto' ? 'Reaberto para correção' :
-                           item.visita
-                            ? `Próxima visita: ${format(item.visita.data, "dd/MM/yyyy", { locale: ptBR })}`
+                          {item.visita
+                            ? `Visita programada: ${format(item.visita.data, "dd/MM/yyyy", { locale: ptBR })}`
                             : 'Não agendado'}
                         </span>
                         {item.visita?.remarcada && (
@@ -305,10 +319,22 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
                         </p>
                       )}
 
-                      {status === 'reaberto' && item.pmoc?.motivo_reabertura && (
+                      {jaExecutada?.data_execucao && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                          <CheckCircle className="h-4 w-4 text-emerald-600" />
+                          <span className="text-muted-foreground">
+                            Última execução em {format(new Date(jaExecutada.data_execucao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                          </span>
+                          <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setVendoExecucao(jaExecutada)}>
+                            Ver o que foi feito
+                          </Button>
+                        </div>
+                      )}
+
+                      {status === 'reaberta' && jaExecutada?.motivo_reabertura && (
                         <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
                           <p className="text-sm text-red-800">
-                            <strong>⚠️ Motivo:</strong> {item.pmoc.motivo_reabertura}
+                            <strong>⚠️ Motivo:</strong> {jaExecutada.motivo_reabertura}
                           </p>
                         </div>
                       )}
@@ -318,12 +344,12 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
                       <Button
                         onClick={() => abrirExecucao(item)}
                         disabled={abrindoRodada === item.cliente.id}
-                        className={`shrink-0 ${status === 'reaberto' ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'}`}
+                        className={`shrink-0 ${status === 'reaberta' ? 'bg-red-600 hover:bg-red-700' : 'bg-purple-600 hover:bg-purple-700'}`}
                       >
                         <Wrench className="w-4 h-4 mr-2" />
                         {abrindoRodada === item.cliente.id ? 'Abrindo...' :
-                         status === 'reaberto' ? 'Corrigir PMOC' :
-                         status === 'em_execucao' ? 'Continuar execução' : 'Executar Manutenção'}
+                         status === 'reaberta' ? 'Corrigir PMOC' :
+                         status === 'em_andamento' ? 'Continuar execução' : 'Executar Manutenção'}
                       </Button>
                     )}
                   </div>
@@ -411,10 +437,10 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="todos">Todos</option>
-                <option value="aguardando">Aguardando Execução</option>
-                <option value="em_andamento">Em Execução</option>
+                <option value="aguardando">Aguardando execução</option>
+                <option value="em_andamento">Execução salva</option>
+                <option value="executado">Já executado</option>
                 <option value="reaberto">Reaberto</option>
-                <option value="concluido">Concluído</option>
               </select>
             </div>
           </div>
@@ -423,6 +449,16 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
 
       {visualizacao === 'lista' ? renderLista() : renderCalendario()}
 
+      {vendoExecucao && (
+        <VisualizarPMOCCliente
+          manutencao={vendoExecucao}
+          pmoc={pmocs.find((p) => p.id === vendoExecucao.pmoc_id) || null}
+          tecnico={null}
+          equipamentos={equipamentos.filter((eq) => vendoExecucao.equipamentos_ids?.includes(eq.id))}
+          onClose={() => setVendoExecucao(null)}
+        />
+      )}
+
       {pmocSelecionado && (
         <ExecutarManutencaoModal
           pmoc={pmocSelecionado.pmoc}
@@ -430,6 +466,7 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
           onClose={() => {
             setPmocSelecionado(null);
             queryClient.invalidateQueries(['pmocs-empresa']);
+            queryClient.invalidateQueries(['manutencoes-empresa']);
             queryClient.invalidateQueries(['equipamentos-pmoc-empresa']);
           }}
         />

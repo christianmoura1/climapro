@@ -29,6 +29,7 @@ import OrcamentosClientePortal from "../components/cliente/OrcamentosClientePort
 import EquipamentosClientePortal from "../components/cliente/EquipamentosClientePortal";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
 import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
+import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
 import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
@@ -46,6 +47,7 @@ export default function ClienteDashboard() {
   const [qrEquipamento, setQrEquipamento] = useState(null);
   const [verPlanoAnual, setVerPlanoAnual] = useState(false);
   const [verCaderno, setVerCaderno] = useState(false);
+  const [vendoExecucao, setVendoExecucao] = useState(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -311,6 +313,11 @@ ${mensagem}
   // linha só nasce quando a empresa executa a primeira rodada, e até lá o
   // cliente via "Nenhum PMOC programado" mesmo tendo equipamento no contrato.
   const equipamentosNoPlano = equipamentos.filter((eq) => eq.pmoc_ativo);
+  // Rodada ainda em aprovação interna não é do cliente: ele vê o que a empresa
+  // já liberou.
+  const manutencoesRealizadas = manutencoes.filter(
+    (m) => m.status === 'concluida' || m.status === 'aguardando_validacao_cliente'
+  );
   const indiceAgendamentos = indexarAgendamentos(agendamentosPMOC);
   const visitaAgendada = cliente ? proximaVisita(cliente, indiceAgendamentos) : null;
   const proximasVisitas = cliente
@@ -603,11 +610,38 @@ ${mensagem}
                   </ul>
                 </div>
 
-                {meusPMOCs.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Situação atual: {meusPMOCs[0].status?.replace(/_/g, ' ')}.
-                  </p>
-                )}
+                <div>
+                  <p className="mb-2 text-sm font-semibold text-foreground">Manutenções realizadas</p>
+                  {manutencoesRealizadas.length === 0 ? (
+                    <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+                      Nenhuma visita concluída ainda. Assim que a empresa finalizar a primeira, o
+                      relatório aparece aqui.
+                    </p>
+                  ) : (
+                    <ul className="divide-y rounded-lg border">
+                      {manutencoesRealizadas.map((item) => (
+                        <li key={item.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+                          <span className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-emerald-600" />
+                            <span className="text-foreground">
+                              {item.data_execucao
+                                ? format(new Date(item.data_execucao), "dd/MM/yyyy", { locale: ptBR })
+                                : 'Data não informada'}
+                            </span>
+                            {item.status === 'aguardando_validacao_cliente' && (
+                              <Badge variant="outline" className="border-amber-300 text-amber-700">
+                                aguardando sua validação
+                              </Badge>
+                            )}
+                          </span>
+                          <Button variant="outline" size="sm" onClick={() => setVendoExecucao(item)}>
+                            Ver o que foi feito
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
@@ -621,6 +655,15 @@ ${mensagem}
         pmocId={meusPMOCs[0]?.id || null}
         somenteLeitura
         onClose={() => setVerPlanoAnual(false)}
+      />
+    )}
+    {vendoExecucao && (
+      <VisualizarPMOCCliente
+        manutencao={vendoExecucao}
+        pmoc={meusPMOCs.find((p) => p.id === vendoExecucao.pmoc_id) || null}
+        tecnico={tecnicos.find((t) => t.id === vendoExecucao.tecnico_id) || null}
+        equipamentos={equipamentos.filter((eq) => vendoExecucao.equipamentos_ids?.includes(eq.id))}
+        onClose={() => setVendoExecucao(null)}
       />
     )}
     {verCaderno && (
