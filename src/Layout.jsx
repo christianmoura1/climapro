@@ -44,6 +44,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import StatusConexao from "@/components/ui/status-conexao";
 import AvisoPagamento from "@/components/ui/aviso-pagamento";
 import { useAlertas } from "@/hooks/useAlertas";
+import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 
 const navigationItems = [
   {
@@ -489,10 +490,13 @@ export default function Layout({ children, currentPageName }) {
 
               <main className="flex-1 flex flex-col overflow-hidden">
                 <AvisoPagamento />
-                <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur md:hidden">
-                  <SidebarTrigger className="h-11 w-11 rounded-lg hover:bg-gray-100" aria-label="Abrir menu principal">
+                <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur">
+                  <SidebarTrigger className="h-11 w-11 rounded-lg hover:bg-gray-100 md:hidden" aria-label="Abrir menu principal">
                     <Menu className="w-6 h-6" />
                   </SidebarTrigger>
+                  <div className="ml-auto">
+                    <SinoNotificacoes verTudoEm="Alertas" />
+                  </div>
                 </header>
 
                 <div className="flex-1 overflow-auto">

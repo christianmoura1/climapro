@@ -33,6 +33,7 @@ import VisualizarPMOCCliente from "../components/pmoc/VisualizarPMOCCliente";
 import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
+import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 import { toast } from "@/components/ui/use-toast";
 
 export default function ClienteDashboard() {
@@ -357,6 +358,8 @@ ${mensagem}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <SinoNotificacoes />
+
               <Link to="/alterar-senha">
                 <Button variant="outline">
                   <Lock className="w-4 h-4 mr-2" />
