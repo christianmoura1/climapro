@@ -20,7 +20,8 @@ import {
   Clock,
   Lock, // Added Lock icon for password change
   FileSignature,
-  Package
+  Package,
+  Bell
 } from "lucide-react";
 import {
   Sidebar,
@@ -42,6 +43,7 @@ import BootDiagnostics from "@/components/BootDiagnostics";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import StatusConexao from "@/components/ui/status-conexao";
 import AvisoPagamento from "@/components/ui/aviso-pagamento";
+import { useAlertas } from "@/hooks/useAlertas";
 
 const navigationItems = [
   {
@@ -117,6 +119,13 @@ const navigationItems = [
     modulo: "notas_fiscais"
   },
   {
+    title: "Alertas",
+    url: createPageUrl("Alertas"),
+    icon: Bell,
+    modulo: null, // Sempre visível
+    contador: 'alertas'
+  },
+  {
     title: "Planos",
     url: createPageUrl("Planos"),
     icon: FileText,
@@ -145,6 +154,8 @@ export default function Layout({ children, currentPageName }) {
   const [isAdminGlobal, setIsAdminGlobal] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [modulosAtivos, setModulosAtivos] = React.useState({});
+  const { naoLidos } = useAlertas();
+  const alertasNaoLidos = naoLidos.length;
 
   // Páginas que não precisam de autenticação
   const noAuthPages = ["LandingPage", "Welcome", "SetupInicial", "TecnicoDashboard", "ClienteDashboard", "InitialChoice", "AlterarSenha", "Login"];
@@ -417,7 +428,15 @@ export default function Layout({ children, currentPageName }) {
                               >
                                 <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
                                   <item.icon className="w-5 h-5" />
-                                  <span>{item.title}</span>
+                                  <span className="flex-1">{item.title}</span>
+                                  {item.contador === 'alertas' && alertasNaoLidos > 0 && (
+                                    <span
+                                      className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white"
+                                      aria-label={`${alertasNaoLidos} alerta(s) não lido(s)`}
+                                    >
+                                      {alertasNaoLidos > 9 ? '9+' : alertasNaoLidos}
+                                    </span>
+                                  )}
                                 </Link>
                               </SidebarMenuButton>
                             </SidebarMenuItem>
