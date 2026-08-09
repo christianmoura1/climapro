@@ -273,7 +273,9 @@ export default function Layout({ children, currentPageName }) {
   }, [user, isAdminGlobal, shouldLoadAuth]);
 
   const handleLogout = function() {
-    base44.auth.logout();
+    // Sem o destino, o adapter encerra a sessão no Supabase e não navega para
+    // lugar nenhum — a tela ficava parada como se nada tivesse acontecido.
+    base44.auth.logout('/Login');
   };
 
   // Páginas que não devem mostrar sidebar nem CompatibilityCheck
