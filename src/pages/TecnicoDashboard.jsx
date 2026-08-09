@@ -166,14 +166,15 @@ export default function TecnicoDashboard() {
       toast({ description: `Não foi possível cadastrar o equipamento: ${error.message}`, variant: "destructive" });
     },
   });
-  const { data: meusPMOCs = [] } = useQuery({
-    queryKey: ['meus-pmocs', tecnico?.id],
-    queryFn: () => base44.entities.PMOC.filter({
-      empresa_id: user.empresa_id,
-      tecnico_responsavel_id: tecnico.id
-    }),
-    enabled: !!tecnico && !!user?.empresa_id
+  // Clientes com equipamento no plano de manutenção. O contador antigo lia a
+  // tabela `pmoc` filtrando por tecnico_responsavel_id — campo que nenhuma tela
+  // preenche — e por isso marcava 0 mesmo com o plano cheio.
+  const { data: equipamentosPMOC = [] } = useQuery({
+    queryKey: ['equipamentos-pmoc-empresa', user?.empresa_id],
+    queryFn: () => base44.entities.Equipamento.filter({ empresa_id: user.empresa_id, pmoc_ativo: true }),
+    enabled: !!user?.empresa_id
   });
+  const clientesComPMOC = new Set(equipamentosPMOC.map((eq) => eq.cliente_id));
 
   const { data: orcamentosPendentes = [] } = useQuery({
     queryKey: ['orcamentos-pendentes', tecnico?.id],
@@ -416,7 +417,7 @@ export default function TecnicoDashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-purple-600">{meusPMOCs.length}</p>
+                <p className="text-3xl font-bold text-purple-600">{clientesComPMOC.size}</p>
                 <Calendar className="w-8 h-8 text-purple-500" />
               </div>
             </CardContent>
@@ -520,7 +521,7 @@ export default function TecnicoDashboard() {
         )}
 
         {abaSelecionada === 'pmocs' && (
-          <MeusPMOCs pmocs={meusPMOCs} clientes={clientes} empresaId={user?.empresa_id} />
+          <MeusPMOCs clientes={clientes} empresaId={user?.empresa_id} tecnicoId={tecnico?.id} />
         )}
 
         {abaSelecionada === 'financeiro' && (
