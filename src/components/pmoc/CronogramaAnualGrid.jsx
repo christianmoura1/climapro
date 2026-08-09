@@ -9,7 +9,7 @@ export const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ag
 // único rótulo com a periodicidade calculada automaticamente — as opções de
 // alteração só aparecem ao clicar nele (é um <select> estilizado como chip);
 // escolher um valor reposiciona o calendário do ano inteiro.
-export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento, visitas, onAlterarData }) {
+export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento, visitas, onAlterarData, somenteLeitura }) {
   const scrollRef = React.useRef(null);
   const [showScrollHint, setShowScrollHint] = React.useState(true);
 
@@ -75,6 +75,15 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
                 </td>
                 {cronograma.map((m, idx) => (
                   <td key={m.mes} className="p-1 text-center align-middle">
+                    {somenteLeitura ? (
+                      <div
+                        className={`flex h-11 w-full min-w-[80px] items-center justify-center rounded-md px-2 text-center text-xs font-semibold leading-tight ${
+                          m.cicloProfundo ? 'bg-purple-100 text-purple-800' : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {LABEL_PERIODICIDADE[m.periodicidade]}
+                      </div>
+                    ) : (
                     <select
                       value={m.periodicidade}
                       onChange={(e) => onAncorar(eq, idx, e.target.value)}
@@ -91,6 +100,7 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
                         <option key={p} value={p}>{LABEL_PERIODICIDADE[p]}</option>
                       ))}
                     </select>
+                    )}
                   </td>
                 ))}
               </tr>
@@ -102,7 +112,9 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
         {showScrollHint ? <div className="pointer-events-none absolute inset-y-0 right-0 w-10 rounded-r-lg bg-gradient-to-l from-indigo-200/70 to-transparent" aria-hidden="true" /> : null}
       </div>
       <p className="text-xs text-muted-foreground">
-        Ao trocar a periodicidade de um m&ecirc;s, o sistema usa esse m&ecirc;s como nova &acirc;ncora e recalcula o ano inteiro.
+        {somenteLeitura
+          ? 'Cada mês mostra o tipo de manutenção previsto.'
+          : 'Ao trocar a periodicidade de um mês, o sistema usa esse mês como nova âncora e recalcula o ano inteiro.'}
         {visitas ? ' O dia no cabeçalho é a data da visita; um asterisco marca o mês remarcado.' : ''}
       </p>
     </div>

@@ -20,7 +20,10 @@ import AgendarVisitaPMOC from "./AgendarVisitaPMOC";
 // periodicidade ou forçar/desmarcar o ciclo profundo de um mês específico
 // direto nesta tela, sem sair dela. Ao abrir, também sincroniza a Agenda com
 // as próximas 12 visitas — documento e agenda nascem juntos.
-export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose }) {
+// `somenteLeitura` é o modo do portal do cliente: ele precisa ver e imprimir o
+// plano do próprio contrato, mas não mexe na periodicidade nem sincroniza a
+// Agenda da empresa (o RLS recusaria as duas coisas, e o certo é nem oferecer).
+export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocId, onClose, somenteLeitura = false }) {
   const [gerando, setGerando] = useState(false);
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
   const [equipamentosState, setEquipamentosState] = useState(equipamentos);
@@ -77,9 +80,10 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   };
 
   useEffect(() => {
+    if (somenteLeitura) return;
     sincronizarAgenda();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cliente, empresaId, pmocId]);
+  }, [cliente, empresaId, pmocId, somenteLeitura]);
 
   // Escolher uma periodicidade num mês redefine a periodicidade-base do
   // equipamento com aquele mês como âncora — os outros 11 meses recalculam
@@ -227,12 +231,12 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         </CardHeader>
         <CardContent className="space-y-4 overflow-y-auto p-4 sm:p-6">
           <p className="text-sm text-muted-foreground">
-            Plano completo gerado automaticamente: mensal todo mês, trimestral a cada 3, semestral
-            a cada 6 e anual 1x/ano — cada mês já vem pré-preenchido com o ciclo mais profundo que
-            vence nele. Clique num mês para alterar o plano; o calendário inteiro se reposiciona
-            sozinho a partir dali.
+            {somenteLeitura
+              ? 'Plano de manutenção preventiva do ano: mensal todo mês, trimestral a cada 3, semestral a cada 6 e anual 1x/ano. Cada mês mostra o ciclo previsto e a data da visita.'
+              : 'Plano completo gerado automaticamente: mensal todo mês, trimestral a cada 3, semestral a cada 6 e anual 1x/ano — cada mês já vem pré-preenchido com o ciclo mais profundo que vence nele. Clique num mês para alterar o plano; o calendário inteiro se reposiciona sozinho a partir dali.'}
           </p>
 
+          {!somenteLeitura && (
           <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
             <span className="text-foreground">
               {statusAgenda === 'sincronizando' && 'Sincronizando a Agenda com as próximas 12 visitas...'}
@@ -244,6 +248,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
               Ressincronizar
             </Button>
           </div>
+          )}
 
           <CronogramaAnualGrid
             equipamentos={equipamentosState}
@@ -251,7 +256,8 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
             onAncorar={ancorarPeriodicidadeNoMes}
             salvando={updateEquipamentoMutation.isPending}
             visitas={visitas}
-            onAlterarData={(mes0) => setRemarcandoMes({ ano, mes0 })}
+            onAlterarData={somenteLeitura ? undefined : (mes0) => setRemarcandoMes({ ano, mes0 })}
+            somenteLeitura={somenteLeitura}
           />
 
           <Button
