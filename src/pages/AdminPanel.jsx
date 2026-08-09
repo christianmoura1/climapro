@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { aplicacaoDoPlano, PLANOS, planoPorId } from "@/lib/planos";
 import { format, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -24,6 +25,13 @@ import NovaEmpresaForm from "../components/admin/NovaEmpresaForm";
 import ListaEmpresas from "../components/admin/ListaEmpresas";
 import EmpresasInadimplentes from "../components/admin/EmpresasInadimplentes";
 import { toast } from "@/components/ui/use-toast";
+
+// Valor mensal formatado do plano, para os avisos de cobrança.
+function valorDoPlano(planoId) {
+  const plano = planoPorId(planoId);
+  if (!plano || !plano.valor) return 'a combinar';
+  return `R$ ${plano.valor.toFixed(2).replace('.', ',')}`;
+}
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -341,7 +349,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
             await base44.integrations.Core.SendEmail({
               to: empresa.email_contato,
               subject: "⏰ Lembrete: Seu plano vence em 3 dias",
-              body: `Olá ${empresa.nome},\n\nSeu plano ${empresa.plano} vence em 3 dias (${format(vencimento, "dd/MM/yyyy", { locale: ptBR })}).\n\nRenove para continuar usando todos os recursos.\n\nValor: R$ ${empresa.plano === 'intermediario' ? '59,90' : '99,90'}\n\nAtenciosamente,\nEquipe ClimaPro`
+              body: `Olá ${empresa.nome},\n\nSeu plano ${empresa.plano} vence em 3 dias (${format(vencimento, "dd/MM/yyyy", { locale: ptBR })}).\n\nRenove para continuar usando todos os recursos.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
             });
           }
           
@@ -350,7 +358,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
             await base44.integrations.Core.SendEmail({
               to: empresa.email_contato,
               subject: "🔔 Seu plano vence hoje!",
-              body: `Olá ${empresa.nome},\n\nSeu plano vence HOJE!\n\nRenove agora para não perder o acesso.\n\nValor: R$ ${empresa.plano === 'intermediario' ? '59,90' : '99,90'}\n\nAtenciosamente,\nEquipe ClimaPro`
+              body: `Olá ${empresa.nome},\n\nSeu plano vence HOJE!\n\nRenove agora para não perder o acesso.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
             });
           }
           
@@ -359,7 +367,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
             await base44.integrations.Core.SendEmail({
               to: empresa.email_contato,
               subject: "⚠️ Pagamento Atrasado - Urgente",
-              body: `Olá ${empresa.nome},\n\nSeu pagamento está atrasado há 2 dias.\n\nSem o pagamento, sua conta será bloqueada em 5 dias.\n\nValor: R$ ${empresa.plano === 'intermediario' ? '59,90' : '99,90'}\n\nAtenciosamente,\nEquipe ClimaPro`
+              body: `Olá ${empresa.nome},\n\nSeu pagamento está atrasado há 2 dias.\n\nSem o pagamento, sua conta será bloqueada em 5 dias.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
             });
           }
         }
@@ -372,11 +380,9 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
   }, [empresas, isAdmin]);
 
   // Calcular métricas
-  const precos = {
-    free: 0,
-    intermediario: 59.90,
-    avancado: 99.90
-  };
+  // Valor mensal por plano, para o cálculo de faturamento. Vem de
+  // src/lib/planos.js para não ficar defasado quando o preço mudar.
+  const precos = Object.fromEntries(PLANOS.map((plano) => [plano.id, plano.valor]));
 
   const empresasAtivas = empresas.filter(e => e.status === 'ativa').length;
   const empresasInadimplentes = empresas.filter(e => 
@@ -428,11 +434,10 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
   const dadosFaturamento = calcularFaturamentoPorMes();
 
   const handleUpdatePlan = async (empresaId, newPlan) => {
-    const limits = {
-      free: 5,
-      intermediario: 999999,
-      avancado: 999999
-    };
+    // aplicacaoDoPlano grava limites E módulos, igual ao webhook do Stripe.
+    // Antes daqui saía só limite_chamados_mes, e com um mapa de planos que nem
+    // existia mais ('intermediario', 'avancado'), então o valor ia undefined.
+    const aplicacao = aplicacaoDoPlano(newPlan);
 
     const dataVencimento = newPlan !== 'free' 
       ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -441,10 +446,9 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
     updateEmpresaMutation.mutate({
       id: empresaId,
       data: {
-        plano: newPlan,
-        limite_chamados_mes: limits[newPlan],
+        ...aplicacao,
         data_vencimento_plano: dataVencimento,
-        status_pagamento: newPlan === 'free' ? 'ativo' : 'ativo',
+        status_pagamento: 'ativo',
         status: 'ativa'
       }
     });

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Save, X, AlertCircle, Building2 } from "lucide-react";
+import { aplicacaoDoPlano, PLANOS } from "@/lib/planos";
 
 export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }) {
   const [formData, setFormData] = useState({
@@ -37,16 +38,10 @@ export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Definir limite de chamados baseado no plano
-    const limites = {
-      free: 5,
-      intermediario: 999999,
-      avancado: 999999
-    };
-
+    // Grava limites e módulos do plano escolhido, igual ao webhook do Stripe.
     onSubmit({
       ...formData,
-      limite_chamados_mes: limites[formData.plano]
+      ...aplicacaoDoPlano(formData.plano),
     });
   };
 
@@ -169,9 +164,11 @@ export default function NovaEmpresaForm({ onSubmit, onCancel, isLoading, error }
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="free">Free (até 5 chamados/mês)</SelectItem>
-                  <SelectItem value="intermediario">Intermediário (R$ 59,90/mês)</SelectItem>
-                  <SelectItem value="avancado">Avançado (R$ 99,90/mês)</SelectItem>
+                  {PLANOS.map((plano) => (
+                    <SelectItem key={plano.id} value={plano.id}>
+                      {plano.nome} ({plano.preco})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

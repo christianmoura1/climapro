@@ -74,8 +74,12 @@ const statusPagamentoConfig = {
 
 const planoConfig = {
   free: { color: "bg-muted text-foreground", label: "Free", preco: "Gratuito" },
-  intermediario: { color: "bg-blue-100 text-blue-800", label: "Intermediário", preco: "R$ 59,90/mês" },
-  avancado: { color: "bg-purple-100 text-purple-800", label: "Avançado", preco: "R$ 99,90/mês" }
+  profissional: { color: "bg-blue-100 text-blue-800", label: "Profissional", preco: "R$ 79,90/mês" },
+  empresa: { color: "bg-purple-100 text-purple-800", label: "Empresa", preco: "R$ 197/mês" },
+  enterprise: { color: "bg-slate-800 text-white", label: "Enterprise", preco: "Sob consulta" },
+  // Vendidos antes da revisão de planos; aparecem só em empresas antigas.
+  essencial: { color: "bg-blue-50 text-blue-700", label: "Essencial (antigo)", preco: "—" },
+  corporativo: { color: "bg-purple-50 text-purple-700", label: "Corporativo (antigo)", preco: "—" }
 };
 
 export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], onUpdateStatus, onUpdatePlan, onDelete, onConfirmarPagamento, onUpdateModulos }) {
@@ -263,16 +267,16 @@ export default function ListaEmpresas({ empresas, tecnicos = [], clientes = [], 
                         Free
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => onUpdatePlan(empresa.id, 'intermediario')}
-                        disabled={empresa.plano === 'intermediario'}
+                        onClick={() => onUpdatePlan(empresa.id, 'profissional')}
+                        disabled={empresa.plano === 'profissional'}
                       >
-                        Intermediário (30 dias)
+                        Profissional (30 dias)
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => onUpdatePlan(empresa.id, 'avancado')}
-                        disabled={empresa.plano === 'avancado'}
+                        onClick={() => onUpdatePlan(empresa.id, 'empresa')}
+                        disabled={empresa.plano === 'empresa'}
                       >
-                        Avançado (30 dias)
+                        Empresa (30 dias)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

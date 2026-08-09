@@ -1,247 +1,55 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { invokeEdgeFunction, BUILD_TAG } from "@/lib/edgeFunctions";
+import { invokeEdgeFunction } from "@/lib/edgeFunctions";
 import { toast } from "@/components/ui/use-toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  CheckCircle, 
-  Crown, 
-  Zap,
-  AlertTriangle,
-  MessageCircle,
-  CreditCard,
-  Users,
-  Building2,
-  ClipboardList,
-  Star
-} from "lucide-react";
-import { Link } from "react-router-dom";
+import { Check, X, AlertTriangle, CreditCard, Star, Users, Building2 } from "lucide-react";
 import { createPageUrl } from "@/utils";
-
-const planosDisponiveis = [
-  {
-    id: "free",
-    nome: "Free",
-    preco: "Gratuito",
-    valor: 0,
-    cor: "bg-gray-500",
-    corClara: "bg-muted",
-    icone: Zap,
-    limites: {
-      tecnicos: 1,
-      clientes: 1,
-      empresas: 1,
-      chamados: "5/mês"
-    },
-    features: [
-      "Até 5 chamados por mês",
-      "1 técnico",
-      "1 cliente",
-      "Agenda básica",
-      "Suporte por email"
-    ],
-    modulos: ["Chamados", "Clientes", "Agenda"]
-  },
-  {
-    id: "essencial",
-    nome: "Essencial",
-    preco: "R$ 49,90/mês",
-    valor: 49.90,
-    cor: "bg-blue-600",
-    corClara: "bg-blue-100",
-    icone: Users,
-    limites: {
-      tecnicos: 2,
-      clientes: 3,
-      empresas: 1,
-      chamados: "ilimitado"
-    },
-    features: [
-      "Chamados ilimitados",
-      "Até 2 técnicos",
-      "Até 3 clientes",
-      "Agenda avançada",
-      "Suporte prioritário"
-    ],
-    modulos: ["Chamados", "Clientes", "Técnicos", "Agenda"],
-    popular: false
-  },
-  {
-    id: "profissional",
-    nome: "Profissional",
-    preco: "R$ 99,90/mês",
-    valor: 99.90,
-    cor: "bg-green-600",
-    corClara: "bg-green-100",
-    icone: Building2,
-    limites: {
-      tecnicos: 5,
-      clientes: 10,
-      empresas: 1,
-      chamados: "ilimitado"
-    },
-    features: [
-      "Chamados ilimitados",
-      "Até 5 técnicos",
-      "Até 10 clientes",
-      "PMOC completo",
-      "Controle financeiro",
-      "Relatórios avançados"
-    ],
-    modulos: ["Chamados", "Clientes", "Técnicos", "PMOC", "Financeiro", "Agenda"],
-    popular: true
-  },
-  {
-    id: "corporativo",
-    nome: "Corporativo",
-    preco: "R$ 149,90/mês",
-    valor: 149.90,
-    cor: "bg-orange-600",
-    corClara: "bg-orange-100",
-    icone: ClipboardList,
-    limites: {
-      tecnicos: 15,
-      clientes: 30,
-      empresas: 3,
-      chamados: "ilimitado"
-    },
-    features: [
-      "Chamados ilimitados",
-      "Até 15 técnicos",
-      "Até 30 clientes",
-      "Até 3 empresas",
-      "Emissão de notas fiscais",
-      "Multiempresa",
-      "Suporte 24/7"
-    ],
-    modulos: ["Todos os módulos", "Notas Fiscais", "Multiempresa"],
-    popular: false
-  },
-  {
-    id: "enterprise",
-    nome: "Enterprise",
-    preco: "Sob consulta",
-    valor: null,
-    cor: "bg-purple-900",
-    corClara: "bg-purple-100",
-    icone: Crown,
-    limites: {
-      tecnicos: "ilimitado",
-      clientes: "ilimitado",
-      empresas: "ilimitado",
-      chamados: "ilimitado"
-    },
-    features: [
-      "Recursos ilimitados",
-      "Técnicos ilimitados",
-      "Clientes ilimitados",
-      "Empresas ilimitadas",
-      "API completa",
-      "White Label",
-      "Suporte dedicado"
-    ],
-    modulos: ["Todos os módulos", "API", "White Label", "Consultoria"],
-    destaque: true
-  }
-];
+import { PageLoading } from "@/components/ui/page-loading";
+import { PageHeader, PageShell } from "@/components/ui/page-shell";
+import { PLANOS, nomeDoPlano, ehIlimitado, formatarLimite } from "@/lib/planos";
 
 export default function PlanosPage() {
   const [user, setUser] = useState(null);
   const [empresa, setEmpresa] = useState(null);
-  const queryClient = useQueryClient();
+  const [processando, setProcessando] = useState(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    const carregar = async () => {
       try {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
-        
         if (currentUser.empresa_id) {
           const empresas = await base44.entities.Empresa.list();
-          const minhaEmpresa = empresas.find(e => e.id === currentUser.empresa_id);
-          setEmpresa(minhaEmpresa);
+          setEmpresa(empresas.find((e) => e.id === currentUser.empresa_id) || null);
         }
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
       }
     };
-    loadData();
+    carregar();
   }, []);
-
-  const { data: chamadosMes = [] } = useQuery({
-    queryKey: ['chamados-mes'],
-    queryFn: async () => {
-      const chamados = await base44.entities.Chamado.list();
-      const inicioMes = new Date();
-      inicioMes.setDate(1);
-      return chamados.filter(c => new Date(c.created_date) >= inicioMes);
-    },
-    enabled: !!empresa
-  });
 
   const { data: tecnicos = [] } = useQuery({
     queryKey: ['tecnicos', empresa?.id],
     queryFn: () => base44.entities.Tecnico.filter({ empresa_id: empresa.id }),
-    enabled: !!empresa
+    enabled: !!empresa,
   });
 
-  const { data: clientes = [] } = useQuery({
-    queryKey: ['clientes', empresa?.id],
-    queryFn: () => base44.entities.Cliente.filter({ empresa_id: empresa.id }),
-    enabled: !!empresa
+  // Clientes com PMOC: os que têm ao menos um equipamento no plano. É o
+  // limite que separa o Free (1 cliente) dos planos pagos.
+  const { data: clientesComPmoc = 0 } = useQuery({
+    queryKey: ['clientes-com-pmoc', empresa?.id],
+    queryFn: async () => {
+      const equipamentos = await base44.entities.Equipamento.filter({ empresa_id: empresa.id });
+      return new Set(equipamentos.filter((e) => e.pmoc_ativo).map((e) => e.cliente_id)).size;
+    },
+    enabled: !!empresa,
   });
 
-  const [processandoPlano, setProcessandoPlano] = useState(null);
-
-  // Assinatura via Stripe Checkout. Se a empresa já tem assinatura ativa,
-  // upgrades/downgrades/cancelamento passam pelo Portal de Cobrança (evita
-  // criar uma segunda assinatura e cobrar em dobro).
-  const handleAssinarPlano = async (plano) => {
-    if (plano.id === 'enterprise') {
-      const mensagem = `Olá! Gostaria de saber mais sobre o plano Enterprise para minha empresa: ${empresa?.nome}`;
-      window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(mensagem)}`, '_blank');
-      return;
-    }
-
-    setProcessandoPlano(plano.id);
-    try {
-      if (empresa?.stripe_subscription_id) {
-        const data = await invokeEdgeFunction('portal-cobranca', {});
-        window.location.href = data.url;
-        return;
-      }
-      if (plano.id === 'free') {
-        toast({ description: 'Você já pode usar o plano Free — nenhum pagamento é necessário.' });
-        return;
-      }
-      const data = await invokeEdgeFunction('criar-checkout', { plano: plano.id });
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Erro ao iniciar pagamento:', error);
-      toast({ description: `Erro ao iniciar o pagamento: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
-    } finally {
-      setProcessandoPlano(null);
-    }
-  };
-
-  const handleGerenciarAssinatura = async () => {
-    setProcessandoPlano('portal');
-    try {
-      const data = await invokeEdgeFunction('portal-cobranca', {});
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Erro ao abrir portal:', error);
-      toast({ description: `Erro ao abrir o portal: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
-      setProcessandoPlano(null);
-    }
-  };
-
-  // Feedback de retorno do checkout (?checkout=sucesso|cancelado)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const checkout = params.get('checkout');
@@ -254,281 +62,198 @@ export default function PlanosPage() {
     }
   }, []);
 
-  const planoAtual = planosDisponiveis.find(p => p.id === empresa?.plano) || planosDisponiveis[0];
-  
-  // Calcular uso atual
-  const chamadosUsados = chamadosMes.length;
-  const tecnicosUsados = tecnicos.length;
-
-  // Verificar se atingiu limites
-  const limitesChamados = empresa?.limite_chamados_mes || 5;
-  const limitesTecnicos = empresa?.limite_tecnicos || 1;
-
-  const atingiuLimiteChamados = chamadosUsados >= limitesChamados && limitesChamados !== 999999;
-  const atingiuLimiteTecnicos = tecnicosUsados >= limitesTecnicos && limitesTecnicos !== 999999;
-
-  const atingiuAlgumLimite = atingiuLimiteChamados || atingiuLimiteTecnicos;
-
-  // Sugerir próximo plano lógico
-  const sugerirProximoPlano = () => {
-    const planoAtualIndex = planosDisponiveis.findIndex(p => p.id === empresa?.plano);
-    if (planoAtualIndex < planosDisponiveis.length - 1) {
-      return planosDisponiveis[planoAtualIndex + 1];
+  // Quem já tem assinatura passa pelo Portal de Cobrança para trocar de plano;
+  // criar um checkout novo geraria uma segunda assinatura e cobrança dupla.
+  const assinar = async (plano) => {
+    setProcessando(plano.id);
+    try {
+      if (empresa?.stripe_subscription_id) {
+        const data = await invokeEdgeFunction('portal-cobranca', {});
+        window.location.href = data.url;
+        return;
+      }
+      if (plano.id === 'free') {
+        toast({ description: 'O Free não exige pagamento — é só usar.' });
+        return;
+      }
+      const data = await invokeEdgeFunction('criar-checkout', { plano: plano.id });
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Erro ao iniciar pagamento:', error);
+      toast({ description: `Erro ao iniciar o pagamento: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+    } finally {
+      setProcessando(null);
     }
-    return null;
   };
 
-  const planoSugerido = sugerirProximoPlano();
+  const abrirPortal = async () => {
+    setProcessando('portal');
+    try {
+      const data = await invokeEdgeFunction('portal-cobranca', {});
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Erro ao abrir portal:', error);
+      toast({ description: `Erro ao abrir o portal: ${error.message || 'tente novamente.'}`, variant: 'destructive' });
+      setProcessando(null);
+    }
+  };
+
+  if (!user) return <PageLoading />;
+
+  const planoAtualId = empresa?.plano || 'free';
+  const limiteTecnicos = empresa?.limite_tecnicos ?? 1;
+  const limitePmoc = empresa?.limite_clientes_pmoc ?? 1;
+
+  const estourouTecnicos = !ehIlimitado(limiteTecnicos) && tecnicos.length >= limiteTecnicos;
+  const estourouPmoc = !ehIlimitado(limitePmoc) && clientesComPmoc >= limitePmoc;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Link to={createPageUrl("Dashboard")}>
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Planos e Assinaturas</h1>
-            <p className="text-muted-foreground mt-1">Escolha o melhor plano para sua empresa</p>
-          </div>
-        </div>
+    <PageShell>
+      <PageHeader
+        title="Planos"
+        eyebrow="Assinatura"
+        description={`Você está no plano ${nomeDoPlano(planoAtualId)}`}
+        backTo={createPageUrl("Dashboard")}
+        actions={empresa?.stripe_subscription_id ? (
+          <Button variant="outline" onClick={abrirPortal} disabled={processando === 'portal'} className="w-full sm:w-auto">
+            <CreditCard className="w-4 h-4 mr-2" />
+            {processando === 'portal' ? 'Abrindo...' : 'Gerenciar assinatura'}
+          </Button>
+        ) : null}
+      />
 
-        {/* Alerta de Limite Atingido */}
-        {atingiuAlgumLimite && planoSugerido && (
-          <Card className="mb-8 border-2 border-orange-500 bg-orange-50">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-foreground mb-2">
-                    ⚠️ Limite do Plano Atingido!
-                  </h3>
-                  <p className="text-foreground mb-4">
-                    {atingiuLimiteChamados && `Você atingiu o limite de ${limitesChamados} chamados/mês. `}
-                    {atingiuLimiteTecnicos && `Você atingiu o limite de ${limitesTecnicos} técnicos. `}
-                    <strong>Faça upgrade para continuar utilizando o ClimaPro!</strong>
-                  </p>
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => {
-                        const element = document.getElementById(`plano-${planoSugerido.id}`);
-                        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }}
-                      className="bg-orange-600 hover:bg-orange-700"
-                    >
-                      <Star className="w-4 h-4 mr-2" />
-                      Ver Plano Recomendado
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Stats Cards */}
-        {empresa && planoAtual && (
-          <Card className="mb-8 shadow-lg border-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-yellow-500" />
-                Seu Plano Atual
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Plano</p>
-                  <Badge className={`${planoAtual.cor} text-white text-lg px-4 py-1`}>
-                    {planoAtual.nome}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Chamados este mês</p>
-                  <p className={`text-2xl font-bold ${atingiuLimiteChamados ? 'text-red-600' : 'text-foreground'}`}>
-                    {chamadosUsados} / {limitesChamados === 999999 ? '∞' : limitesChamados}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Técnicos</p>
-                  <p className={`text-2xl font-bold ${atingiuLimiteTecnicos ? 'text-red-600' : 'text-foreground'}`}>
-                    {tecnicosUsados} / {limitesTecnicos === 999999 ? '∞' : limitesTecnicos}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Grade de Planos */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {planosDisponiveis.map((plano, index) => {
-            const isPlanoAtual = plano.id === empresa?.plano;
-            const Icon = plano.icone;
-            const isSugerido = planoSugerido?.id === plano.id;
-            
-            return (
-              <Card 
-                key={plano.id}
-                id={`plano-${plano.id}`}
-                className={`shadow-lg hover:shadow-2xl transition-all ${
-                  plano.popular ? 'border-2 border-blue-600 scale-105' : 'border-none'
-                } ${
-                  plano.destaque ? 'border-2 border-purple-900' : ''
-                } ${
-                  isSugerido ? 'ring-4 ring-orange-400 animate-pulse' : ''
-                }`}
-              >
-                <CardHeader className={`${plano.corClara}`}>
-                  <div className="flex justify-between items-start">
-                    <div className={`w-12 h-12 ${plano.cor} rounded-xl flex items-center justify-center`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    {plano.popular && (
-                      <Badge className="bg-blue-600 text-white">Mais Popular</Badge>
-                    )}
-                    {plano.destaque && (
-                      <Badge className="bg-purple-900 text-white">Premium</Badge>
-                    )}
-                    {isSugerido && (
-                      <Badge className="bg-orange-600 text-white animate-pulse">
-                        <Star className="w-3 h-3 mr-1" />
-                        Recomendado
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-2xl mt-4">{plano.nome}</CardTitle>
-                  <p className="text-3xl font-bold text-foreground mt-2">
-                    {plano.preco}
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-6">
-                  {/* Limites */}
-                  <div className="bg-muted rounded-lg p-4">
-                    <h4 className="font-semibold text-sm text-foreground mb-3">Limites</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Técnicos:</span>
-                        <span className="font-semibold">{plano.limites.tecnicos}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Clientes:</span>
-                        <span className="font-semibold">{plano.limites.clientes}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Empresas:</span>
-                        <span className="font-semibold">{plano.limites.empresas}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Chamados:</span>
-                        <span className="font-semibold">{plano.limites.chamados}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <ul className="space-y-3">
-                    {plano.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Módulos */}
-                  <div>
-                    <h4 className="font-semibold text-sm text-foreground mb-2">Módulos Inclusos:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {plano.modulos.map((modulo, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {modulo}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Botão */}
-                  {isPlanoAtual ? (
-                    empresa?.stripe_subscription_id ? (
-                      <Button className="w-full" variant="outline" onClick={handleGerenciarAssinatura} disabled={processandoPlano !== null}>
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        {processandoPlano === 'portal' ? 'Abrindo portal...' : 'Gerenciar Assinatura'}
-                      </Button>
-                    ) : (
-                      <Button className="w-full bg-gray-500" disabled>
-                        <Crown className="w-4 h-4 mr-2" />
-                        Plano Atual
-                      </Button>
-                    )
-                  ) : (
-                    <div className="space-y-2">
-                      <Button
-                        className={`w-full ${plano.cor} text-white hover:opacity-90 ${
-                          isSugerido ? 'ring-2 ring-orange-400' : ''
-                        }`}
-                        onClick={() => handleAssinarPlano(plano)}
-                        disabled={processandoPlano !== null}
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        {processandoPlano === plano.id
-                          ? 'Abrindo pagamento...'
-                          : plano.id === 'enterprise'
-                          ? 'Falar com Vendas'
-                          : empresa?.stripe_subscription_id
-                          ? 'Trocar para este plano'
-                          : 'Assinar Agora'}
-                      </Button>
-                      <p className="text-xs text-center text-muted-foreground">
-                        {plano.id === 'enterprise' ? 'Atendimento personalizado' : 'Pagamento seguro via Stripe'}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Formas de Pagamento */}
-        <Card className="mt-8 shadow-lg border-none">
-          <CardHeader>
-            <CardTitle>Formas de Pagamento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                <MessageCircle className="w-8 h-8 text-green-500" />
-                <div>
-                  <p className="font-semibold">WhatsApp</p>
-                  <p className="text-sm text-muted-foreground">Contato direto com admin</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                <CreditCard className="w-8 h-8 text-blue-500" />
-                <div>
-                  <p className="font-semibold">PIX</p>
-                  <p className="text-sm text-muted-foreground">Pagamento instantâneo</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                <CreditCard className="w-8 h-8 text-purple-500" />
-                <div>
-                  <p className="font-semibold">Cartão de Crédito</p>
-                  <p className="text-sm text-muted-foreground">Recorrência mensal</p>
-                </div>
-              </div>
+      {(estourouTecnicos || estourouPmoc) && (
+        <Card className="mb-6 border-2 border-amber-300 bg-amber-50 shadow-sm">
+          <CardContent className="p-5 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-amber-900">
+              <p className="font-semibold">Seu plano chegou no limite</p>
+              <p className="mt-1">
+                {estourouTecnicos && `Você usa ${tecnicos.length} de ${formatarLimite(limiteTecnicos)} técnicos. `}
+                {estourouPmoc && `Você tem PMOC em ${clientesComPmoc} de ${formatarLimite(limitePmoc)} cliente(s). `}
+                Suba de plano para continuar cadastrando.
+              </p>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Carimbo de versão — para diagnosticar qual build está em produção */}
-        <p className="text-center text-xs text-muted-foreground mt-6">build {BUILD_TAG}</p>
+      {empresa && (
+        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+          <Card className="shadow-sm border-none">
+            <CardContent className="p-5">
+              <p className="text-sm text-muted-foreground">Plano atual</p>
+              <p className="text-xl font-bold text-foreground">{nomeDoPlano(planoAtualId)}</p>
+              {empresa.data_vencimento_plano && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Renova em {new Date(`${empresa.data_vencimento_plano}T12:00:00`).toLocaleDateString('pt-BR')}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border-none">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Técnicos</p>
+                <p className={`text-xl font-bold ${estourouTecnicos ? 'text-amber-600' : 'text-foreground'}`}>
+                  {tecnicos.length} / {formatarLimite(limiteTecnicos)}
+                </p>
+              </div>
+              <Users className="w-7 h-7 text-indigo-400" />
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border-none">
+            <CardContent className="p-5 flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Clientes com PMOC</p>
+                <p className={`text-xl font-bold ${estourouPmoc ? 'text-amber-600' : 'text-foreground'}`}>
+                  {clientesComPmoc} / {formatarLimite(limitePmoc)}
+                </p>
+              </div>
+              <Building2 className="w-7 h-7 text-purple-400" />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {PLANOS.map((plano) => {
+          const atual = plano.id === planoAtualId;
+          return (
+            <Card
+              key={plano.id}
+              className={`relative flex flex-col shadow-lg ${
+                plano.destaque ? 'border-2 border-indigo-600' : 'border-none'
+              } ${atual ? 'ring-2 ring-green-500' : ''}`}
+            >
+              {plano.destaque && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white">
+                  <Star className="w-3 h-3 mr-1" />
+                  Mais escolhido
+                </Badge>
+              )}
+              {atual && (
+                <Badge className="absolute -top-3 right-4 bg-green-600 text-white">Seu plano</Badge>
+              )}
+
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl">{plano.nome}</CardTitle>
+                <p className="text-3xl font-bold text-foreground mt-2">{plano.preco}</p>
+                <p className="text-sm text-muted-foreground mt-1">{plano.resumo}</p>
+              </CardHeader>
+
+              <CardContent className="flex-1 flex flex-col">
+                <ul className="space-y-2 flex-1">
+                  {plano.inclui.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-foreground">{item}</span>
+                    </li>
+                  ))}
+                  {plano.naoInclui.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <X className="w-4 h-4 text-muted-foreground/50 shrink-0 mt-0.5" />
+                      <span className="text-muted-foreground">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  className={`w-full mt-5 ${plano.destaque ? 'bg-indigo-600 hover:bg-indigo-700' : ''}`}
+                  variant={plano.destaque ? 'default' : 'outline'}
+                  disabled={atual || processando === plano.id}
+                  onClick={() => assinar(plano)}
+                >
+                  {atual
+                    ? 'Plano atual'
+                    : processando === plano.id
+                      ? 'Abrindo...'
+                      : plano.id === 'free'
+                        ? 'Gratuito'
+                        : empresa?.stripe_subscription_id
+                          ? 'Trocar para este plano'
+                          : 'Assinar'}
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-    </div>
+
+      <p className="text-center text-sm text-muted-foreground mt-8">
+        Precisa de mais de 10 técnicos ou de algo específico?{' '}
+        <a
+          href={`https://wa.me/5541992572743?text=${encodeURIComponent(`Olá! Queria falar sobre um plano maior para a ${empresa?.nome || 'minha empresa'}.`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-600 underline"
+        >
+          Fale com a gente
+        </a>
+        .
+      </p>
+    </PageShell>
   );
 }
