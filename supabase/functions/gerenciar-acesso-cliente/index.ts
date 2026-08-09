@@ -136,3 +136,25 @@ Deno.serve(async (req) => {
       .eq('id', authUserId);
     if (profileError) throw profileError;
 
+    const { error: accessError } = await supabaseAdmin
+      .from('cliente')
+      .update({ tem_acesso_portal: true })
+      .eq('id', cliente.id);
+    if (accessError) throw accessError;
+
+    return json({
+      success: true,
+      created,
+      email,
+      message: created ? 'Acesso do cliente criado.' : 'Senha do cliente atualizada.',
+    });
+  } catch (error) {
+    if (createdUserId) {
+      await supabaseAdmin.auth.admin.deleteUser(createdUserId).catch(() => undefined);
+    }
+    console.error('Erro ao gerenciar acesso do cliente:', error);
+    return json({
+      error: error instanceof Error ? error.message : 'Erro interno ao gerenciar acesso.',
+    }, 500);
+  }
+});
