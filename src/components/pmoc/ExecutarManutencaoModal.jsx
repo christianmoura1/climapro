@@ -141,6 +141,36 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }
   }, [equipamentos, checklists, rascunho, carregandoRascunho]);
 
+  const itensPendentes = Object.values(checklists)
+    .reduce((total, lista) => total + (lista || []).filter((i) => resultadoItem(i) === 'pendente').length, 0);
+
+  // Atalho para a visita em que estava tudo certo. Marcar 30 caixinhas no
+  // celular, uma a uma, é o tipo de atrito que faz o técnico preencher no fim
+  // do dia de memória — o que é pior para o laudo do que este botão.
+  //
+  // Só toca no que está pendente. Item já marcado como não conforme fica como
+  // está: apagar um problema que o técnico encontrou seria bem pior que a
+  // economia de cliques.
+  const marcarTudoConforme = () => {
+    if (!window.confirm(
+      `Marcar ${itensPendentes} item(ns) como conforme?\n\n`
+      + 'Isso vale como sua verificação: o laudo vai dizer que estava tudo certo, com sua assinatura.\n\n'
+      + 'O que você já marcou como não conforme continua como está.'
+    )) return;
+
+    setChecklists((prev) => {
+      const novo = {};
+      for (const [equipamentoId, lista] of Object.entries(prev)) {
+        novo[equipamentoId] = lista.map((item) => (
+          resultadoItem(item) === 'pendente'
+            ? { ...item, resultado: 'ok', concluido: true }
+            : item
+        ));
+      }
+      return novo;
+    });
+  };
+
   const marcarResultadoItem = (equipamentoId, index, resultado) => {
     setChecklists(prev => ({
       ...prev,
@@ -756,10 +786,22 @@ ClimaPro`
 
           {/* Lista de Equipamentos */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              🏢 Equipamentos para Manutenção
-              <Badge variant="outline">{equipamentos.length}</Badge>
-            </h3>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="flex items-center gap-2 text-lg font-semibold">
+                🏢 Equipamentos para Manutenção
+                <Badge variant="outline">{equipamentos.length}</Badge>
+              </h3>
+              {itensPendentes > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={marcarTudoConforme}
+                  className="min-h-11 whitespace-normal border-green-300 text-green-700 hover:bg-green-50 hover:text-green-800"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Marcar tudo como conforme ({itensPendentes})
+                </Button>
+              )}
+            </div>
 
             {equipamentos.length === 0 ? (
               <Card className="border-2 border-dashed">
