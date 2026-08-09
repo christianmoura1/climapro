@@ -40,7 +40,9 @@ export default function GerenciarTecnicosPage() {
     telefone: "",
     cpf: "",
     especialidade: "ambos",
-    tem_acesso_sistema: false
+    tem_acesso_sistema: false,
+    senha: "",
+    confirmar_senha: ""
   });
 
   const [showAdicionarSaldoDialog, setShowAdicionarSaldoDialog] = useState(false);
@@ -114,6 +116,18 @@ export default function GerenciarTecnicosPage() {
         total_atendimentos: 0
       });
       
+      if (data.tem_acesso_sistema) {
+        try {
+          await base44.integrations.Core.GerenciarAcessoTecnico({
+            tecnico_id: tecnico.id,
+            password: data.senha
+          });
+        } catch (error) {
+          await base44.entities.Tecnico.delete(tecnico.id).catch(() => undefined);
+          throw new Error(`Não foi possível criar o acesso do técnico: ${error.message}`);
+        }
+      }
+
       return { tecnico, temAcesso: data.tem_acesso_sistema };
     },
     onSuccess: (data) => {
@@ -126,94 +140,15 @@ export default function GerenciarTecnicosPage() {
         telefone: "", 
         cpf: "", 
         especialidade: "ambos",
-        tem_acesso_sistema: false
+        tem_acesso_sistema: false,
+        senha: "",
+        confirmar_senha: ""
       });
       
       if (data.temAcesso) {
-        const linkSistema = `https://geradordepmoc.com.br`;
-        const mensagemParaEnviar = `🔐 ACESSO AO SISTEMA ClimaPro
-
-Olá ${data.tecnico.nome}!
-
-Você agora tem acesso ao sistema ClimaPro. Siga o passo a passo abaixo:
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📱 PASSO 1: ACESSE O LINK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Clique ou copie este link no seu navegador:
-👉 ${linkSistema}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✍️ PASSO 2: CRIAR SUA CONTA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Quando a página abrir, você verá "Welcome to ClimaPro"
-
-⚠️ Como você ainda NÃO tem conta, clique em:
-   "Sign up" (embaixo do botão azul)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📧 PASSO 3: PREENCHER SEU EMAIL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-No formulário de cadastro, digite:
-
-Email: ${data.tecnico.email}
-
-⚠️ IMPORTANTE: Use EXATAMENTE este email!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔒 PASSO 4: CRIAR UMA SENHA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Crie uma senha segura (mínimo 8 caracteres)
-Exemplo: MinhaSenh@123
-
-⚠️ Guarde bem sua senha!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ PASSO 5: CONFIRMAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Clique em "Sign up" para criar sua conta.
-
-Pronto! Você será automaticamente direcionado para o painel do técnico.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 O QUE VOCÊ PODE FAZER NO SISTEMA:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ Ver seus chamados atribuídos
-✅ Atualizar status de serviços
-✅ Registrar gastos diários
-✅ Gerenciar PMOCs
-✅ Visualizar histórico
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Bem-vindo à equipe!
-${empresa.nome}`;
-
-        navigator.clipboard.writeText(mensagemParaEnviar).then(() => {
-          alert(`✅ Técnico criado com sucesso!
-
-📋 INSTRUÇÕES COPIADAS!
-
-As instruções detalhadas foram copiadas para sua área de transferência.
-
-📱 ENVIE AGORA PARA O TÉCNICO:
-
-WhatsApp: ${data.tecnico.telefone}
-Email: ${data.tecnico.email}
-
-Cole (Ctrl+V ou Cmd+V) a mensagem no WhatsApp ou Email do técnico.`);
-        }).catch(() => {
-          toast({ description: `✅ Técnico criado com sucesso!
-
-⚠️ COPIE E ENVIE ESTAS INSTRUÇÕES:
-
-${mensagemParaEnviar}`, variant: "success" });
+        toast({
+          description: `Técnico criado com acesso ao sistema. Login: ${data.tecnico.email}`,
+          variant: "success"
         });
       } else {
         toast({ description: "Técnico criado com sucesso!", variant: "default" });
@@ -226,20 +161,36 @@ ${mensagemParaEnviar}`, variant: "success" });
   });
 
   const updateTecnicoMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Tecnico.update(id, data),
-    onSuccess: () => {
+    mutationFn: async ({ id, data, senha }) => {
+      const tecnico = await base44.entities.Tecnico.update(id, data);
+      if (senha) {
+        await base44.integrations.Core.GerenciarAcessoTecnico({
+          tecnico_id: id,
+          password: senha
+        });
+      }
+      return { tecnico, senhaAtualizada: !!senha };
+    },
+    onSuccess: ({ senhaAtualizada }) => {
       queryClient.invalidateQueries(['tecnicos']);
       setShowForm(false);
       setEditingTecnico(null);
-      setFormData({ 
-        nome: "", 
-        email: "", 
-        telefone: "", 
-        cpf: "", 
+      setFormData({
+        nome: "",
+        email: "",
+        telefone: "",
+        cpf: "",
         especialidade: "ambos",
-        tem_acesso_sistema: false
+        tem_acesso_sistema: false,
+        senha: "",
+        confirmar_senha: ""
       });
-      toast({ description: "Técnico atualizado com sucesso!", variant: "default" });
+      toast({
+        description: senhaAtualizada
+          ? "Técnico e senha de acesso atualizados com sucesso!"
+          : "Técnico atualizado com sucesso!",
+        variant: "default"
+      });
     },
     onError: (error) => {
       console.error("Erro ao atualizar técnico:", error);
@@ -363,7 +314,17 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
+    const deveConfigurarSenha = editingTecnico ? !!formData.senha : formData.tem_acesso_sistema;
+    if (deveConfigurarSenha && formData.senha.length < 8) {
+      toast({ description: "A senha deve ter pelo menos 8 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (deveConfigurarSenha && formData.senha !== formData.confirmar_senha) {
+      toast({ description: "A confirmação da senha não confere.", variant: "destructive" });
+      return;
+    }
+
     if (editingTecnico) {
       updateTecnicoMutation.mutate({
         id: editingTecnico.id,
@@ -372,7 +333,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           email: formData.email,
           telefone: formData.telefone,
           especialidade: formData.especialidade
-        }
+        },
+        senha: formData.senha
       });
     } else {
       createTecnicoMutation.mutate(formData);
@@ -387,7 +349,9 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
       telefone: tecnico.telefone,
       cpf: "", // CPF is not usually editable after creation
       especialidade: tecnico.especialidade,
-      tem_acesso_sistema: false // This checkbox is for initial access setup, not edit
+      tem_acesso_sistema: false,
+      senha: "",
+      confirmar_senha: ""
     });
     setShowForm(true);
   };
@@ -455,7 +419,9 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                 telefone: "", 
                 cpf: "", 
                 especialidade: "ambos",
-                tem_acesso_sistema: false
+                tem_acesso_sistema: false,
+                senha: "",
+                confirmar_senha: ""
               });
               setShowForm(!showForm);
             }}
@@ -561,6 +527,49 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                   </div>
                 )}
 
+                {(editingTecnico || formData.tem_acesso_sistema) && (
+                  <div className="border-t pt-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-foreground">
+                        {editingTecnico ? "Criar ou alterar senha de acesso" : "Senha inicial de acesso"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {editingTecnico
+                          ? "Preencha somente quando quiser criar o acesso ou definir uma nova senha. A senha atual nunca é exibida."
+                          : "O técnico entrará com o e-mail cadastrado e esta senha."}
+                      </p>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="senha">{editingTecnico ? "Nova senha" : "Senha"} *</Label>
+                        <Input
+                          id="senha"
+                          type="password"
+                          autoComplete="new-password"
+                          minLength={8}
+                          value={formData.senha}
+                          onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                          placeholder="Mínimo de 8 caracteres"
+                          required={!editingTecnico}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmar_senha">Confirmar senha *</Label>
+                        <Input
+                          id="confirmar_senha"
+                          type="password"
+                          autoComplete="new-password"
+                          minLength={8}
+                          value={formData.confirmar_senha}
+                          onChange={(e) => setFormData({ ...formData, confirmar_senha: e.target.value })}
+                          placeholder="Digite a senha novamente"
+                          required={!editingTecnico || !!formData.senha}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-3 pt-4">
                   <Button 
                     type="button" 
@@ -574,7 +583,9 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                         telefone: "", 
                         cpf: "", 
                         especialidade: "ambos",
-                        tem_acesso_sistema: false
+                        tem_acesso_sistema: false,
+                        senha: "",
+                        confirmar_senha: ""
                       });
                     }}
                   >
