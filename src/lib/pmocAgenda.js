@@ -1,8 +1,8 @@
 import { base44 } from "@/api/base44Client";
 import { gerarProximasVisitas } from "@/lib/pmocChecklist";
+import { dataVisitaDoMes, indexarAgendamentos } from "@/lib/pmocDataVisita";
 
 const MESES_JANELA = 12;
-const DIA_PLACEHOLDER = 10; // dia arbitrário do mês para a visita ainda não agendada por horário exato
 
 function chaveAnoMes(data) {
   const d = new Date(data);
@@ -22,11 +22,15 @@ export async function sincronizarAgendaAnualPMOC({ empresaId, cliente, pmocId, e
   const hoje = new Date();
   const inicioMesAtual = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  const eventosExistentes = await base44.entities.AgendaEvento.filter({
-    cliente_id: cliente.id,
-    tipo: 'pmoc',
-    origem: 'automatico',
-  });
+  const [eventosExistentes, agendamentos] = await Promise.all([
+    base44.entities.AgendaEvento.filter({
+      cliente_id: cliente.id,
+      tipo: 'pmoc',
+      origem: 'automatico',
+    }),
+    base44.entities.PmocAgendamento.filter({ cliente_id: cliente.id }),
+  ]);
+  const indiceAgendamentos = indexarAgendamentos(agendamentos);
 
   const mesesCobertos = new Set();
   const paraExcluir = [];
@@ -46,7 +50,18 @@ export async function sincronizarAgendaAnualPMOC({ empresaId, cliente, pmocId, e
 
   const novosEventos = [];
   for (let i = 0; i < MESES_JANELA; i++) {
-    const dataVisita = new Date(inicioMesAtual.getFullYear(), inicioMesAtual.getMonth() + i, DIA_PLACEHOLDER);
+    const mesAlvo = new Date(inicioMesAtual.getFullYear(), inicioMesAtual.getMonth() + i, 1);
+    // A data sai do dia fixo do cliente (ou da remarcação daquele mês), não
+    // mais de um dia 10 chutado igual para todo mundo.
+    const { data: dataVisita } = dataVisitaDoMes(
+      cliente,
+      mesAlvo.getFullYear(),
+      mesAlvo.getMonth(),
+      indiceAgendamentos
+    );
+    // A checagem de cobertura usa a data efetiva, igual à chave montada a
+    // partir dos eventos existentes — uma visita remarcada para o mês seguinte
+    // ocupa o mês em que ela realmente acontece.
     if (mesesCobertos.has(chaveAnoMes(dataVisita))) continue;
 
     const equipamentosCicloProfundo = equipamentosAtivos.filter((eq) => {

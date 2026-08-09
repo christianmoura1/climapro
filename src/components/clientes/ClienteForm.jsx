@@ -11,6 +11,7 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { diaVisitaDoCliente } from "@/lib/pmocDataVisita";
 
 const ESTABELECIMENTOS_PADRAO = [
   { id: "casa", label: "🏠 Casa", tipo: "residencial" },
@@ -257,9 +258,14 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
     longitude: null,
     tipo_estabelecimento: "comercial",
     observacoes: "",
+    dia_execucao_pmoc: null,
     tem_acesso_portal: false,
     estabelecimentos: []
   });
+
+  // Dia que o PMOC usaria se o campo ficar em branco — mostrado como
+  // placeholder para a data programada não parecer ter saído do nada.
+  const diaSugerido = diaVisitaDoCliente(cliente);
 
   const [estabelecimentos, setEstabelecimentos] = useState(initEstabelecimentos);
   const [abaAtiva, setAbaAtiva] = useState(0);
@@ -521,6 +527,28 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
               abaAtiva={abaAtiva}
             />
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="dia_execucao_pmoc">Dia da visita do PMOC</Label>
+            <Input
+              id="dia_execucao_pmoc"
+              type="number"
+              min="1"
+              max="31"
+              value={formData.dia_execucao_pmoc ?? ""}
+              onChange={(e) => setFormData({
+                ...formData,
+                dia_execucao_pmoc: e.target.value === "" ? null : Number(e.target.value),
+              })}
+              placeholder={`${diaSugerido} (calculado pela data de cadastro)`}
+              className="max-w-[220px]"
+            />
+            <p className="text-xs text-muted-foreground">
+              Dia do mês em que a manutenção preventiva deste cliente é feita. Em branco, o sistema
+              usa o dia {diaSugerido}. Mês sem esse dia cai no último dia do mês, e dá para remarcar
+              um mês específico na tela do PMOC.
+            </p>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="observacoes">Observações</Label>

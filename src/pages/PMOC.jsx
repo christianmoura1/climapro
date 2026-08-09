@@ -369,6 +369,7 @@ export default function PMOCPage() {
           <PainelPMOCCliente
             cliente={clientePainel}
             equipamentos={equipamentosDoPainel}
+            empresaId={user?.empresa_id}
             onExecutarRodada={handleExecutarRodada}
             onGerarCaderno={setGerandoCadernoCliente}
             onVerPlanoAnual={setVendoPlanoAnualCliente}

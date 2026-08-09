@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,12 +10,31 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMont
 import { ptBR } from "date-fns/locale";
 
 import ExecutarManutencaoModal from "../pmoc/ExecutarManutencaoModal";
+import { indexarAgendamentosPorCliente, proximaVisita } from "@/lib/pmocDataVisita";
 
-export default function MeusPMOCs({ pmocs, clientes }) {
+export default function MeusPMOCs({ pmocs, clientes, empresaId }) {
   const [pmocSelecionado, setPmocSelecionado] = useState(null);
   const [visualizacao, setVisualizacao] = useState('lista'); // 'lista' ou 'calendario'
   const [dataAtual, setDataAtual] = useState(new Date());
-  
+
+  // Remarcações de mês feitas pela empresa. Sem elas, o técnico veria a data
+  // padrão do cliente numa visita que já foi movida.
+  const { data: agendamentos = [] } = useQuery({
+    queryKey: ['pmoc-agendamentos', 'empresa', empresaId],
+    queryFn: () => base44.entities.PmocAgendamento.filter({ empresa_id: empresaId }),
+    enabled: !!empresaId,
+  });
+  const indicePorCliente = indexarAgendamentosPorCliente(agendamentos);
+
+  // A data que o técnico vê é a mesma que a empresa programou: o campo
+  // proxima_manutencao do PMOC só é preenchido depois da primeira aprovação, e
+  // até lá a lista inteira aparecia como "Não agendado".
+  const dataVisita = (pmoc) => {
+    const cliente = clientes.find((c) => c.id === pmoc.cliente_id);
+    if (!cliente) return pmoc.proxima_manutencao ? new Date(pmoc.proxima_manutencao) : null;
+    return proximaVisita(cliente, indicePorCliente[cliente.id] || {})?.data || null;
+  };
+
   // Filtros
   const [filtros, setFiltros] = useState({
     periodo: 'todos',
@@ -37,8 +58,8 @@ export default function MeusPMOCs({ pmocs, clientes }) {
     }
 
     // Filtro de período
-    if (filtros.periodo !== 'todos' && pmoc.proxima_manutencao) {
-      const dataProxima = new Date(pmoc.proxima_manutencao);
+    const dataProxima = dataVisita(pmoc);
+    if (filtros.periodo !== 'todos' && dataProxima) {
       const hoje = new Date();
       
       switch (filtros.periodo) {
@@ -93,8 +114,8 @@ export default function MeusPMOCs({ pmocs, clientes }) {
 
     const getPMOCsNoDia = (dia) => {
       return pmocsFiltrados.filter(pmoc => {
-        if (!pmoc.proxima_manutencao) return false;
-        return isSameDay(new Date(pmoc.proxima_manutencao), dia);
+        const data = dataVisita(pmoc);
+        return data ? isSameDay(data, dia) : false;
       });
     };
 
@@ -251,8 +272,8 @@ export default function MeusPMOCs({ pmocs, clientes }) {
                           <Calendar className="w-4 h-4" />
                           <span>
                             {pmoc.status === 'reaberto' ? 'Reaberto para correção' :
-                             pmoc.proxima_manutencao 
-                              ? `Próxima: ${format(new Date(pmoc.proxima_manutencao), "dd/MM/yyyy", { locale: ptBR })}`
+                             dataVisita(pmoc)
+                              ? `Próxima visita: ${format(dataVisita(pmoc), "dd/MM/yyyy", { locale: ptBR })}`
                               : 'Não agendado'}
                           </span>
                         </div>

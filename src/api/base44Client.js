@@ -26,6 +26,7 @@ const ENTITY_TABLE_MAP = {
   Orcamento: 'orcamento',
   OrcamentoTecnico: 'orcamento_tecnico',
   PMOC: 'pmoc',
+  PmocAgendamento: 'pmoc_agendamento',
   PontoEletronico: 'ponto_eletronico',
   Tecnico: 'tecnico',
   ValorTecnico: 'valor_tecnico',

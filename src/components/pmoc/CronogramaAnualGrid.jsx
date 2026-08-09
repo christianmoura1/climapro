@@ -9,7 +9,7 @@ export const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ag
 // único rótulo com a periodicidade calculada automaticamente — as opções de
 // alteração só aparecem ao clicar nele (é um <select> estilizado como chip);
 // escolher um valor reposiciona o calendário do ano inteiro.
-export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento }) {
+export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salvando, renderInfoEquipamento, visitas, onAlterarData }) {
   const scrollRef = React.useRef(null);
   const [showScrollHint, setShowScrollHint] = React.useState(true);
 
@@ -31,9 +31,33 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
         <thead>
           <tr className="bg-muted/50 text-left">
             <th className="sticky left-0 z-20 min-w-[190px] border-r bg-muted p-3 font-semibold shadow-[6px_0_12px_-10px_rgba(15,23,42,0.8)]">Equipamento</th>
-            {MESES_ABREV.map((m) => (
-              <th key={m} className="p-2 font-medium text-center">{m}</th>
-            ))}
+            {MESES_ABREV.map((m, idx) => {
+              const visita = visitas?.[idx];
+              return (
+                <th key={m} className="p-2 font-medium text-center align-top">
+                  <div>{m}</div>
+                  {visita && (
+                    onAlterarData ? (
+                      <button
+                        type="button"
+                        onClick={() => onAlterarData(idx)}
+                        title={`Alterar a data da visita de ${m} de ${ano}`}
+                        aria-label={`Visita de ${m} de ${ano} no dia ${visita.data.getDate()}. Clique para alterar a data.`}
+                        className={`mt-1 w-full rounded px-1 py-0.5 text-[11px] font-semibold underline-offset-2 hover:underline ${
+                          visita.remarcada ? 'text-amber-700' : 'text-indigo-700'
+                        }`}
+                      >
+                        dia {visita.data.getDate()}{visita.remarcada ? ' *' : ''}
+                      </button>
+                    ) : (
+                      <div className={`mt-1 text-[11px] font-semibold ${visita.remarcada ? 'text-amber-700' : 'text-indigo-700'}`}>
+                        dia {visita.data.getDate()}{visita.remarcada ? ' *' : ''}
+                      </div>
+                    )
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -79,6 +103,7 @@ export default function CronogramaAnualGrid({ equipamentos, ano, onAncorar, salv
       </div>
       <p className="text-xs text-muted-foreground">
         Ao trocar a periodicidade de um m&ecirc;s, o sistema usa esse m&ecirc;s como nova &acirc;ncora e recalcula o ano inteiro.
+        {visitas ? ' O dia no cabeçalho é a data da visita; um asterisco marca o mês remarcado.' : ''}
       </p>
     </div>
   );

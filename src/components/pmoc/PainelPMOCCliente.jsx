@@ -1,28 +1,44 @@
 import React from "react";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { PlayCircle, BookOpen, Cpu, CalendarRange } from "lucide-react";
+import { PlayCircle, BookOpen, Cpu, CalendarRange, CalendarClock } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
   statusManutencao,
   STATUS_MANUTENCAO_CONFIG,
   ancoraParaEscolha,
 } from "@/lib/pmocChecklist";
+import {
+  chaveMes,
+  indexarAgendamentos,
+  proximaVisita,
+  visitasDoAno,
+  diaVisitaDoCliente,
+  temDiaDefinido,
+} from "@/lib/pmocDataVisita";
 import CronogramaAnualGrid from "./CronogramaAnualGrid";
+import AgendarVisitaPMOC from "./AgendarVisitaPMOC";
 
 // Painel dinâmico: mostra TODOS os equipamentos ativos no PMOC de um cliente
 // (podem ser 1 ou 50) com o cronograma anual completo direto na página — os
 // 12 meses pré-preenchidos pela escada (mensal/trimestral/semestral/anual) e
 // editáveis aqui mesmo, sem precisar abrir o modal do Plano Anual (que fica
 // só para gerar o documento PDF e sincronizar a Agenda).
-export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRodada, onGerarCaderno, onVerPlanoAnual }) {
+export default function PainelPMOCCliente({ cliente, equipamentos, empresaId, onExecutarRodada, onGerarCaderno, onVerPlanoAnual }) {
   const queryClient = useQueryClient();
   const ano = new Date().getFullYear();
+  const [remarcandoMes, setRemarcandoMes] = React.useState(null);
+
+  const { data: agendamentos = [] } = useQuery({
+    queryKey: ['pmoc-agendamentos', cliente?.id],
+    queryFn: () => base44.entities.PmocAgendamento.filter({ cliente_id: cliente.id }),
+    enabled: !!cliente?.id,
+  });
 
   const updateEquipamentoMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Equipamento.update(id, data),
@@ -36,6 +52,10 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
   });
 
   if (!cliente) return null;
+
+  const indiceAgendamentos = indexarAgendamentos(agendamentos);
+  const visitas = visitasDoAno(cliente, ano, indiceAgendamentos);
+  const proxima = proximaVisita(cliente, indiceAgendamentos);
 
   const handleAncorar = (equipamento, mesIndex0, periodicidade) => {
     updateEquipamentoMutation.mutate({
@@ -123,6 +143,39 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
           </div>
         ) : (
           <>
+            <div className="flex flex-col gap-2 border-b bg-indigo-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2 text-sm">
+                <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-indigo-700" aria-hidden="true" />
+                <div>
+                  <p className="font-semibold text-indigo-950">
+                    Próxima visita: {proxima ? format(proxima.data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'a definir'}
+                    {proxima?.remarcada ? ' (remarcada)' : ''}
+                  </p>
+                  <p className="text-xs text-indigo-900/80">
+                    {temDiaDefinido(cliente)
+                      ? `Visitas no dia ${diaVisitaDoCliente(cliente)} de cada mês.`
+                      : `Visitas no dia ${diaVisitaDoCliente(cliente)} de cada mês, herdado da data de cadastro do cliente.`}
+                    {' '}Clique no dia sob o mês para remarcar.
+                  </p>
+                  {proxima?.observacao && (
+                    <p className="mt-1 text-xs text-amber-800">Motivo: {proxima.observacao}</p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 bg-card"
+                onClick={() => setRemarcandoMes(
+                  proxima
+                    ? { ano: proxima.ano, mes0: proxima.mes0 }
+                    : { ano, mes0: new Date().getMonth() }
+                )}
+              >
+                Alterar data
+              </Button>
+            </div>
+
             <div className="flex flex-wrap gap-3 p-4 border-b bg-muted/30">
               {Object.entries(contagem)
                 .filter(([, qtd]) => qtd > 0)
@@ -143,6 +196,8 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
                     onAncorar={handleAncorar}
                     salvando={updateEquipamentoMutation.isPending}
                     renderInfoEquipamento={renderInfoEquipamento}
+                    visitas={visitas}
+                    onAlterarData={(mes0) => setRemarcandoMes({ ano, mes0 })}
                   />
                 </div>
               ))}
@@ -156,6 +211,17 @@ export default function PainelPMOCCliente({ cliente, equipamentos, onExecutarRod
           </>
         )}
       </CardContent>
+
+      {remarcandoMes && (
+        <AgendarVisitaPMOC
+          cliente={cliente}
+          ano={remarcandoMes.ano}
+          mes0={remarcandoMes.mes0}
+          agendamento={indiceAgendamentos[chaveMes(remarcandoMes.ano, remarcandoMes.mes0)] || null}
+          empresaId={empresaId}
+          onClose={() => setRemarcandoMes(null)}
+        />
+      )}
     </Card>
   );
 }

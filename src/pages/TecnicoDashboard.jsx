@@ -520,7 +520,7 @@ export default function TecnicoDashboard() {
         )}
 
         {abaSelecionada === 'pmocs' && (
-          <MeusPMOCs pmocs={meusPMOCs} clientes={clientes} />
+          <MeusPMOCs pmocs={meusPMOCs} clientes={clientes} empresaId={user?.empresa_id} />
         )}
 
         {abaSelecionada === 'financeiro' && (

@@ -118,6 +118,7 @@ export default function ClientesPage() {
         longitude: clienteData.longitude,
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
+        dia_execucao_pmoc: clienteData.dia_execucao_pmoc ?? null,
         tem_acesso_portal: clienteData.tem_acesso_portal,
         estabelecimentos: clienteData.estabelecimentos || [],
         empresa_id: empresaId,
@@ -167,6 +168,7 @@ export default function ClientesPage() {
         longitude: clienteData.longitude,
         tipo_estabelecimento: clienteData.tipo_estabelecimento,
         observacoes: clienteData.observacoes,
+        dia_execucao_pmoc: clienteData.dia_execucao_pmoc ?? null,
         tem_acesso_portal: clienteData.tem_acesso_portal,
         estabelecimentos: clienteData.estabelecimentos || [],
         ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
