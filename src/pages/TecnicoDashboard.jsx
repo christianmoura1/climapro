@@ -28,6 +28,7 @@ import CreditosPendentes from "../components/tecnico/CreditosPendentes";
 import RegistrarPonto from "../components/ponto/RegistrarPonto"; // New import for Ponto Eletrônico component
 import AprovarEdicoesPonto from "../components/ponto/AprovarEdicoesPonto";
 import { PageLoading } from "@/components/ui/page-loading";
+import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 import { toast } from "@/components/ui/use-toast";
 import ChamadoForm from "@/components/chamados/ChamadoForm";
 import EquipamentoForm from "@/components/equipamentos/EquipamentoForm";
@@ -296,6 +297,8 @@ export default function TecnicoDashboard() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <SinoNotificacoes />
+
               {/* New Ponto Eletrônico Button */}
               <Button 
                 variant="outline" 
