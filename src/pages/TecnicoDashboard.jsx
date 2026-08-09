@@ -74,18 +74,28 @@ export default function TecnicoDashboard() {
           }
         }
 
-        await base44.auth.updateMe({
-          ultimo_acesso: new Date().toISOString()
-        });
+        try {
+          await base44.auth.updateMe({
+            ultimo_acesso: new Date().toISOString()
+          });
+        } catch (error) {
+          console.warn("Não foi possível atualizar o último acesso do técnico:", error);
+        }
 
-        await base44.entities.LogAcao.create({
-          empresa_id: currentUser.empresa_id,
-          user_id: currentUser.id,
-          user_email: currentUser.email,
-          tipo_usuario: currentUser.tipo_usuario,
-          acao: "Login no sistema",
-          data_hora: new Date().toISOString()
-        });
+        // O registro de auditoria é complementar e não pode impedir o técnico
+        // de usar o painel quando uma política RLS recusar a inserção.
+        try {
+          await base44.entities.LogAcao.create({
+            empresa_id: currentUser.empresa_id,
+            user_id: currentUser.id,
+            user_email: currentUser.email,
+            tipo_usuario: currentUser.tipo_usuario,
+            acao: "Login no sistema",
+            data_hora: new Date().toISOString()
+          });
+        } catch (error) {
+          console.warn("Não foi possível registrar o login do técnico:", error);
+        }
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         // Clear user/tecnico state and redirect on error
