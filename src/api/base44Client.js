@@ -206,6 +206,10 @@ async function InvokeLLM({ prompt, response_json_schema }) {
   return invokeEdgeFunction('invoke-llm', { prompt, response_json_schema });
 }
 
+async function GerenciarAcessoTecnico({ tecnico_id, password }) {
+  return invokeEdgeFunction('gerenciar-acesso-tecnico', { tecnico_id, password });
+}
+
 export const base44 = {
   entities: entitiesProxy,
   auth: {
@@ -221,6 +225,7 @@ export const base44 = {
       SendEmail,
       UploadFile,
       InvokeLLM,
+      GerenciarAcessoTecnico,
     },
   },
 };
