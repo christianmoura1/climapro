@@ -31,15 +31,31 @@ export const PLANOS = [
     nome: 'Free',
     preco: 'Gratuito',
     valor: 0,
-    resumo: 'Para quem trabalha sozinho e quer sair do caderno',
+    resumo: 'Para experimentar e sair do caderno',
     tecnicos: 1,
     destaque: false,
     inclui: [
-      'Chamados e clientes ilimitados',
+      'Até 40 chamados por mês',
+      'Até 20 clientes',
       'Cadastro de equipamentos',
       '1 técnico',
       'PMOC de 1 cliente',
       'Fecha chamado com foto e assinatura, mesmo sem internet',
+    ],
+    naoInclui: ['Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
+  },
+  {
+    id: 'basic',
+    nome: 'Basic',
+    preco: 'R$ 29,90/mês',
+    valor: 29.9,
+    resumo: 'Para quem passou do volume do Free',
+    tecnicos: 1,
+    destaque: false,
+    inclui: [
+      'Tudo do Free',
+      'Chamados ilimitados',
+      'Clientes ilimitados',
     ],
     naoInclui: ['Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
   },
@@ -53,7 +69,7 @@ export const PLANOS = [
     tecnicoAdicional: 29,
     destaque: true,
     inclui: [
-      'Tudo do Free',
+      'Tudo do Basic',
       'PMOC ilimitado, com cronograma anual e caderno de manutenção',
       'Até 3 técnicos (adicional R$ 29/mês cada)',
       'Agenda com Google Calendar',
@@ -116,6 +132,12 @@ export function planoQueLibera(modulo) {
   return planoPorId(porModulo[modulo]) || null;
 }
 
+// Menor plano que tira o teto de volume. O Free é o único com limite de
+// chamados e clientes, então quem estourar é sempre convidado para o Basic.
+export function planoQueLiberaVolume() {
+  return planoPorId('basic');
+}
+
 // Espelho do que o webhook grava (supabase/functions/_shared/stripe.ts). Serve
 // ao painel admin, que troca o plano de uma empresa na mão, sem passar pelo
 // Stripe. Sem isso o admin gravaria o plano e deixaria os módulos como
@@ -136,13 +158,19 @@ const MODULOS_EMPRESA = {
   financeiro: true, notas_fiscais: true, multiempresa: true,
 };
 
+// O Free passa a ter teto de volume: é o que separa ele do Basic, já que os
+// dois entregam exatamente os mesmos módulos.
+export const LIMITE_CHAMADOS_FREE = 40;
+export const LIMITE_CLIENTES_FREE = 20;
+
 const APLICACAO_POR_PLANO = {
-  free: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_FREE },
-  profissional: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
-  empresa: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
-  enterprise: { limite_tecnicos: ILIMITADO, limite_empresas: ILIMITADO, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: { ...MODULOS_EMPRESA, api: true, white_label: true } },
-  essencial: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
-  corporativo: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
+  free: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: LIMITE_CHAMADOS_FREE, limite_clientes: LIMITE_CLIENTES_FREE, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_FREE },
+  basic: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_FREE },
+  profissional: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
+  empresa: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
+  enterprise: { limite_tecnicos: ILIMITADO, limite_empresas: ILIMITADO, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: { ...MODULOS_EMPRESA, api: true, white_label: true } },
+  essencial: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
+  corporativo: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
 };
 
 // Campos a gravar na empresa ao mudar o plano manualmente.

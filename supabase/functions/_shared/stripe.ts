@@ -12,6 +12,7 @@ const STRIPE_SECRET_KEY = limparSecret(Deno.env.get('STRIPE_SECRET_KEY'));
 
 // Preços (IDs price_...) configurados nos secrets — um por plano pago.
 export const PRECOS_POR_PLANO: Record<string, string | undefined> = {
+  basic: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC')),
   profissional: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')),
   empresa: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA')),
   // Planos antigos: mantidos para o webhook reconhecer assinaturas que já
@@ -36,7 +37,10 @@ export function planoDoPrice(priceId: string): string | null {
 // não dá para importar um do outro, então mexeu aqui, confira lá.
 // 999999 = ilimitado na prática.
 export const LIMITES_POR_PLANO: Record<string, Record<string, number>> = {
-  free: { limite_tecnicos: 1, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 1 },
+  // O Free ganhou teto de volume: é o que separa ele do Basic, já que os dois
+  // entregam os mesmos módulos. Mexeu aqui, confira src/lib/planos.js.
+  free: { limite_tecnicos: 1, limite_clientes: 20, limite_empresas: 1, limite_chamados_mes: 40, limite_clientes_pmoc: 1 },
+  basic: { limite_tecnicos: 1, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 1 },
   profissional: { limite_tecnicos: 3, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
   empresa: { limite_tecnicos: 10, limite_clientes: 999999, limite_empresas: 3, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
   enterprise: { limite_tecnicos: 999999, limite_clientes: 999999, limite_empresas: 999999, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
@@ -69,6 +73,8 @@ const MODULOS_EMPRESA = {
 // fechar só a etiqueta no Free.
 export const MODULOS_POR_PLANO: Record<string, Record<string, boolean>> = {
   free: { ...MODULOS_FREE, qr_equipamento: false },
+  // Basic é o Free sem teto de volume: mesmos módulos, de propósito.
+  basic: { ...MODULOS_FREE, qr_equipamento: false },
   profissional: { ...MODULOS_PROFISSIONAL, qr_equipamento: true },
   empresa: { ...MODULOS_EMPRESA, qr_equipamento: true },
   enterprise: { ...MODULOS_EMPRESA, qr_equipamento: true, api: true, white_label: true },

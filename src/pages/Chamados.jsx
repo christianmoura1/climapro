@@ -22,6 +22,8 @@ import { toast } from "@/components/ui/use-toast";
 
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
+import { chamadosDoMes, mensagemDeLimite } from "@/lib/limitesPlano";
+import { useEmpresa } from "@/hooks/useEmpresa";
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingChamado, setEditingChamado] = useState(null);
@@ -78,6 +80,8 @@ export default function ChamadosPage() {
   }, []);
 
   // FILTRAR CHAMADOS POR EMPRESA - mesma lógica do Dashboard
+  const { empresa: empresaAtual, atingiuLimite } = useEmpresa();
+
   const { data: chamados = [], isLoading, error: chamadosError, refetch: refetchChamados } = useQuery({
     queryKey: ['chamados', user?.empresa_id, user?.role, forceRender],
     queryFn: async () => {
@@ -226,7 +230,10 @@ ClimaPro`
     },
     onError: (error) => {
       console.error("[Chamados] Erro ao criar chamado:", error);
-      toast({ description: "Erro ao criar chamado. Tente novamente.", variant: "destructive" });
+      toast({
+        description: mensagemDeLimite(error) || "Erro ao criar chamado. Tente novamente.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -379,6 +386,17 @@ ClimaPro - Sistema de Gestão`
           }
         });
       } else {
+        // O gatilho no banco é quem barra de fato; isso evita preencher o
+        // chamado inteiro para levar o "não" no fim.
+        if (atingiuLimite('limite_chamados_mes', chamadosDoMes(chamados))) {
+          toast({
+            description: `Seu plano permite ${empresaAtual?.limite_chamados_mes} chamado(s) por mês e você já abriu ${chamadosDoMes(chamados)}. `
+              + 'O plano Basic, por R$ 29,90/mês, deixa ilimitado.',
+            variant: 'default',
+          });
+          return;
+        }
+
         createMutation.mutate({
           chamadoData: {
             ...data,
