@@ -6,11 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, AlertTriangle, CreditCard, Star, Users, Building2 } from "lucide-react";
+import { Check, X, AlertTriangle, CreditCard, Star, Users, Building2, ClipboardList } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
-import { PLANOS, nomeDoPlano, ehIlimitado, formatarLimite } from "@/lib/planos";
+import { PLANOS, nomeDoPlano, ehIlimitado, formatarLimite, ILIMITADO } from "@/lib/planos";
+import { chamadosDoMes } from "@/lib/limitesPlano";
 
 export default function PlanosPage() {
   const [user, setUser] = useState(null);
@@ -41,6 +42,19 @@ export default function PlanosPage() {
 
   // Clientes com PMOC: os que têm ao menos um equipamento no plano. É o
   // limite que separa o Free (1 cliente) dos planos pagos.
+  // Consumo do mês, para o Free enxergar quanto falta para o teto.
+  const { data: chamados = [] } = useQuery({
+    queryKey: ['chamados-empresa-planos', empresa?.id],
+    queryFn: () => base44.entities.Chamado.filter({ empresa_id: empresa.id }),
+    enabled: !!empresa?.id,
+  });
+
+  const { data: clientes = [] } = useQuery({
+    queryKey: ['clientes-empresa-planos', empresa?.id],
+    queryFn: () => base44.entities.Cliente.filter({ empresa_id: empresa.id }),
+    enabled: !!empresa?.id,
+  });
+
   const { data: clientesComPmoc = 0 } = useQuery({
     queryKey: ['clientes-com-pmoc', empresa?.id],
     queryFn: async () => {
@@ -104,8 +118,14 @@ export default function PlanosPage() {
   const limiteTecnicos = empresa?.limite_tecnicos ?? 1;
   const limitePmoc = empresa?.limite_clientes_pmoc ?? 1;
 
+  const limiteChamados = empresa?.limite_chamados_mes ?? ILIMITADO;
+  const limiteClientes = empresa?.limite_clientes ?? ILIMITADO;
+  const chamadosNoMes = chamadosDoMes(chamados);
+
   const estourouTecnicos = !ehIlimitado(limiteTecnicos) && tecnicos.length >= limiteTecnicos;
   const estourouPmoc = !ehIlimitado(limitePmoc) && clientesComPmoc >= limitePmoc;
+  const estourouChamados = !ehIlimitado(limiteChamados) && chamadosNoMes >= limiteChamados;
+  const estourouClientes = !ehIlimitado(limiteClientes) && clientes.length >= limiteClientes;
 
   return (
     <PageShell>
@@ -122,13 +142,15 @@ export default function PlanosPage() {
         ) : null}
       />
 
-      {(estourouTecnicos || estourouPmoc) && (
+      {(estourouTecnicos || estourouPmoc || estourouChamados || estourouClientes) && (
         <Card className="mb-6 border-2 border-amber-300 bg-amber-50 shadow-sm">
           <CardContent className="p-5 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-sm text-amber-900">
               <p className="font-semibold">Seu plano chegou no limite</p>
               <p className="mt-1">
+                {estourouChamados && `Você abriu ${chamadosNoMes} de ${formatarLimite(limiteChamados)} chamados deste mês. `}
+                {estourouClientes && `Você tem ${clientes.length} de ${formatarLimite(limiteClientes)} clientes. `}
                 {estourouTecnicos && `Você usa ${tecnicos.length} de ${formatarLimite(limiteTecnicos)} técnicos. `}
                 {estourouPmoc && `Você tem PMOC em ${clientesComPmoc} de ${formatarLimite(limitePmoc)} cliente(s). `}
                 Suba de plano para continuar cadastrando.
@@ -139,7 +161,7 @@ export default function PlanosPage() {
       )}
 
       {empresa && (
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid gap-4 mb-8 sm:grid-cols-2 xl:grid-cols-3">
           <Card className="shadow-sm border-none">
             <CardContent className="p-5">
               <p className="text-sm text-muted-foreground">Plano atual</p>
@@ -151,6 +173,34 @@ export default function PlanosPage() {
               )}
             </CardContent>
           </Card>
+
+          {!ehIlimitado(limiteChamados) && (
+            <Card className="shadow-sm border-none">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Chamados neste mês</p>
+                  <p className={`text-xl font-bold ${estourouChamados ? 'text-amber-600' : 'text-foreground'}`}>
+                    {chamadosNoMes} / {formatarLimite(limiteChamados)}
+                  </p>
+                </div>
+                <ClipboardList className="w-7 h-7 text-blue-400" />
+              </CardContent>
+            </Card>
+          )}
+
+          {!ehIlimitado(limiteClientes) && (
+            <Card className="shadow-sm border-none">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Clientes</p>
+                  <p className={`text-xl font-bold ${estourouClientes ? 'text-amber-600' : 'text-foreground'}`}>
+                    {clientes.length} / {formatarLimite(limiteClientes)}
+                  </p>
+                </div>
+                <Building2 className="w-7 h-7 text-emerald-400" />
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="shadow-sm border-none">
             <CardContent className="p-5 flex items-center justify-between">
@@ -178,7 +228,7 @@ export default function PlanosPage() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {PLANOS.map((plano) => {
           const atual = plano.id === planoAtualId;
           return (

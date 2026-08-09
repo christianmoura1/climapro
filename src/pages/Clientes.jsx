@@ -17,6 +17,8 @@ import { PageLoading } from "@/components/ui/page-loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "@/components/ui/use-toast";
 import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
+import { mensagemDeLimite } from "@/lib/limitesPlano";
+import { useEmpresa } from "@/hooks/useEmpresa";
 
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -44,6 +46,7 @@ export default function ClientesPage() {
   }, []);
 
   const empresaId = user?.data?.empresa_id || user?.empresa_id;
+  const { atingiuLimite } = useEmpresa();
 
   const { data: clientes = [], isLoading, error: clientesError, refetch: refetchClientes } = useQuery({
     queryKey: ['clientes', empresaId],
@@ -152,7 +155,10 @@ export default function ClientesPage() {
     },
     onError: (error) => {
       console.error("Erro ao criar cliente:", error);
-      toast({ description: error.message || "Erro ao criar cliente. Verifique os dados e tente novamente.", variant: "default" });
+      toast({
+        description: mensagemDeLimite(error) || error.message || "Erro ao criar cliente. Verifique os dados e tente novamente.",
+        variant: "default",
+      });
     }
   });
 
@@ -265,9 +271,21 @@ export default function ClientesPage() {
 
     if (editingCliente) {
       updateMutation.mutate({ id: editingCliente.id, clienteData });
-    } else {
-      createMutation.mutate(clienteData);
+      return;
     }
+
+    // O gatilho no banco é quem realmente barra; isso aqui é só para o usuário
+    // não preencher a ficha inteira e levar o "não" no fim.
+    if (atingiuLimite('limite_clientes', clientes.length)) {
+      toast({
+        description: `Seu plano permite ${empresa?.limite_clientes} cliente(s) e você já cadastrou ${clientes.length}. `
+          + 'O plano Basic, por R$ 29,90/mês, deixa ilimitado.',
+        variant: 'default',
+      });
+      return;
+    }
+
+    createMutation.mutate(clienteData);
   };
 
   const handleDelete = (clienteId) => { // Modified to accept ID

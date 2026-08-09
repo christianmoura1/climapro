@@ -292,8 +292,10 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
               await updateEmpresaMutation.mutateAsync({
                 id: empresa.id,
                 data: {
-                  plano: 'free',
-                  limite_chamados_mes: 5,
+                  // aplicacaoDoPlano grava limites e módulos juntos; o valor
+                  // fixo que estava aqui deixou de bater com o plano Free
+                  // quando o teto virou 40 chamados.
+                  ...aplicacaoDoPlano('free'),
                   status_pagamento: 'bloqueado',
                   status: 'suspensa'
                 }
