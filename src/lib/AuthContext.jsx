@@ -12,21 +12,39 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
+    let isActive = true;
+    let pendingAuthChange = null;
+
     checkAppState();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        loadUser();
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        setIsLoadingAuth(false);
-      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // O estado inicial já é carregado por checkAppState(). Processá-lo aqui
+      // também iniciava duas leituras concorrentes do perfil no primeiro acesso.
+      if (event === 'INITIAL_SESSION') return;
+
+      // O Supabase recomenda não aguardar novas chamadas do próprio cliente
+      // dentro deste callback. Adiamos a leitura para evitar deadlock no login.
+      if (pendingAuthChange) clearTimeout(pendingAuthChange);
+      pendingAuthChange = setTimeout(() => {
+        if (!isActive) return;
+
+        if (session) {
+          void loadUser();
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsLoadingAuth(false);
+        }
+      }, 0);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isActive = false;
+      if (pendingAuthChange) clearTimeout(pendingAuthChange);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const loadUser = async () => {
