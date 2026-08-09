@@ -8,6 +8,8 @@ import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import UserNotRegisteredError from "@/components/UserNotRegisteredError";
 import { PageLoading } from "@/components/ui/page-loading";
+import RequerModulo from "@/components/ui/requer-modulo";
+import { MODULO_POR_PAGINA } from "@/lib/planos";
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -48,17 +50,27 @@ function AuthenticatedApp() {
             </LayoutWrapper>
           }
         />
-        {Object.entries(Pages).map(([path, Page]) => (
-          <Route
-            key={path}
-            path={`/${path}`}
-            element={
-              <LayoutWrapper currentPageName={path}>
-                <Page />
-              </LayoutWrapper>
-            }
-          />
-        ))}
+        {Object.entries(Pages).map(([path, Page]) => {
+          // Módulos fechados pelo plano param aqui. Antes, modulos_ativos só
+          // filtrava o menu lateral: digitar /Estoque na barra de endereço
+          // abria a tela em qualquer plano.
+          const modulo = MODULO_POR_PAGINA[path];
+          const pagina = modulo
+            ? <RequerModulo modulo={modulo}><Page /></RequerModulo>
+            : <Page />;
+
+          return (
+            <Route
+              key={path}
+              path={`/${path}`}
+              element={
+                <LayoutWrapper currentPageName={path}>
+                  {pagina}
+                </LayoutWrapper>
+              }
+            />
+          );
+        })}
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </React.Suspense>

@@ -160,7 +160,7 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
               )}
 
               {/* New action buttons */}
-              <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className={`mt-4 grid gap-2 ${onQrCode ? "grid-cols-3" : "grid-cols-2"}`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -178,14 +178,16 @@ export default function EquipamentosList({ equipamentos, clientes, isLoading, on
                   <Edit className="w-4 h-4 mr-2" />
                   Editar
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onQrCode(equipamento)}
-                >
-                  <QrCode className="w-4 h-4 mr-2" />
-                  QR Code
-                </Button>
+                {onQrCode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onQrCode(equipamento)}
+                  >
+                    <QrCode className="w-4 h-4 mr-2" />
+                    QR Code
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"

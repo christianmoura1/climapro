@@ -151,6 +151,20 @@ export function aplicacaoDoPlano(planoId) {
   return { plano: planoId, ...base };
 }
 
+// Página → módulo que ela exige. Aplicado nas rotas em PrivateApplication.jsx.
+// Páginas fora deste mapa são abertas para qualquer plano.
+//
+// PMOC não entra: o módulo é true em todos os planos e o que separa o Free é o
+// limite de clientes com PMOC, cobrado na hora de ativar o equipamento.
+export const MODULO_POR_PAGINA = {
+  Agenda: 'agenda',
+  Orcamentos: 'orcamentos',
+  Estoque: 'estoque',
+  PontoEletronico: 'ponto_eletronico',
+  Financeiro: 'financeiro',
+  NotasFiscais: 'notas_fiscais',
+};
+
 export function ehIlimitado(valor) {
   return Number(valor) >= ILIMITADO;
 }

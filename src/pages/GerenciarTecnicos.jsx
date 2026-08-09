@@ -23,9 +23,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { useEmpresa } from "@/hooks/useEmpresa";
 
 
 export default function GerenciarTecnicosPage() {
+  const { atingiuLimite } = useEmpresa();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -90,6 +92,15 @@ export default function GerenciarTecnicosPage() {
     mutationFn: async (data) => {
       if (!empresa) {
         throw new Error("Detalhes da empresa não disponíveis. Tente novamente.");
+      }
+
+      // Limite do plano. A verificação fica aqui, no caminho por onde todo
+      // cadastro passa, e não só no botão — esconder o botão não impede nada.
+      if (atingiuLimite('limite_tecnicos', tecnicos.length)) {
+        throw new Error(
+          `Seu plano permite ${empresa.limite_tecnicos} técnico(s) e você já cadastrou ${tecnicos.length}. `
+          + `Suba de plano ou contrate um técnico adicional em Planos.`
+        );
       }
 
       // Criar técnico

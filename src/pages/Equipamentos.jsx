@@ -16,8 +16,10 @@ import { toast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ErrorState, FilterEmptyState, PageHeader, PageShell } from "@/components/ui/page-shell";
+import { useEmpresa } from "@/hooks/useEmpresa";
 
 export default function EquipamentosPage() {
+  const { atingiuLimite, temModulo } = useEmpresa();
   const [showForm, setShowForm] = useState(false);
   const [editingEquipamento, setEditingEquipamento] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -173,7 +175,27 @@ export default function EquipamentosPage() {
     }
   });
 
+  // Clientes que já têm ao menos um equipamento no PMOC. É o que o Free
+  // limita a 1: o operador monta um PMOC completo para um cliente e vê o
+  // caderno de manutenção pronto; o segundo contrato exige plano pago.
+  const clientesComPmoc = new Set(
+    equipamentos.filter((e) => e.pmoc_ativo).map((e) => e.cliente_id)
+  );
+
   const handleSubmit = (data) => {
+    const ligandoPmocEmClienteNovo = data.pmoc_ativo
+      && data.cliente_id
+      && !clientesComPmoc.has(data.cliente_id);
+
+    if (ligandoPmocEmClienteNovo && atingiuLimite('limite_clientes_pmoc', clientesComPmoc.size)) {
+      toast({
+        description: `⚠️ Seu plano inclui PMOC para ${empresa?.limite_clientes_pmoc} cliente(s). `
+          + `Suba de plano em Planos para atender mais clientes com PMOC.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (editingEquipamento) {
       updateMutation.mutate({ id: editingEquipamento.id, data });
     } else {
@@ -268,15 +290,17 @@ export default function EquipamentosPage() {
           backTo={createPageUrl("Dashboard")}
           actions={
             <>
-              <Button
-                variant="outline"
-                onClick={() => setImprimindoTodosQr(true)}
-                disabled={filteredEquipamentos.length === 0}
-                className="w-full sm:w-auto"
-              >
-                <Printer className="w-5 h-5 mr-2" />
-                Imprimir QR Codes
-              </Button>
+              {temModulo('qr_equipamento') && (
+                <Button
+                  variant="outline"
+                  onClick={() => setImprimindoTodosQr(true)}
+                  disabled={filteredEquipamentos.length === 0}
+                  className="w-full sm:w-auto"
+                >
+                  <Printer className="w-5 h-5 mr-2" />
+                  Imprimir QR Codes
+                </Button>
+              )}
               <Button
                 onClick={() => {
                   setShowForm(!showForm);
@@ -344,7 +368,7 @@ export default function EquipamentosPage() {
           }}
           onDelete={handleDelete}
           onView={handleVisualizarEquipamento}
-          onQrCode={setGerandoQrPara}
+          onQrCode={temModulo('qr_equipamento') ? setGerandoQrPara : null}
         />
         )}
 
