@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Download, CalendarRange, RefreshCw } from "lucide-react";
@@ -9,7 +9,9 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { LABEL_PERIODICIDADE, gerarCronogramaAnual, ancoraParaEscolha } from "@/lib/pmocChecklist";
 import { sincronizarAgendaAnualPMOC } from "@/lib/pmocAgenda";
+import { chaveMes, indexarAgendamentos, visitasDoAno } from "@/lib/pmocDataVisita";
 import CronogramaAnualGrid, { MESES_ABREV } from "./CronogramaAnualGrid";
+import AgendarVisitaPMOC from "./AgendarVisitaPMOC";
 
 // Plano anual de manutenção: cronograma dos 12 meses do ano-calendário
 // para todos os equipamentos ativos
@@ -23,8 +25,17 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   const [statusAgenda, setStatusAgenda] = useState('sincronizando');
   const [equipamentosState, setEquipamentosState] = useState(equipamentos);
   const [empresa, setEmpresa] = useState(null);
+  const [remarcandoMes, setRemarcandoMes] = useState(null);
   const ano = new Date().getFullYear();
   const queryClient = useQueryClient();
+
+  const { data: agendamentos = [] } = useQuery({
+    queryKey: ['pmoc-agendamentos', cliente?.id],
+    queryFn: () => base44.entities.PmocAgendamento.filter({ cliente_id: cliente.id }),
+    enabled: !!cliente?.id,
+  });
+  const indiceAgendamentos = indexarAgendamentos(agendamentos);
+  const visitas = visitasDoAno(cliente, ano, indiceAgendamentos);
 
   useEffect(() => {
     if (!empresaId) return;
@@ -91,7 +102,11 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
         .map((eq) => {
           const cronograma = gerarCronogramaAnual(eq, ano);
           const celulas = cronograma
-            .map((m) => `<td class="${m.cicloProfundo ? 'ciclo-profundo' : 'mensal'}">${LABEL_PERIODICIDADE[m.periodicidade]}</td>`)
+            .map((m, idx) => {
+              const visita = visitas[idx];
+              const dia = visita ? `<span class="dia">${String(visita.data.getDate()).padStart(2, '0')}/${String(visita.data.getMonth() + 1).padStart(2, '0')}</span>` : '';
+              return `<td class="${m.cicloProfundo ? 'ciclo-profundo' : 'mensal'}">${LABEL_PERIODICIDADE[m.periodicidade]}${dia}</td>`;
+            })
             .join('');
           return `
             <tr>
@@ -130,6 +145,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   td.equip-nome .muted { font-weight: 400; color: #6b7280; font-size: 8.5px; }
   td.ciclo-profundo { color: #6b21a8; font-weight: bold; background: #f3e8ff; }
   td.mensal { color: #64748b; }
+  td .dia { display: block; margin-top: 2px; font-weight: 700; font-size: 8.5px; color: #1d4ed8; }
   .legenda { margin-top: 12px; font-size: 9px; color: #4b5563; display: flex; gap: 20px; }
   .legenda span { display: inline-flex; align-items: center; gap: 6px; }
   .footer { position: fixed; left: 0; right: 0; bottom: -11mm; display: flex; justify-content: space-between; border-top: 1px solid #d7deea; padding-top: 4px; color: #6b7280; font-size: 8px; }
@@ -164,6 +180,7 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
   <div class="legenda">
     <span>Destacado = ciclo com atividades adicionais naquele mês</span>
     <span>Mensal = checagem básica (filtros, inspeção, drenos)</span>
+    <span>A data sob cada mês é o dia previsto da visita.</span>
   </div>
 
   <div class="footer">
@@ -233,6 +250,8 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
             ano={ano}
             onAncorar={ancorarPeriodicidadeNoMes}
             salvando={updateEquipamentoMutation.isPending}
+            visitas={visitas}
+            onAlterarData={(mes0) => setRemarcandoMes({ ano, mes0 })}
           />
 
           <Button
@@ -245,6 +264,22 @@ export default function PlanoAnualPMOC({ cliente, equipamentos, empresaId, pmocI
           </Button>
         </CardContent>
       </Card>
+
+      {remarcandoMes && (
+        <AgendarVisitaPMOC
+          cliente={cliente}
+          ano={remarcandoMes.ano}
+          mes0={remarcandoMes.mes0}
+          agendamento={indiceAgendamentos[chaveMes(remarcandoMes.ano, remarcandoMes.mes0)] || null}
+          empresaId={empresaId}
+          onClose={() => {
+            setRemarcandoMes(null);
+            // A Agenda guarda os eventos com a data antiga; sem ressincronizar,
+            // o técnico continuaria vendo a visita no dia que foi remarcado.
+            sincronizarAgenda();
+          }}
+        />
+      )}
     </div>
   );
 }

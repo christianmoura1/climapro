@@ -1,0 +1,113 @@
+// Data da visita do PMOC.
+//
+// O cronograma anual sabe o mês de cada visita e a periodicidade que vence
+// nele; aqui entra o dia. A regra é uma só: todo mês a visita cai no mesmo dia
+// naquele cliente, e a empresa pode remarcar um mês específico sem mexer nos
+// outros.
+//
+// Funções puras de propósito — a mesma conta roda na página do PMOC, no painel
+// do técnico, no portal do cliente e no documento impresso, e todos precisam
+// mostrar a mesma data.
+
+// "yyyy-mm-dd" do banco precisa virar data no fuso LOCAL. `new Date("2026-09-10")`
+// é meia-noite UTC, que no Brasil ainda é dia 9 — a visita apareceria um dia
+// antes na tela.
+export function parseDataLocal(valor) {
+  if (!valor) return null;
+  if (valor instanceof Date) return valor;
+  const m = String(valor).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return new Date(valor);
+}
+
+export function formatarISO(data) {
+  const d = data instanceof Date ? data : parseDataLocal(data);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function chaveMes(ano, mes0) {
+  return `${ano}-${String(mes0 + 1).padStart(2, '0')}`;
+}
+
+// Dia do mês em que as visitas daquele cliente caem. Sem escolha explícita,
+// usa o dia do cadastro: espalha os clientes pelo mês em vez de empilhar todos
+// no mesmo dia, e é estável (não muda sozinho de um mês para o outro).
+export function diaVisitaDoCliente(cliente) {
+  if (cliente?.dia_execucao_pmoc) return Number(cliente.dia_execucao_pmoc);
+  const cadastro = parseDataLocal(cliente?.created_at);
+  if (cadastro && !Number.isNaN(cadastro.getTime())) return cadastro.getDate();
+  return 10;
+}
+
+// Cliente sem dia escolhido tem um dia derivado do cadastro, e a tela precisa
+// dizer isso — senão a data parece ter saído do nada.
+export function temDiaDefinido(cliente) {
+  return !!cliente?.dia_execucao_pmoc;
+}
+
+function ultimoDiaDoMes(ano, mes0) {
+  return new Date(ano, mes0 + 1, 0).getDate();
+}
+
+// Índice das exceções por mês, montado uma vez e reusado em toda a grade.
+// Aceita a lista crua vinda de `PmocAgendamento.filter(...)`.
+export function indexarAgendamentos(agendamentos = []) {
+  const indice = {};
+  for (const a of agendamentos) {
+    const mes = parseDataLocal(a.mes_referencia);
+    if (!mes) continue;
+    indice[chaveMes(mes.getFullYear(), mes.getMonth())] = a;
+  }
+  return indice;
+}
+
+// Mesmo índice, um por cliente — para telas que listam vários clientes de uma
+// vez (painel do técnico, agenda da empresa) sem uma consulta por cliente.
+export function indexarAgendamentosPorCliente(agendamentos = []) {
+  const porCliente = {};
+  for (const a of agendamentos) {
+    if (!porCliente[a.cliente_id]) porCliente[a.cliente_id] = [];
+    porCliente[a.cliente_id].push(a);
+  }
+  return Object.fromEntries(
+    Object.entries(porCliente).map(([id, lista]) => [id, indexarAgendamentos(lista)])
+  );
+}
+
+// Data da visita de um mês: a exceção daquele mês, se existir; senão o dia fixo
+// do cliente, encurtado quando o mês não tem aquele dia (dia 31 em fevereiro
+// vira 28/29).
+// `ano`/`mes0` acompanham o retorno porque a visita remarcada pode cair em
+// outro mês: quem for editá-la de novo precisa mirar o mês de referência, não
+// o mês da data.
+export function dataVisitaDoMes(cliente, ano, mes0, indiceAgendamentos = {}) {
+  const excecao = indiceAgendamentos[chaveMes(ano, mes0)];
+  if (excecao?.data_visita) {
+    return {
+      data: parseDataLocal(excecao.data_visita),
+      remarcada: true,
+      observacao: excecao.observacao || '',
+      ano,
+      mes0,
+    };
+  }
+  const dia = Math.min(diaVisitaDoCliente(cliente), ultimoDiaDoMes(ano, mes0));
+  return { data: new Date(ano, mes0, dia), remarcada: false, observacao: '', ano, mes0 };
+}
+
+// As 12 visitas do ano-calendário, na mesma ordem da grade do cronograma.
+export function visitasDoAno(cliente, ano, indiceAgendamentos = {}) {
+  return Array.from({ length: 12 }, (_, mes0) => dataVisitaDoMes(cliente, ano, mes0, indiceAgendamentos));
+}
+
+// Próxima visita a partir de hoje: a deste mês se ainda não passou, senão a do
+// mês seguinte. Olha 13 meses à frente para não devolver null em dezembro.
+export function proximaVisita(cliente, indiceAgendamentos = {}, hoje = new Date()) {
+  const referencia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  for (let i = 0; i < 13; i++) {
+    const alvo = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
+    const visita = dataVisitaDoMes(cliente, alvo.getFullYear(), alvo.getMonth(), indiceAgendamentos);
+    if (visita.data >= referencia) return visita;
+  }
+  return null;
+}

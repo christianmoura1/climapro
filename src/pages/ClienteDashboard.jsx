@@ -26,6 +26,7 @@ import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipame
 import OrcamentosClientePortal from "../components/cliente/OrcamentosClientePortal";
 import EquipamentosClientePortal from "../components/cliente/EquipamentosClientePortal";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
+import { indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 
@@ -103,6 +104,14 @@ export default function ClienteDashboard() {
   const { data: meusPMOCs = [] } = useQuery({
     queryKey: ['meus-pmocs-cliente', cliente?.id],
     queryFn: () => base44.entities.PMOC.filter({ cliente_id: cliente.id }),
+    enabled: !!cliente
+  });
+
+  // Remarcações de mês, para o cliente ver a data que a empresa realmente
+  // programou e não a data padrão do contrato.
+  const { data: agendamentosPMOC = [] } = useQuery({
+    queryKey: ['pmoc-agendamentos', cliente?.id],
+    queryFn: () => base44.entities.PmocAgendamento.filter({ cliente_id: cliente.id }),
     enabled: !!cliente
   });
 
@@ -291,6 +300,10 @@ ${mensagem}
       />
     );
   }
+
+  const visitaAgendada = cliente
+    ? proximaVisita(cliente, indexarAgendamentos(agendamentosPMOC))
+    : null;
 
   const chamadosPendentes = meusChamados.filter(c => c.status === 'pendente' || c.status === 'em_andamento').length;
   const chamadosFinalizados = meusChamados.filter(c => c.status === 'finalizado').length;
@@ -529,11 +542,14 @@ ${mensagem}
                         <div className="flex items-center gap-2 mt-2">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">
-                            Próxima manutenção: {pmoc.proxima_manutencao
-                              ? format(new Date(pmoc.proxima_manutencao), "dd/MM/yyyy", { locale: ptBR })
-                              : 'N/A'}
+                            {visitaAgendada
+                              ? `Próxima visita: ${format(visitaAgendada.data, "dd/MM/yyyy", { locale: ptBR })}`
+                              : 'Próxima visita: a definir'}
                           </span>
                         </div>
+                        {visitaAgendada?.remarcada && (
+                          <p className="mt-1 text-xs text-amber-700">Data remarcada pela empresa.</p>
+                        )}
                       </div>
                       <Badge className="bg-purple-100 text-purple-800">
                         {pmoc.status}
