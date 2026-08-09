@@ -29,3 +29,8 @@ dist-ssr
 
 .env
 base44/.app.jsonc
+
+# SQL de importação gerado a partir de exports de cliente: contém nome,
+# telefone, endereço e assinatura de terceiros. Regenerável pelo script em
+# scripts/gerar-import-gelax.py.
+scripts/import-gelax/
