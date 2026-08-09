@@ -1,7 +1,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Wrench, ClipboardCheck } from "lucide-react";
+import { Check, X, AlertTriangle, Wrench, ClipboardCheck } from "lucide-react";
+import { resultadoChecklistItem } from "@/lib/pmocChecklist";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -52,13 +53,16 @@ export default function HistoricoManutencaoPublico({ historico }) {
                     <ul className="space-y-1 mb-3">
                       {exec.checklist.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-xs">
-                          {item.concluido ? (
+                          {resultadoChecklistItem(item) === 'ok' ? (
                             <Check className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
+                          ) : resultadoChecklistItem(item) === 'nok' ? (
+                            <X className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
                           ) : (
-                            <X className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                           )}
-                          <span className={item.concluido ? "text-foreground" : "text-muted-foreground"}>
+                          <span className={resultadoChecklistItem(item) === 'nok' ? "font-semibold text-red-700" : "text-foreground"}>
                             {item.descricao}
+                            {resultadoChecklistItem(item) === 'nok' && ' (não conforme)'}
                             {item.observacao && <span className="block text-muted-foreground">Obs: {item.observacao}</span>}
                           </span>
                         </li>
