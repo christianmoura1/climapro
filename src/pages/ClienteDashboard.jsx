@@ -26,7 +26,7 @@ import HistoricoEquipamentoCliente from "../components/cliente/HistoricoEquipame
 import OrcamentosClientePortal from "../components/cliente/OrcamentosClientePortal";
 import EquipamentosClientePortal from "../components/cliente/EquipamentosClientePortal";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
-import { indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
+import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 
@@ -301,9 +301,20 @@ ${mensagem}
     );
   }
 
-  const visitaAgendada = cliente
-    ? proximaVisita(cliente, indexarAgendamentos(agendamentosPMOC))
-    : null;
+  // A programação sai dos equipamentos no plano, não da tabela `pmoc`: aquela
+  // linha só nasce quando a empresa executa a primeira rodada, e até lá o
+  // cliente via "Nenhum PMOC programado" mesmo tendo equipamento no contrato.
+  const equipamentosNoPlano = equipamentos.filter((eq) => eq.pmoc_ativo);
+  const indiceAgendamentos = indexarAgendamentos(agendamentosPMOC);
+  const visitaAgendada = cliente ? proximaVisita(cliente, indiceAgendamentos) : null;
+  const proximasVisitas = cliente
+    ? Array.from({ length: 6 }, (_, i) => {
+        const base = new Date();
+        base.setDate(1);
+        base.setMonth(base.getMonth() + i);
+        return dataVisitaDoMes(cliente, base.getFullYear(), base.getMonth(), indiceAgendamentos);
+      }).filter((v) => v.data >= new Date(new Date().setHours(0, 0, 0, 0))).slice(0, 5)
+    : [];
 
   const chamadosPendentes = meusChamados.filter(c => c.status === 'pendente' || c.status === 'em_andamento').length;
   const chamadosFinalizados = meusChamados.filter(c => c.status === 'finalizado').length;
@@ -378,11 +389,11 @@ ${mensagem}
 
           <Card className="shadow-lg border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">PMOCs Ativos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Equipamentos no PMOC</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <p className="text-3xl font-bold text-purple-600">{meusPMOCs.length}</p>
+                <p className="text-3xl font-bold text-purple-600">{equipamentosNoPlano.length}</p>
                 <Calendar className="w-8 h-8 text-purple-500" />
               </div>
             </CardContent>
@@ -528,35 +539,55 @@ ${mensagem}
             <CardTitle>Programação de Manutenções (PMOC)</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {meusPMOCs.length === 0 ? (
+            {equipamentosNoPlano.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                Nenhum PMOC programado
+                Nenhum equipamento no plano de manutenção preventiva.
               </div>
             ) : (
-              <div className="divide-y">
-                {meusPMOCs.map((pmoc) => (
-                  <div key={pmoc.id} className="p-4 hover:bg-muted">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-semibold text-foreground">PMOC {pmoc.periodicidade}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {visitaAgendada
-                              ? `Próxima visita: ${format(visitaAgendada.data, "dd/MM/yyyy", { locale: ptBR })}`
-                              : 'Próxima visita: a definir'}
-                          </span>
-                        </div>
-                        {visitaAgendada?.remarcada && (
-                          <p className="mt-1 text-xs text-amber-700">Data remarcada pela empresa.</p>
-                        )}
-                      </div>
-                      <Badge className="bg-purple-100 text-purple-800">
-                        {pmoc.status}
-                      </Badge>
+              <div className="p-4 space-y-4">
+                <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+                  <div className="flex items-start gap-2">
+                    <Calendar className="mt-0.5 h-5 w-5 shrink-0 text-indigo-700" aria-hidden="true" />
+                    <div>
+                      <p className="font-semibold text-indigo-950">
+                        {visitaAgendada
+                          ? `Próxima visita: ${format(visitaAgendada.data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`
+                          : 'Próxima visita: a definir'}
+                      </p>
+                      <p className="text-sm text-indigo-900/80">
+                        {equipamentosNoPlano.length} equipamento(s) no plano de manutenção preventiva.
+                      </p>
+                      {visitaAgendada?.remarcada && (
+                        <p className="mt-1 text-sm text-amber-800">Data remarcada pela empresa.</p>
+                      )}
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div>
+                  <p className="mb-2 text-sm font-semibold text-foreground">Próximas visitas</p>
+                  <ul className="divide-y rounded-lg border">
+                    {proximasVisitas.map((visita) => (
+                      <li key={visita.data.toISOString()} className="flex items-center justify-between p-3 text-sm">
+                        <span className="capitalize text-muted-foreground">
+                          {format(visita.data, "MMMM 'de' yyyy", { locale: ptBR })}
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {format(visita.data, "dd/MM/yyyy", { locale: ptBR })}
+                          {visita.remarcada && (
+                            <Badge variant="outline" className="ml-2 border-amber-300 text-amber-700">remarcada</Badge>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {meusPMOCs.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Situação atual: {meusPMOCs[0].status?.replace(/_/g, ' ')}.
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

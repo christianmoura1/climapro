@@ -100,6 +100,40 @@ export function visitasDoAno(cliente, ano, indiceAgendamentos = {}) {
   return Array.from({ length: 12 }, (_, mes0) => dataVisitaDoMes(cliente, ano, mes0, indiceAgendamentos));
 }
 
+// Programação de PMOC de uma empresa, montada a partir dos EQUIPAMENTOS com
+// pmoc_ativo — não das linhas da tabela `pmoc`.
+//
+// A linha de `pmoc` é só um cabeçalho, e ela só nasce quando alguém aperta
+// "Executar PMOC" pela primeira vez. Enquanto isso não acontecia, o técnico e o
+// cliente não viam programação nenhuma: o painel do técnico filtrava por
+// `tecnico_responsavel_id`, campo que nada no sistema preenche, e o portal do
+// cliente listava linhas de `pmoc` que ainda não existiam. Quem sabe que existe
+// visita marcada é o equipamento no plano, então é dele que a lista sai.
+export function montarProgramacaoPMOC({ clientes = [], equipamentos = [], pmocs = [], agendamentos = [], hoje = new Date() }) {
+  const porCliente = {};
+  for (const eq of equipamentos) {
+    if (!eq.pmoc_ativo) continue;
+    if (!porCliente[eq.cliente_id]) porCliente[eq.cliente_id] = [];
+    porCliente[eq.cliente_id].push(eq);
+  }
+
+  const indicePorCliente = indexarAgendamentosPorCliente(agendamentos);
+
+  return Object.entries(porCliente)
+    .map(([clienteId, equipamentosDoCliente]) => {
+      const cliente = clientes.find((c) => c.id === clienteId);
+      if (!cliente) return null;
+      return {
+        cliente,
+        equipamentos: equipamentosDoCliente,
+        pmoc: pmocs.find((p) => p.cliente_id === clienteId) || null,
+        visita: proximaVisita(cliente, indicePorCliente[clienteId] || {}, hoje),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => (a.visita?.data || 0) - (b.visita?.data || 0));
+}
+
 // Próxima visita a partir de hoje: a deste mês se ainda não passou, senão a do
 // mês seguinte. Olha 13 meses à frente para não devolver null em dezembro.
 export function proximaVisita(cliente, indiceAgendamentos = {}, hoje = new Date()) {
