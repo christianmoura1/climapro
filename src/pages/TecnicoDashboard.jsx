@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,9 +12,11 @@ import {
   CheckCircle,
   LogOut,
   Wallet,
-  TrendingUp, // For Ponto Eletrônico Entrada
-  TrendingDown, // For Ponto Eletrônico Saída
-  Lock // New import for the lock icon
+  TrendingUp,
+  TrendingDown,
+  Lock,
+  Plus,
+  Wrench
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link import
 
@@ -27,6 +29,9 @@ import RegistrarPonto from "../components/ponto/RegistrarPonto"; // New import f
 import AprovarEdicoesPonto from "../components/ponto/AprovarEdicoesPonto";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
+import ChamadoForm from "@/components/chamados/ChamadoForm";
+import EquipamentoForm from "@/components/equipamentos/EquipamentoForm";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper function for creating page URLs, as implied by the outline.
 // For "AlterarSenha", it's assumed there's a route configured at /alterar-senha.
@@ -46,6 +51,8 @@ export default function TecnicoDashboard() {
   const [tecnico, setTecnico] = useState(null);
   const [abaSelecionada, setAbaSelecionada] = useState('chamados');
   const [showRegistrarPontoModal, setShowRegistrarPontoModal] = useState(false); // New state to control Ponto Eletrônico modal visibility
+  const [showNovoChamado, setShowNovoChamado] = useState(false);
+  const [showNovoEquipamento, setShowNovoEquipamento] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -123,6 +130,42 @@ export default function TecnicoDashboard() {
     enabled: !!user?.empresa_id
   });
 
+  const criarChamadoMutation = useMutation({
+    mutationFn: ({ chamadoData }) => base44.entities.Chamado.create({
+      ...chamadoData,
+      empresa_id: user.empresa_id,
+      tecnico_id: tecnico.id,
+      created_by: user.id,
+      status: 'pendente',
+      origem: 'manual',
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meus-chamados'] });
+      setShowNovoChamado(false);
+      setAbaSelecionada('chamados');
+      toast({ description: "Chamado aberto e atribuído a você.", variant: "success" });
+    },
+    onError: (error) => {
+      console.error("Erro ao abrir chamado:", error);
+      toast({ description: `Não foi possível abrir o chamado: ${error.message}`, variant: "destructive" });
+    },
+  });
+
+  const criarEquipamentoMutation = useMutation({
+    mutationFn: (equipamentoData) => base44.entities.Equipamento.create({
+      ...equipamentoData,
+      empresa_id: user.empresa_id,
+      created_by: user.id,
+    }),
+    onSuccess: () => {
+      setShowNovoEquipamento(false);
+      toast({ description: "Equipamento cadastrado com sucesso.", variant: "success" });
+    },
+    onError: (error) => {
+      console.error("Erro ao cadastrar equipamento:", error);
+      toast({ description: `Não foi possível cadastrar o equipamento: ${error.message}`, variant: "destructive" });
+    },
+  });
   const { data: meusPMOCs = [] } = useQuery({
     queryKey: ['meus-pmocs', tecnico?.id],
     queryFn: () => base44.entities.PMOC.filter({
@@ -280,6 +323,25 @@ export default function TecnicoDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <section className="mb-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 shadow-sm sm:p-5" aria-labelledby="acoes-campo-title">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Ações de campo</p>
+              <h2 id="acoes-campo-title" className="mt-1 text-lg font-bold text-foreground">Registre o atendimento no momento em que ele acontece</h2>
+              <p className="mt-1 text-sm text-muted-foreground">O chamado fica atribuído a você e o equipamento vinculado à sua empresa.</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button onClick={() => setShowNovoChamado(true)} className="min-h-12 justify-center bg-blue-600 px-5 hover:bg-blue-700">
+                <Plus className="mr-2 h-5 w-5" />
+                Novo chamado
+              </Button>
+              <Button onClick={() => setShowNovoEquipamento(true)} variant="outline" className="min-h-12 justify-center border-blue-300 bg-white px-5 text-blue-800 hover:bg-blue-50">
+                <Wrench className="mr-2 h-5 w-5" />
+                Cadastrar equipamento
+              </Button>
+            </div>
+          </div>
+        </section>
         {/* Alertas de orçamento */}
         {percentualGasto >= 80 && saldoInfo.orcamento > 0 && (
           <Card className="mb-6 border-2 border-orange-200 bg-orange-50">
@@ -482,6 +544,37 @@ export default function TecnicoDashboard() {
           onSuccess={handlePontoRegistrado} // Callback to refresh data and close modal
         />
       )}
+      <Dialog open={showNovoChamado} onOpenChange={setShowNovoChamado}>
+        <DialogContent className="p-0 sm:max-w-5xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Novo chamado</DialogTitle>
+            <DialogDescription>Abra um chamado atribuído ao seu usuário técnico.</DialogDescription>
+          </DialogHeader>
+          <ChamadoForm
+            chamado={{ tecnico_id: tecnico.id }}
+            clientes={clientes}
+            tecnicos={[tecnico]}
+            tecnicoFixo={tecnico}
+            onSubmit={(chamadoData) => criarChamadoMutation.mutate({ chamadoData })}
+            onCancel={() => setShowNovoChamado(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showNovoEquipamento} onOpenChange={setShowNovoEquipamento}>
+        <DialogContent className="p-0 sm:max-w-5xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Cadastrar equipamento</DialogTitle>
+            <DialogDescription>Cadastre um equipamento para um cliente da sua empresa.</DialogDescription>
+          </DialogHeader>
+          <EquipamentoForm
+            clientes={clientes}
+            onSubmit={(equipamentoData) => criarEquipamentoMutation.mutate(equipamentoData)}
+            onCancel={() => setShowNovoEquipamento(false)}
+            isLoading={criarEquipamentoMutation.isPending}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
