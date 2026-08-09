@@ -109,7 +109,30 @@ export function visitasDoAno(cliente, ano, indiceAgendamentos = {}) {
 // `tecnico_responsavel_id`, campo que nada no sistema preenche, e o portal do
 // cliente listava linhas de `pmoc` que ainda não existiam. Quem sabe que existe
 // visita marcada é o equipamento no plano, então é dele que a lista sai.
-export function montarProgramacaoPMOC({ clientes = [], equipamentos = [], pmocs = [], agendamentos = [], hoje = new Date() }) {
+// Situação real da rodada do mês.
+//
+// O status da linha `pmoc` não serve para isso: quando a empresa aprova, ele
+// volta para 'aguardando_execucao' de propósito, para o ciclo seguinte. Quem
+// guarda o que aconteceu é o registro da execução (`manutencao_pmoc`), então é
+// dele que a situação sai — e só conta a execução do mês da visita, senão a
+// rodada de agosto ficaria marcada como feita por causa da de julho.
+export function situacaoDaRodada(manutencoesDoCliente = [], mesDaVisita = new Date()) {
+  const doMes = manutencoesDoCliente
+    .filter((m) => {
+      const referencia = parseDataLocal(m.data_execucao || m.created_at);
+      if (!referencia || Number.isNaN(referencia.getTime())) return false;
+      return referencia.getFullYear() === mesDaVisita.getFullYear()
+        && referencia.getMonth() === mesDaVisita.getMonth();
+    })
+    .sort((a, b) => new Date(b.data_execucao || b.created_at) - new Date(a.data_execucao || a.created_at));
+
+  return {
+    situacao: doMes[0]?.status || 'aguardando_execucao',
+    execucaoDoMes: doMes[0] || null,
+  };
+}
+
+export function montarProgramacaoPMOC({ clientes = [], equipamentos = [], pmocs = [], agendamentos = [], manutencoes = [], hoje = new Date() }) {
   const porCliente = {};
   for (const eq of equipamentos) {
     if (!eq.pmoc_ativo) continue;
@@ -123,11 +146,19 @@ export function montarProgramacaoPMOC({ clientes = [], equipamentos = [], pmocs 
     .map(([clienteId, equipamentosDoCliente]) => {
       const cliente = clientes.find((c) => c.id === clienteId);
       if (!cliente) return null;
+
+      const doCliente = manutencoes.filter((m) => m.cliente_id === clienteId);
+      const ordenadas = [...doCliente].sort(
+        (a, b) => new Date(b.data_execucao || b.created_at) - new Date(a.data_execucao || a.created_at)
+      );
+
       return {
         cliente,
         equipamentos: equipamentosDoCliente,
         pmoc: pmocs.find((p) => p.cliente_id === clienteId) || null,
         visita: proximaVisita(cliente, indicePorCliente[clienteId] || {}, hoje),
+        ...situacaoDaRodada(doCliente, hoje),
+        ultimaExecucao: ordenadas[0] || null,
       };
     })
     .filter(Boolean)
