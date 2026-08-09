@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Save, X, MapPin, Navigation, Plus, Building2, ClipboardList, Clock } from "lucide-react";
+import { Save, X, MapPin, Navigation, Plus, Building2, ClipboardList, Clock, KeyRound, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -271,8 +271,30 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
   // mostramos o hash já salvo, só grava se o usuário digitar algo novo.
   const [novoCodigoAcesso, setNovoCodigoAcesso] = useState("");
 
+  const [senhaPortal, setSenhaPortal] = useState("");
+  const [confirmarSenhaPortal, setConfirmarSenhaPortal] = useState("");
+  const precisaSenhaInicial = !cliente || !cliente.tem_acesso_portal;
+  const emailPortalAlterado = !!cliente?.tem_acesso_portal
+    && String(formData.email || '').trim().toLowerCase() !== String(cliente.email || '').trim().toLowerCase();
+  const senhaObrigatoria = precisaSenhaInicial || emailPortalAlterado;
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const deveConfigurarSenha = formData.tem_acesso_portal && (senhaObrigatoria || !!senhaPortal);
+    if (formData.tem_acesso_portal && !formData.email?.trim()) {
+      toast({ description: "Cadastre um e-mail válido para liberar o acesso ao portal.", variant: "destructive" });
+      return;
+    }
+    if (deveConfigurarSenha && senhaPortal.length < 8) {
+      toast({ description: "A senha do portal deve ter pelo menos 8 caracteres.", variant: "destructive" });
+      return;
+    }
+    if (deveConfigurarSenha && senhaPortal !== confirmarSenhaPortal) {
+      toast({ description: "A confirmação da senha do portal não confere.", variant: "destructive" });
+      return;
+    }
+
     const { senha_acesso_publico_hash, ...formDataSemSenha } = formData;
     const dadosFinal = { ...formDataSemSenha, estabelecimentos };
     if (estabelecimentos.length > 0) {
@@ -282,6 +304,9 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
     }
     if (novoCodigoAcesso.trim()) {
       dadosFinal.senha_acesso_publico_hash = novoCodigoAcesso.trim();
+    }
+    if (deveConfigurarSenha) {
+      dadosFinal.senha_portal = senhaPortal;
     }
     onSubmit(dadosFinal);
   };
@@ -508,25 +533,82 @@ export default function ClienteForm({ cliente, onSubmit, onCancel, isLoading }) 
             />
           </div>
 
-          <div className="border-t pt-4">
-            <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-              <Checkbox
-                id="tem_acesso_portal"
-                checked={formData.tem_acesso_portal}
-                onCheckedChange={(checked) => setFormData({ ...formData, tem_acesso_portal: !!checked })}
-              />
-              <div className="flex-1">
-                <label
-                  htmlFor="tem_acesso_portal"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                >
-                  O cliente vai ter acesso ao portal?
-                </label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  O cliente poderá fazer login com o email cadastrado acima para acessar chamados e PMOCs.
-                </p>
+          <div className="border-t pt-4 space-y-4">
+            <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="tem_acesso_portal"
+                  checked={formData.tem_acesso_portal}
+                  onCheckedChange={(checked) => {
+                    const ativo = !!checked;
+                    setFormData({ ...formData, tem_acesso_portal: ativo });
+                    if (!ativo) {
+                      setSenhaPortal("");
+                      setConfirmarSenhaPortal("");
+                    }
+                  }}
+                />
+                <div className="flex-1">
+                  <label
+                    htmlFor="tem_acesso_portal"
+                    className="flex cursor-pointer items-center gap-2 text-sm font-semibold leading-none"
+                  >
+                    <ShieldCheck className="h-4 w-4 text-blue-700" />
+                    Liberar acesso ao sistema
+                  </label>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    O cliente entrará com o e-mail cadastrado para acompanhar chamados, equipamentos e PMOCs.
+                  </p>
+                </div>
               </div>
             </div>
+
+            {formData.tem_acesso_portal && (
+              <div className="rounded-xl border bg-card p-4 space-y-4">
+                <div>
+                  <h3 className="flex items-center gap-2 font-semibold text-foreground">
+                    <KeyRound className="h-4 w-4 text-blue-600" />
+                    {cliente ? "Criar ou alterar senha de acesso" : "Senha inicial de acesso"}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {cliente
+                      ? "Preencha somente para criar o acesso ou definir uma nova senha. A senha atual nunca é exibida."
+                      : "Defina a senha que o cliente usará no primeiro acesso."}
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="senha_portal">{senhaObrigatoria ? "Senha" : "Nova senha"} {senhaObrigatoria && "*"}</Label>
+                    <Input
+                      id="senha_portal"
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      value={senhaPortal}
+                      onChange={(e) => setSenhaPortal(e.target.value)}
+                      placeholder="Mínimo de 8 caracteres"
+                      required={senhaObrigatoria}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmar_senha_portal">Confirmar senha {senhaObrigatoria && "*"}</Label>
+                    <Input
+                      id="confirmar_senha_portal"
+                      type="password"
+                      autoComplete="new-password"
+                      minLength={8}
+                      value={confirmarSenhaPortal}
+                      onChange={(e) => setConfirmarSenhaPortal(e.target.value)}
+                      placeholder="Digite a senha novamente"
+                      required={senhaObrigatoria || !!senhaPortal}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Por segurança, a senha não fica salva nem visível no cadastro do cliente.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="border-t pt-4 space-y-2">

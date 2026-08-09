@@ -21,6 +21,7 @@ import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } fr
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [accessFilter, setAccessFilter] = useState("todos");
   const [viewingCliente, setViewingCliente] = useState(null); // Changed from selectedCliente
   const [editingCliente, setEditingCliente] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null); // New state for viewing equipment history
@@ -123,104 +124,30 @@ export default function ClientesPage() {
         ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
       });
 
+      if (clienteData.tem_acesso_portal && clienteData.senha_portal) {
+        try {
+          await base44.integrations.Core.GerenciarAcessoCliente({
+            cliente_id: cliente.id,
+            password: clienteData.senha_portal
+          });
+        } catch (error) {
+          await base44.entities.Cliente.delete(cliente.id).catch(() => undefined);
+          throw new Error(`Não foi possível criar o acesso do cliente: ${error.message}`);
+        }
+      }
+
       return { cliente, temAcessoPortal: clienteData.tem_acesso_portal };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(['clientes']);
       setShowForm(false);
       setEditingCliente(null);
-      
-      if (data.temAcessoPortal) {
-        const linkPortal = `https://geradordepmoc.com.br`;
-        const mensagemParaEnviar = `🔐 ACESSO AO PORTAL DO CLIENTE - ClimaPro
-
-Olá ${data.cliente.nome}!
-
-Você agora tem acesso ao nosso portal do cliente. Siga o passo a passo abaixo:
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📱 PASSO 1: ACESSE O LINK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Clique ou copie este link no seu navegador:
-👉 ${linkPortal}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✍️ PASSO 2: CRIAR SUA CONTA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Quando a página abrir, você verá "Welcome to ClimaPro"
-
-⚠️ Como você ainda NÃO tem conta, clique em:
-   "Sign up" (embaixo do botão azul)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📧 PASSO 3: PREENCHER SEU EMAIL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-No formulário de cadastro, digite:
-
-Email: ${data.cliente.email}
-
-⚠️ IMPORTANTE: Use EXATAMENTE este email!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔒 PASSO 4: CRIAR UMA SENHA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Crie uma senha segura (mínimo 8 caracteres)
-Exemplo: MinhaSenh@123
-
-⚠️ Guarde bem sua senha!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ PASSO 5: CONFIRMAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Clique em "Sign up" para criar sua conta.
-
-Pronto! Você será automaticamente direcionado para o portal do cliente.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🎯 O QUE VOCÊ PODE FAZER NO PORTAL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ Abrir novos chamados de manutenção
-✅ Acompanhar status dos seus chamados
-✅ Ver histórico de atendimentos
-✅ Consultar programação PMOC
-✅ Visualizar seus equipamentos
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Qualquer dúvida, estamos à disposição!
-
-📱 WhatsApp: ${data.cliente.whatsapp || data.cliente.telefone}
-📧 Email: ${data.cliente.email}`;
-
-        navigator.clipboard.writeText(mensagemParaEnviar).then(() => {
-          alert(`✅ Cliente cadastrado com sucesso!
-
-📋 INSTRUÇÕES COPIADAS!
-
-As instruções detalhadas foram copiadas para sua área de transferência.
-
-📱 ENVIE AGORA PARA O CLIENTE:
-
-WhatsApp: ${data.cliente.whatsapp || data.cliente.telefone}
-Email: ${data.cliente.email}
-
-Cole (Ctrl+V ou Cmd+V) a mensagem no WhatsApp ou Email do cliente.`);
-        }).catch(() => {
-          toast({ description: `✅ Cliente cadastrado com sucesso!
-
-⚠️ COPIE E ENVIE ESTAS INSTRUÇÕES:
-
-${mensagemParaEnviar}`, variant: "success" });
-        });
-      } else {
-        toast({ description: "Cliente cadastrado com sucesso!", variant: "default" });
-      }
+      toast({
+        description: data.temAcessoPortal
+          ? `Cliente cadastrado com acesso ao sistema. Login: ${data.cliente.email}`
+          : "Cliente cadastrado com sucesso!",
+        variant: data.temAcessoPortal ? "success" : "default"
+      });
     },
     onError: (error) => {
       console.error("Erro ao criar cliente:", error);
@@ -230,7 +157,7 @@ ${mensagemParaEnviar}`, variant: "success" });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, clienteData }) => {
-      return await base44.entities.Cliente.update(id, {
+      const cliente = await base44.entities.Cliente.update(id, {
         nome: clienteData.nome,
         email: clienteData.email,
         telefone: clienteData.telefone,
@@ -244,12 +171,24 @@ ${mensagemParaEnviar}`, variant: "success" });
         estabelecimentos: clienteData.estabelecimentos || [],
         ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
       });
+      if (clienteData.tem_acesso_portal && clienteData.senha_portal) {
+        await base44.integrations.Core.GerenciarAcessoCliente({
+          cliente_id: id,
+          password: clienteData.senha_portal
+        });
+      }
+      return { cliente, senhaAtualizada: !!clienteData.senha_portal };
     },
-    onSuccess: () => {
+    onSuccess: ({ senhaAtualizada }) => {
       queryClient.invalidateQueries(['clientes']);
       setShowForm(false);
       setEditingCliente(null);
-      toast({ description: "Cliente atualizado com sucesso!", variant: "default" });
+      toast({
+        description: senhaAtualizada
+          ? "Cliente e senha de acesso atualizados com sucesso!"
+          : "Cliente atualizado com sucesso!",
+        variant: "default"
+      });
     },
     onError: (error) => {
       console.error("Erro ao atualizar cliente:", error);
@@ -374,6 +313,8 @@ ${mensagemParaEnviar}`, variant: "success" });
       if (!empresaId || cliente.empresa_id !== empresaId) return false;
     }
     // Filtra por nome ou telefone
+    if (accessFilter === 'com_acesso' && !cliente.tem_acesso_portal) return false;
+    if (accessFilter === 'sem_acesso' && cliente.tem_acesso_portal) return false;
     if (!searchTerm) return true;
     return cliente.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cliente.telefone?.includes(searchTerm);
@@ -506,6 +447,36 @@ ${mensagemParaEnviar}`, variant: "success" });
           />
         )}
 
+        <div className="mb-4 overflow-x-auto" role="tablist" aria-label="Filtrar clientes por acesso">
+          <div className="inline-flex min-w-max rounded-lg border bg-card p-1 shadow-sm">
+            {[
+              { id: "todos", label: "Todos os clientes", count: clientes.length },
+              { id: "com_acesso", label: "Com acesso", count: clientes.filter((cliente) => cliente.tem_acesso_portal).length },
+              { id: "sem_acesso", label: "Sem acesso", count: clientes.filter((cliente) => !cliente.tem_acesso_portal).length }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={accessFilter === tab.id}
+                onClick={() => setAccessFilter(tab.id)}
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-4 ${
+                  accessFilter === tab.id
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+                <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
+                  accessFilter === tab.id ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                }`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-6">
           <div className="relative">
             <label htmlFor="busca-clientes" className="sr-only">Buscar clientes</label>
@@ -523,7 +494,7 @@ ${mensagemParaEnviar}`, variant: "success" });
         {isLoading ? (
           <InlineLoading label="Carregando clientes" cards={3} />
         ) : clientes.length > 0 && filteredClientes.length === 0 ? (
-          <Card className="shadow-sm"><FilterEmptyState onClear={() => setSearchTerm("")} /></Card>
+          <Card className="shadow-sm"><FilterEmptyState onClear={() => { setSearchTerm(""); setAccessFilter("todos"); }} /></Card>
         ) : filteredClientes.length === 0 ? (
           <EmptyState
             icon={Building2}
