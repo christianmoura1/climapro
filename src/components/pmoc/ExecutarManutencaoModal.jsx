@@ -24,7 +24,12 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { checklistParaEquipamento, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
+import {
+  checklistParaEquipamento,
+  LABEL_PERIODICIDADE,
+  ROTULO_RESULTADO,
+  resultadoChecklistItem as resultadoItem,
+} from "@/lib/pmocChecklist";
 import { SignatureCanvas, limparAssinatura, isCanvasEmpty, getCanvasDataURL } from "@/components/ui/signature-canvas";
 
 export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
@@ -136,12 +141,16 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
     }
   }, [equipamentos, checklists, rascunho, carregandoRascunho]);
 
-  const toggleChecklistItem = (equipamentoId, index) => {
+  const marcarResultadoItem = (equipamentoId, index, resultado) => {
     setChecklists(prev => ({
       ...prev,
-      [equipamentoId]: prev[equipamentoId].map((item, i) => 
-        i === index ? { ...item, concluido: !item.concluido } : item
-      )
+      [equipamentoId]: prev[equipamentoId].map((item, i) => {
+        if (i !== index) return item;
+        // Tocar de novo no mesmo botão desmarca, para corrigir um toque errado
+        // sem ter que apagar tudo.
+        const novo = resultadoItem(item) === resultado ? 'pendente' : resultado;
+        return { ...item, resultado: novo, concluido: novo !== 'pendente' };
+      })
     }));
   };
 
@@ -211,9 +220,18 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       if (checklist.length === 0) {
         return "❌ Todos os equipamentos devem ter pelo menos um item no checklist";
       }
+      const nomeEquipamento = equipamentos.find(eq => eq.id === equipamentoId)?.modelo || 'desconhecido';
       // Added check that all checklist items are concluded for submission
       if (!checklist.every(item => item.concluido)) {
-        return `❌ O checklist do equipamento ${equipamentos.find(eq => eq.id === equipamentoId)?.modelo || 'desconhecido'} não está totalmente concluído.`;
+        return `❌ O checklist do equipamento ${nomeEquipamento} não está totalmente concluído.`;
+      }
+      // Um "não conforme" sem descrição não serve de nada no laudo: quem lê
+      // depois precisa saber o que foi encontrado.
+      const semDescricao = checklist.find(
+        (item) => resultadoItem(item) === 'nok' && !item.observacao?.trim()
+      );
+      if (semDescricao) {
+        return `❌ Descreva o que foi encontrado em "${semDescricao.descricao}" (${nomeEquipamento}).`;
       }
     }
 
@@ -440,8 +458,8 @@ ClimaPro`
             <h4>✅ Checklist Executado:</h4>
             <ul class="checklist">
               ${checklistEq.map(item => `
-                <li class="${item.concluido ? 'concluido' : 'pendente'}">
-                  ${item.concluido ? '✅' : '❌'} ${item.descricao}
+                <li class="${resultadoItem(item)}">
+                  ${ROTULO_RESULTADO[resultadoItem(item)]} ${item.descricao}
                   ${item.observacao ? `<br><span class="obs">Obs: ${item.observacao}</span>` : ''}
                 </li>
               `).join('')}
@@ -489,7 +507,8 @@ ClimaPro`
     .equipamento-section h4 { color: #4b5563; margin: 15px 0 10px 0; font-size: 14px; }
     .checklist { list-style: none; margin: 10px 0; }
     .checklist li { padding: 8px; margin: 5px 0; background: white; border-radius: 4px; border-left: 4px solid #10b981; }
-    .checklist li.pendente { border-left-color: #ef4444; }
+    .checklist li.nok { border-left-color: #dc2626; background: #fef2f2; font-weight: bold; }
+    .checklist li.pendente { border-left-color: #f59e0b; }
     .checklist li .obs { font-size: 11px; color: #6b7280; font-style: italic; margin-left: 20px; }
     .observacoes { background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b; }
     .fotos { margin: 15px 0; }
@@ -627,8 +646,18 @@ ClimaPro`
     const checklist = checklists[eq.id] || [];
     return checklist.length === 0 || checklist.some((item) => !item.concluido);
   });
+  // Não conforme sem descrição vira pendência visível, e não uma surpresa só
+  // na hora de enviar.
+  const nokSemDescricao = equipamentos.reduce((total, eq) => total + (checklists[eq.id] || []).filter(
+    (item) => resultadoItem(item) === 'nok' && !item.observacao?.trim()
+  ).length, 0);
+  const totalNok = equipamentos.reduce((total, eq) => total + (checklists[eq.id] || []).filter(
+    (item) => resultadoItem(item) === 'nok'
+  ).length, 0);
+
   const requisitosPendentes = [
     equipamentosPendentes.length > 0 ? `Concluir o checklist de ${equipamentosPendentes.length} equipamento(s)` : null,
+    nokSemDescricao > 0 ? `Descrever o que foi encontrado em ${nokSemDescricao} item(ns) marcado(s) como não conforme` : null,
     !nomeTecnico.trim() ? 'Informar o nome do técnico' : null,
     !assinaturaTecnicoPreenchida ? 'Coletar a assinatura do técnico' : null,
     !nomeCliente.trim() ? 'Informar o nome do responsável no local' : null,
@@ -746,14 +775,16 @@ ClimaPro`
                   const checklist = checklists[equipamento.id] || [];
                   const totalItens = checklist.length;
                   const itensConcluidos = checklist.filter(i => i.concluido).length;
+                  const itensNok = checklist.filter((i) => resultadoItem(i) === 'nok').length;
                   const percentualConclusao = totalItens > 0 ? (itensConcluidos / totalItens) * 100 : 0;
 
                   return (
                     <Card 
                       key={equipamento.id} 
                       className={`border-2 ${
-                        percentualConclusao === 100 ? 'border-green-300 bg-green-50' : 
-                        percentualConclusao > 0 ? 'border-yellow-300 bg-yellow-50' : 
+                        itensNok > 0 ? 'border-red-300 bg-red-50' :
+                        percentualConclusao === 100 ? 'border-green-300 bg-green-50' :
+                        percentualConclusao > 0 ? 'border-yellow-300 bg-yellow-50' :
                         'border-border'
                       }`}
                     >
@@ -780,14 +811,18 @@ ClimaPro`
                                   🧹 Checagem Mensal
                                 </Badge>
                               )}
-                              {percentualConclusao === 100 && (
+                              {itensNok > 0 ? (
+                                <Badge className="bg-red-600 text-white">
+                                  {itensNok} não conforme
+                                </Badge>
+                              ) : percentualConclusao === 100 && (
                                 <CheckCircle className="w-5 h-5 text-green-600" />
                               )}
                             </div>
                             <div className="grid md:grid-cols-3 gap-2 text-sm text-muted-foreground">
                               <p>📍 {equipamento.localizacao || 'Localização não informada'}</p>
                               <p>⚙️ {equipamento.capacidade || 'N/A'}</p>
-                              <p>✅ {itensConcluidos}/{totalItens} itens</p>
+                              <p>✅ {itensConcluidos}/{totalItens} itens{itensNok > 0 ? ` · ${itensNok} NOK` : ''}</p>
                             </div>
                             {percentualConclusao > 0 && (
                               <div className="mt-2 bg-muted rounded-full h-2">
@@ -818,31 +853,61 @@ ClimaPro`
                                         Itens do ciclo {LABEL_PERIODICIDADE[equipamento.periodicidade_pmoc]?.toLowerCase()}
                                       </p>
                                     )}
-                                    <div className="bg-white p-4 rounded-lg border">
+                                    <div className={`rounded-lg border p-4 ${
+                                      resultadoItem(item) === 'nok' ? 'border-red-300 bg-red-50' : 'bg-card'
+                                    }`}>
                                     <div className="flex items-start gap-3">
-                                      <button
-                                        type="button"
-                                        onClick={() => toggleChecklistItem(equipamento.id, itemIndex)}
-                                        aria-pressed={item.concluido}
-                                        aria-label={`${item.concluido ? 'Desmarcar' : 'Marcar'}: ${item.descricao}`}
-                                        className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg border-2 ${
-                                          item.concluido 
-                                            ? 'bg-green-500 border-green-500 text-white' 
-                                            : 'border-border'
-                                        }`}
-                                      >
-                                        {item.concluido && <Check className="h-5 w-5" />}
-                                      </button>
+                                      <div className="flex flex-shrink-0 gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => marcarResultadoItem(equipamento.id, itemIndex, 'ok')}
+                                          aria-pressed={resultadoItem(item) === 'ok'}
+                                          aria-label={`Conforme: ${item.descricao}`}
+                                          title="Conforme"
+                                          className={`flex h-11 w-11 items-center justify-center rounded-lg border-2 transition-colors ${
+                                            resultadoItem(item) === 'ok'
+                                              ? 'border-green-500 bg-green-500 text-white'
+                                              : 'border-border text-muted-foreground hover:border-green-400 hover:text-green-600'
+                                          }`}
+                                        >
+                                          <Check className="h-5 w-5" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => marcarResultadoItem(equipamento.id, itemIndex, 'nok')}
+                                          aria-pressed={resultadoItem(item) === 'nok'}
+                                          aria-label={`Não conforme: ${item.descricao}`}
+                                          title="Não conforme"
+                                          className={`flex h-11 w-11 items-center justify-center rounded-lg border-2 transition-colors ${
+                                            resultadoItem(item) === 'nok'
+                                              ? 'border-red-600 bg-red-600 text-white'
+                                              : 'border-border text-muted-foreground hover:border-red-400 hover:text-red-600'
+                                          }`}
+                                        >
+                                          <X className="h-5 w-5" />
+                                        </button>
+                                      </div>
                                       <div className="flex-1">
-                                        <p className={item.concluido ? 'line-through text-muted-foreground' : ''}>
+                                        <p className={resultadoItem(item) === 'ok' ? 'line-through text-muted-foreground' : ''}>
                                           {item.descricao}
+                                          {resultadoItem(item) === 'nok' && (
+                                            <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                                              Não conforme
+                                            </span>
+                                          )}
                                         </p>
                                         <Input
-                                          placeholder="Observações adicionais (opcional)"
+                                          placeholder={resultadoItem(item) === 'nok'
+                                            ? 'Descreva o que foi encontrado (obrigatório)'
+                                            : 'Observações adicionais (opcional)'}
                                           aria-label={`Observações para ${item.descricao}`}
                                           value={item.observacao}
                                           onChange={(e) => updateObservacaoItem(equipamento.id, itemIndex, e.target.value)}
-                                          className="mt-2 text-sm"
+                                          className={`mt-2 text-sm ${
+                                            resultadoItem(item) === 'nok' && !item.observacao?.trim()
+                                              ? 'border-red-400 bg-card'
+                                              : ''
+                                          }`}
                                         />
                                       </div>
                                     </div>

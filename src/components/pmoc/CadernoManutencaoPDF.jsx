@@ -6,7 +6,7 @@ import { X, Download, BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { LABEL_PERIODICIDADE, statusManutencao, STATUS_MANUTENCAO_CONFIG } from "@/lib/pmocChecklist";
+import { LABEL_PERIODICIDADE, statusManutencao, STATUS_MANUTENCAO_CONFIG, ROTULO_RESULTADO, resultadoChecklistItem } from "@/lib/pmocChecklist";
 
 // "Livro de Registro de Manutenção" consolidado do cliente: resumo do estado
 // atual dos equipamentos e histórico cronológico das execuções (checklist,
@@ -69,7 +69,7 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
                 <div class="equipment-section">
                   <h4>${eq.numero_equipamento || ''} — ${eq.marca} ${eq.modelo}</h4>
                   <ul class="checklist">
-                    ${checklist.map((item) => `<li>${item.concluido ? '✅' : '⚠️'} ${item.descricao}${item.observacao ? ` — <em>${item.observacao}</em>` : ''}</li>`).join('')}
+                    ${checklist.map((item) => `<li${resultadoChecklistItem(item) === 'nok' ? ' style="color:#991b1b;font-weight:bold"' : ''}>${ROTULO_RESULTADO[resultadoChecklistItem(item)]} ${item.descricao}${resultadoChecklistItem(item) === 'nok' ? ' (não conforme)' : ''}${item.observacao ? ` — <em>${item.observacao}</em>` : ''}</li>`).join('')}
                   </ul>
                   ${fotos.length > 0 ? `<div class="fotos-grid">${fotos.map((url) => `<img src="${url}" />`).join('')}</div>` : ''}
                 </div>`;

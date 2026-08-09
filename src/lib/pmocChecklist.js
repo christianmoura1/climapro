@@ -17,6 +17,29 @@ export const LABEL_PERIODICIDADE = {
   anual: 'Anual',
 };
 
+// Resultado de um item do checklist: pendente, conforme (OK) ou não conforme
+// (NOK). Antes era só um booleano `concluido`, e um item com problema saía no
+// laudo igual a um item que o técnico ainda nem tinha olhado.
+//
+// `concluido` continua sendo gravado, significando "respondido" — é o que as
+// telas de aprovação e o caderno de manutenção leem, e é como as manutenções
+// antigas estão salvas. Item sem `resultado` é lido pelo `concluido` que tem.
+export function resultadoChecklistItem(item) {
+  return item?.resultado || (item?.concluido ? 'ok' : 'pendente');
+}
+
+export const ROTULO_RESULTADO = {
+  ok: '✅',
+  nok: '❌',
+  pendente: '⚠️',
+};
+
+export const TEXTO_RESULTADO = {
+  ok: 'Conforme',
+  nok: 'Não conforme',
+  pendente: 'Não verificado',
+};
+
 export const CHECKLIST_MENSAL_BASE = [
   'Limpeza de filtros',
   'Inspeção visual do equipamento',

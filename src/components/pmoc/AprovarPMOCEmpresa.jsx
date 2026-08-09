@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { 
-  CheckCircle, 
+  CheckCircle,
   X,
+  XCircle,
   AlertCircle,
   Image as ImageIcon,
   MapPin,
@@ -20,7 +21,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { calcularProximaManutencao } from "@/lib/pmocChecklist";
+import { calcularProximaManutencao, resultadoChecklistItem } from "@/lib/pmocChecklist";
 
 export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico, equipamentos, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState(manutencao.observacoes_empresa || '');
@@ -251,15 +252,24 @@ Equipe ClimaPro`
                       {/* Checklist */}
                       <div className="space-y-2">
                         {checklist.map((item, itemIndex) => (
-                          <div key={itemIndex} className="flex items-start gap-3 bg-white p-3 rounded-lg">
-                            {item.concluido ? (
+                          <div key={itemIndex} className={`flex items-start gap-3 rounded-lg p-3 ${
+                            resultadoChecklistItem(item) === 'nok' ? 'border border-red-200 bg-red-50' : 'bg-card'
+                          }`}>
+                            {resultadoChecklistItem(item) === 'ok' ? (
                               <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            ) : resultadoChecklistItem(item) === 'nok' ? (
+                              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                             ) : (
                               <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
                             )}
                             <div className="flex-1">
-                              <p className={item.concluido ? '' : 'text-muted-foreground'}>
+                              <p className={resultadoChecklistItem(item) === 'pendente' ? 'text-muted-foreground' : ''}>
                                 {item.descricao}
+                                {resultadoChecklistItem(item) === 'nok' && (
+                                  <span className="ml-2 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                                    Não conforme
+                                  </span>
+                                )}
                               </p>
                               {item.observacao && (
                                 <p className="text-sm text-muted-foreground mt-1 bg-muted p-2 rounded">

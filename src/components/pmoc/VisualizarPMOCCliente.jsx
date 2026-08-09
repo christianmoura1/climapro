@@ -14,6 +14,7 @@ import {
   FileText,
   Download
 } from "lucide-react";
+import { ROTULO_RESULTADO, resultadoChecklistItem } from "@/lib/pmocChecklist";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
@@ -263,10 +264,10 @@ export default function VisualizarPMOCCliente({ manutencao, pmoc, tecnico, equip
                 
                 <h4 style="color: #475569; margin-top: 15px;">Checklist:</h4>
                 ${checklist.map(item => `
-                  <div class="checklist-item">
-                    <span class="check-icon">${item.concluido ? '✅' : '⚠️'}</span>
+                  <div class="checklist-item" style="${resultadoChecklistItem(item) === 'nok' ? 'background:#fef2f2;border-left:4px solid #dc2626;padding-left:8px;' : ''}">
+                    <span class="check-icon">${ROTULO_RESULTADO[resultadoChecklistItem(item)]}</span>
                     <div style="flex: 1;">
-                      <span>${item.descricao}</span>
+                      <span style="${resultadoChecklistItem(item) === 'nok' ? 'font-weight:bold;color:#991b1b;' : ''}">${item.descricao}${resultadoChecklistItem(item) === 'nok' ? ' — NÃO CONFORME' : ''}</span>
                       ${item.observacao ? `<div style="color: #64748b; font-size: 14px; margin-top: 5px;">💬 ${item.observacao}</div>` : ''}
                     </div>
                   </div>
