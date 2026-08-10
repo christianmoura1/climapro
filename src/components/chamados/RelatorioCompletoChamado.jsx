@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import {
   X,
   Download,
-  Mail,
   MapPin,
   User,
   Calendar,
@@ -328,40 +327,6 @@ export default function RelatorioCompletoChamado({ chamado, cliente, tecnico, em
     }
   };
 
-  const enviarPorEmail = async () => {
-    if (!cliente?.email) {
-      toast({ description: "⚠️ Cliente não possui email cadastrado.", variant: "warning" });
-      return;
-    }
-
-    try {
-      await base44.integrations.Core.SendEmail({
-        to: cliente.email,
-        subject: `Ordem de Serviço #${chamado.numero_chamado} - ${empresa?.nome || 'ClimaPro'}`,
-        body: `Prezado(a) ${cliente.nome},
-
-Segue em anexo o relatório do serviço realizado:
-
-Chamado: #${chamado.numero_chamado}
-Técnico: ${tecnico?.nome}
-Data de Finalização: ${chamado.data_finalizacao ? formatarDataBrasil(chamado.data_finalizacao) : 'N/A'}
-${chamado.valor_servico ? `Valor: R$ ${parseFloat(chamado.valor_servico).toFixed(2)}` : ''}
-
-Obrigado pela preferência!
-
-Atenciosamente,
-${empresa?.nome || 'ClimaPro'}
-${empresa?.telefone || ''}
-${empresa?.email_contato || ''}`
-      });
-
-      toast({ description: "✅ Email enviado com sucesso!", variant: "success" });
-    } catch (error) {
-      console.error("Erro ao enviar email:", error);
-      toast({ description: "❌ Erro ao enviar email. Tente novamente.", variant: "destructive" });
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
       <Card className="w-full max-w-4xl max-h-[95vh] overflow-y-auto">
@@ -386,15 +351,6 @@ ${empresa?.email_contato || ''}`
                   </>
                 )}
               </Button>
-              {cliente?.email && (
-                <Button
-                  variant="outline"
-                  onClick={enviarPorEmail}
-                >
-                  <Mail className="w-4 h-4 mr-2" />
-                  Enviar Email
-                </Button>
-              )}
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="w-4 h-4" />
               </Button>

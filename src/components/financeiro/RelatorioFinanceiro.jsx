@@ -3,11 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Download, Mail } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { base44 } from "@/api/base44Client";
-import { toast } from "@/components/ui/use-toast";
 
 export default function RelatorioFinanceiro({ lancamentos, empresa, onClose }) {
   const [dataInicio, setDataInicio] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]);
@@ -28,35 +25,6 @@ export default function RelatorioFinanceiro({ lancamentos, empresa, onClose }) {
 
   const saldo = receitas - despesas;
 
-  const handleEnviarEmail = async () => {
-    if (empresa?.email_contato) {
-      const relatorioTexto = `
-RELATÓRIO FINANCEIRO - ${empresa.nome}
-Período: ${format(new Date(dataInicio), "dd/MM/yyyy")} a ${format(new Date(dataFim), "dd/MM/yyyy")}
-
-RESUMO:
-Receitas: R$ ${receitas.toFixed(2)}
-Despesas: R$ ${despesas.toFixed(2)}
-Saldo: R$ ${saldo.toFixed(2)}
-
-LANÇAMENTOS:
-${lancamentosFiltrados.map(l => 
-  `${format(new Date(l.data_lancamento), "dd/MM/yyyy")} - ${l.tipo === 'entrada' ? '+' : '-'} R$ ${l.valor.toFixed(2)} - ${l.descricao}`
-).join('\n')}
-
-Relatório gerado automaticamente pelo ClimaPro.
-      `;
-
-      await base44.integrations.Core.SendEmail({
-        to: empresa.email_contato,
-        subject: `Relatório Financeiro - ${format(new Date(), "MMMM yyyy", { locale: ptBR })}`,
-        body: relatorioTexto
-      });
-
-      toast({ description: "Relatório enviado por e-mail com sucesso!", variant: "default" });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-6">
       <div className="max-w-5xl mx-auto">
@@ -71,10 +39,6 @@ Relatório gerado automaticamente pelo ClimaPro.
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleEnviarEmail}>
-              <Mail className="w-4 h-4 mr-2" />
-              Enviar por E-mail
-            </Button>
             <Button onClick={() => window.print()}>
               <Download className="w-4 h-4 mr-2" />
               Baixar PDF
