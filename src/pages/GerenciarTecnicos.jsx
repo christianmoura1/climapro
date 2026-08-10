@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { useEmpresa } from "@/hooks/useEmpresa";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 
 export default function GerenciarTecnicosPage() {
@@ -249,7 +250,7 @@ export default function GerenciarTecnicosPage() {
         
         // Email
         if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: tecnico.email,
             subject: "💰 Novo Crédito Pendente - ClimaPro",
             body: `Olá ${tecnico.nome},

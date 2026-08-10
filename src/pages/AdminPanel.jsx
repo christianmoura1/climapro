@@ -25,6 +25,7 @@ import NovaEmpresaForm from "../components/admin/NovaEmpresaForm";
 import ListaEmpresas from "../components/admin/ListaEmpresas";
 import EmpresasInadimplentes from "../components/admin/EmpresasInadimplentes";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 // Valor mensal formatado do plano, para os avisos de cobrança.
 function valorDoPlano(planoId) {
@@ -247,7 +248,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
 
       // Enviar notificação por email
       if (empresa?.email_contato) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: empresa.email_contato,
           subject: `Módulo ${novoStatus ? 'Ativado' : 'Desativado'} - ClimaPro`,
           body: `Olá ${empresa.nome},\n\nO módulo "${moduloAlterado}" foi ${novoStatus ? 'ativado' : 'desativado'} no seu painel.\n\n${novoStatus ? 'Você já pode começar a utilizá-lo!' : 'Entre em contato conosco para mais informações.'}\n\nAtenciosamente,\nEquipe ClimaPro`
@@ -303,7 +304,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
               
               // Enviar email de bloqueio
               if (empresa.email_contato) {
-                await base44.integrations.Core.SendEmail({
+                await notificarPorEmail({
                   to: empresa.email_contato,
                   subject: "🚫 Conta Bloqueada - Pagamento Pendente",
                   body: `Olá ${empresa.nome},\n\nSua conta foi bloqueada devido ao não pagamento do plano há mais de 7 dias.\n\nPara reativar, entre em contato conosco.\n\nAtenciosamente,\nEquipe ClimaPro`
@@ -348,7 +349,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
           
           // 3 dias antes
           if (diasRestantes === 3) {
-            await base44.integrations.Core.SendEmail({
+            await notificarPorEmail({
               to: empresa.email_contato,
               subject: "⏰ Lembrete: Seu plano vence em 3 dias",
               body: `Olá ${empresa.nome},\n\nSeu plano ${empresa.plano} vence em 3 dias (${format(vencimento, "dd/MM/yyyy", { locale: ptBR })}).\n\nRenove para continuar usando todos os recursos.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
@@ -357,7 +358,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
           
           // No dia do vencimento
           if (diasRestantes === 0) {
-            await base44.integrations.Core.SendEmail({
+            await notificarPorEmail({
               to: empresa.email_contato,
               subject: "🔔 Seu plano vence hoje!",
               body: `Olá ${empresa.nome},\n\nSeu plano vence HOJE!\n\nRenove agora para não perder o acesso.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
@@ -366,7 +367,7 @@ Total de registros excluídos: ${resultado.lancamentosTecnico + resultado.movime
           
           // 2 dias após vencimento
           if (diasRestantes === -2) {
-            await base44.integrations.Core.SendEmail({
+            await notificarPorEmail({
               to: empresa.email_contato,
               subject: "⚠️ Pagamento Atrasado - Urgente",
               body: `Olá ${empresa.nome},\n\nSeu pagamento está atrasado há 2 dias.\n\nSem o pagamento, sua conta será bloqueada em 5 dias.\n\nValor: ${valorDoPlano(empresa.plano)}\n\nAtenciosamente,\nEquipe ClimaPro`
@@ -495,7 +496,7 @@ ClimaPro`;
     }
     
     if (empresa.email_contato) {
-      await base44.integrations.Core.SendEmail({
+      await notificarPorEmail({
         to: empresa.email_contato,
         subject: "🔔 Lembrete de Pagamento - ClimaPro",
         body: mensagem

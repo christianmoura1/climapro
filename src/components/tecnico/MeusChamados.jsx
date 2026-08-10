@@ -14,6 +14,7 @@ import KanbanChamados from "../chamados/KanbanChamados"; // New import
 import { toast } from "@/components/ui/use-toast";
 import { enfileirar, estaOnline, ehFalhaDeRede } from "@/lib/outbox";
 import { finalizarChamado, ACAO_FINALIZAR_CHAMADO } from "@/lib/sincronizacaoChamado";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -92,7 +93,7 @@ export default function MeusChamados({ chamados, clientes, user, tecnico }) {
         const chamado = chamados.find(c => c.id === chamadoId);
 
         if (empresa?.email_contato && chamado) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `✅ Chamado Finalizado - Aguardando Aprovação #${chamado.numero_chamado}`,
             body: `O técnico ${tecnico.nome} finalizou um chamado que aguarda sua aprovação:

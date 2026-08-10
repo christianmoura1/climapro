@@ -11,6 +11,7 @@ import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function ControleFinanceiroTecnico({ user, tecnico, saldoInfo, lancamentos }) {
   const [showForm, setShowForm] = useState(false);
@@ -56,7 +57,7 @@ export default function ControleFinanceiroTecnico({ user, tecnico, saldoInfo, la
         const empresa = empresas.find(e => e.id === user.empresa_id);
         
         if (empresa?.email_contato) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `🔔 Nova Movimentação Pendente - ${tecnico.nome}`,
             body: `Olá,

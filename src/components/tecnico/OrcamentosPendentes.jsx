@@ -7,6 +7,7 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function OrcamentosPendentes({ orcamentos, user, tecnico }) {
   const queryClient = useQueryClient();
@@ -39,7 +40,7 @@ export default function OrcamentosPendentes({ orcamentos, user, tecnico }) {
           const empresa = empresas.find(e => e.id === user.empresa_id);
 
           if (empresa?.email_contato) {
-            await base44.integrations.Core.SendEmail({
+            await notificarPorEmail({
               to: empresa.email_contato,
               subject: `✅ Orçamento Aprovado - ${tecnico.nome}`,
               body: `O técnico ${tecnico.nome} aprovou o orçamento mensal!

@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 const statusConfig = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -66,7 +67,7 @@ export default function ChamadosList({ chamados, isLoading, tecnicos, onEdit }) 
         const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
         
         if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: tecnico.email,
             subject: "📅 Chamado Agendado - ClimaPro",
             body: `Olá ${tecnico.nome},

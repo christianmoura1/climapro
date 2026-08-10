@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { chamadosDoMes, mensagemDeLimite } from "@/lib/limitesPlano";
 import { useEmpresa } from "@/hooks/useEmpresa";
+import { notificarPorEmail } from "@/lib/notificacoes";
 export default function ChamadosPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingChamado, setEditingChamado] = useState(null);
@@ -200,7 +201,7 @@ export default function ChamadosPage() {
         
         // Enviar notificação para o técnico
         if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: tecnico.email,
             subject: "🔧 Novo Chamado Agendado - ClimaPro",
             body: `Olá ${tecnico.nome},
@@ -251,7 +252,7 @@ ClimaPro`
           const tecnico = tecnicos.find(t => t.id === chamadoAtualizado.tecnico_id);
           const cliente = clientes.find(c => c.id === chamadoAtualizado.cliente_id);
           
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `✅ Chamado Finalizado - Aguardando Aprovação #${chamadoAtualizado.numero_chamado}`,
             body: `Um chamado foi finalizado pelo técnico e aguarda sua aprovação:

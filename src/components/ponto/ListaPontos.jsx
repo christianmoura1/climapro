@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 const tiposConfig = {
   entrada: { label: "Entrada", icon: "🟢", cor: "bg-green-100 text-green-800" },
@@ -66,7 +67,7 @@ export default function ListaPontos({ pontos, tecnicos, isLoading, podeEditar = 
 
       const tecnico = tecnicos.find(t => t.id === editandoPonto.tecnico_id);
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: "⚠️ Solicitação de Aprovação - Edição de Ponto",
           body: `Olá ${tecnico.nome},

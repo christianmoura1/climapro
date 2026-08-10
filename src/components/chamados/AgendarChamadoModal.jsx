@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function AgendarChamadoModal({ chamado, tecnicos, cliente, onClose }) {
   const [dataAgendamento, setDataAgendamento] = useState("");
@@ -49,7 +50,7 @@ export default function AgendarChamadoModal({ chamado, tecnicos, cliente, onClos
       // 3. Notificar técnico
       const tecnico = tecnicos.find(t => t.id === tecnicoSelecionado);
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: "📅 Chamado Agendado - ClimaPro",
           body: `Olá ${tecnico.nome},

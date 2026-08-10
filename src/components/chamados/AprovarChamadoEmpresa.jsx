@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
@@ -69,7 +70,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
       // 3. Enviar relatório completo ao cliente
       const emailDestino = emailCliente || cliente?.email;
       if (emailDestino) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: emailDestino,
           subject: `✅ Chamado Concluído - ${chamado.titulo} - ClimaPro`,
           body: `Prezado(a) ${nomeCliente},
@@ -116,7 +117,7 @@ ClimaPro`
 
       // Notificar técnico
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: `⚠️ Chamado Reaberto - ${chamado.titulo}`,
           body: `Olá ${tecnico.nome},

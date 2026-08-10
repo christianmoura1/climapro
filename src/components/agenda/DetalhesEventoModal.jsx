@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 // A utility function for generating page URLs. In a full application,
 // this would typically come from a routing library (e.g., Next.js useRouter, React Router).
@@ -111,7 +112,7 @@ export default function DetalhesEventoModal({ evento, onClose, onUpdate, cliente
       
       // Optionally, send an email notification to the technician
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: "🔧 Novo Chamado Vinculado - ClimaPro",
           body: `Olá ${tecnico.nome},
