@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function NovoEventoModal({ eventoInicial, onClose, clientes, tecnicos, user }) {
   const [evento, setEvento] = useState(eventoInicial ? {
@@ -124,7 +125,7 @@ export default function NovoEventoModal({ eventoInicial, onClose, clientes, tecn
       
       // Notificar técnico
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: "🔧 Novo Chamado Criado - ClimaPro",
           body: `Olá ${tecnico.nome},

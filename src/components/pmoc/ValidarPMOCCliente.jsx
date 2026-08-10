@@ -17,6 +17,7 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function ValidarPMOCCliente({ manutencao, pmoc, tecnico, equipamentos, onClose }) {
   const [observacoesCliente, setObservacoesCliente] = useState('');
@@ -69,7 +70,7 @@ export default function ValidarPMOCCliente({ manutencao, pmoc, tecnico, equipame
       const empresa = empresas.find(e => e.id === manutencao.empresa_id);
       
       if (empresa?.email_contato) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: empresa.email_contato,
           subject: `✅ PMOC Validado pelo Cliente - ${user.full_name}`,
           body: `Olá,

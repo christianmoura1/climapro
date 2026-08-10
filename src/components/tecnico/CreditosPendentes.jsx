@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function CreditosPendentes({ creditos, user, tecnico }) {
   const [creditoSelecionado, setCreditoSelecionado] = React.useState(null);
@@ -83,7 +84,7 @@ export default function CreditosPendentes({ creditos, user, tecnico }) {
         const empresa = empresas.find(e => e.id === credito.empresa_id);
         
         if (empresa?.email_contato) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `✅ Crédito Aprovado - ${tecnico.nome}`, // Updated subject
             body: `O técnico ${tecnico.nome} aprovou um crédito:
@@ -133,7 +134,7 @@ ClimaPro` // Updated body
         const empresa = empresas.find(e => e.id === credito.empresa_id);
         
         if (empresa?.email_contato) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `❌ Crédito Rejeitado - ${tecnico.nome}`, // Updated subject
             body: `O técnico ${tecnico.nome} rejeitou um crédito:

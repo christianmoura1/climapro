@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function AprovarMovimentacoes({ movimentacoes, tecnicos }) {
   const [movSelecionada, setMovSelecionada] = useState(null);
@@ -80,7 +81,7 @@ export default function AprovarMovimentacoes({ movimentacoes, tecnicos }) {
       try {
         const tecnico = tecnicos.find(t => t.id === mov.tecnico_id);
         if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: tecnico.email,
             subject: "✅ Movimentação Aprovada - ClimaPro",
             body: `Olá ${tecnico.nome},
@@ -149,7 +150,7 @@ https://geradordepmoc.com.br/TecnicoDashboard`;
       try {
         const tecnico = tecnicos.find(t => t.id === mov.tecnico_id);
         if (tecnico?.email) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: tecnico.email,
             subject: "❌ Movimentação Rejeitada - ClimaPro",
             body: `Olá ${tecnico.nome},

@@ -31,6 +31,7 @@ import {
   resultadoChecklistItem as resultadoItem,
 } from "@/lib/pmocChecklist";
 import { SignatureCanvas, limparAssinatura, isCanvasEmpty, getCanvasDataURL } from "@/components/ui/signature-canvas";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
   const [user, setUser] = useState(null);
@@ -381,7 +382,7 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
         const empresa = empresas.find(e => e.id === user.empresa_id);
         
         if (empresa?.email_contato) {
-          await base44.integrations.Core.SendEmail({
+          await notificarPorEmail({
             to: empresa.email_contato,
             subject: `⏳ PMOC Executado - Aguardando Aprovação - ${cliente.nome}`,
             body: `Olá,

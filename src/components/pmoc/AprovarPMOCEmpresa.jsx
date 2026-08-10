@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { calcularProximaManutencao, resultadoChecklistItem } from "@/lib/pmocChecklist";
+import { notificarPorEmail } from "@/lib/notificacoes";
 
 export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico, equipamentos, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState(manutencao.observacoes_empresa || '');
@@ -75,7 +76,7 @@ export default function AprovarPMOCEmpresa({ manutencao, pmoc, cliente, tecnico,
 
       // 4. Enviar notificação ao cliente com link para visualizar
       if (cliente?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: cliente.email,
           subject: `✅ PMOC Concluído - ${cliente.nome} - ClimaPro`,
           body: `Prezado(a) ${cliente.nome},
@@ -106,7 +107,7 @@ Equipe ClimaPro`
       
       // 5. Enviar notificação ao técnico
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: `✅ PMOC Aprovado - ${cliente.nome}`,
           body: `Olá ${tecnico.nome},
@@ -148,7 +149,7 @@ Equipe ClimaPro`
 
       // Notificar técnico
       if (tecnico?.email) {
-        await base44.integrations.Core.SendEmail({
+        await notificarPorEmail({
           to: tecnico.email,
           subject: `⚠️ PMOC Reaberto para Correção - ${cliente.nome}`,
           body: `Olá ${tecnico.nome},
