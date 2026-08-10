@@ -155,6 +155,8 @@ export default function Layout({ children, currentPageName }) {
   const [isAdminGlobal, setIsAdminGlobal] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [modulosAtivos, setModulosAtivos] = React.useState({});
+  // Marca que o usuário já veio uma vez, para as recargas não piscarem a tela.
+  const usuarioCarregado = React.useRef(false);
   const { naoLidos } = useAlertas();
   const alertasNaoLidos = naoLidos.length;
 
@@ -170,7 +172,10 @@ export default function Layout({ children, currentPageName }) {
     }
 
     const loadUser = async function() {
-      setLoading(true);
+      // Spinner só na primeira carga. Este efeito dependia de currentPageName,
+      // então toda troca de página trocava a tela inteira por "Carregando..."
+      // e remontava tudo — era isso que apagava o formulário meio preenchido.
+      if (!usuarioCarregado.current) setLoading(true);
       try {
         // Primeiro verificar se está autenticado
         const isAuth = await base44.auth.isAuthenticated();
@@ -182,20 +187,13 @@ export default function Layout({ children, currentPageName }) {
         }
 
         const currentUser = await base44.auth.me();
-        console.log("[Layout] Usuário carregado:", currentUser.email);
         setUser(currentUser);
+        usuarioCarregado.current = true;
         
         // Verificar se é admin global
         const isAdmin = currentUser.role === 'admin';
         setIsAdminGlobal(isAdmin);
         
-        // Se for admin global e estiver tentando acessar páginas restritas, redirecionar
-        // "AlterarSenha" is explicitly allowed for admin global, so it's kept in the exception list.
-        if (isAdmin && !["LandingPage", "Welcome", "AdminPanel", "AlterarSenha"].includes(currentPageName)) {
-          navigate(createPageUrl("AdminPanel"));
-          return;
-        }
-
         // Carregar módulos ativos da empresa
         if (!isAdmin && currentUser.empresa_id) {
           const empresas = await base44.entities.Empresa.list();
@@ -242,7 +240,16 @@ export default function Layout({ children, currentPageName }) {
     };
     
     loadUser();
-  }, [currentPageName, navigate, shouldLoadAuth]);
+  }, [shouldLoadAuth]);
+
+  // Admin global não tem empresa e não usa as telas operacionais. Isso era
+  // decidido dentro da carga do usuário, o que obrigava a refazê-la a cada
+  // navegação; agora é um efeito à parte, que só olha a rota.
+  React.useEffect(function() {
+    if (!isAdminGlobal) return;
+    if (["LandingPage", "Welcome", "AdminPanel", "AlterarSenha"].includes(currentPageName)) return;
+    navigate(createPageUrl("AdminPanel"));
+  }, [isAdminGlobal, currentPageName, navigate]);
 
   // Effect for reloading modules periodically
   React.useEffect(function() {
