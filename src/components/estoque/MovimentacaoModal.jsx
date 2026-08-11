@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X, ArrowDownCircle, ArrowUpCircle, ClipboardCheck } from "lucide-react";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -168,15 +169,14 @@ export default function MovimentacaoModal({ peca, chamados = [], tecnicos = [], 
           {tecnicos.length > 0 && (
             <div className="space-y-1.5">
               <Label htmlFor="tecnico">Técnico (opcional)</Label>
-              <select
+              <SelectBuscavel
                 id="tecnico"
-                value={tecnicoId}
-                onChange={(e) => setTecnicoId(e.target.value)}
-                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Não informar</option>
-                {tecnicos.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
-              </select>
+                itens={tecnicos.map((t) => ({ valor: t.id, rotulo: t.nome, secundario: t.especialidade }))}
+                valor={tecnicoId}
+                onChange={setTecnicoId}
+                opcaoTodos="Não informar"
+                className="h-11"
+              />
             </div>
           )}
 

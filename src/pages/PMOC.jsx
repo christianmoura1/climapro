@@ -20,6 +20,7 @@ import PlanoAnualPMOC from "../components/pmoc/PlanoAnualPMOC";
 import { toast } from "@/components/ui/use-toast";
 import { PageLoading } from "@/components/ui/page-loading";
 import { ErrorState, PageHeader, PageShell } from "@/components/ui/page-shell";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 export default function PMOCPage() {
   const [aprovandoManutencao, setAprovandoManutencao] = useState(null);
@@ -350,17 +351,14 @@ export default function PMOCPage() {
             <CardTitle>🏢 Painel de Equipamentos por Cliente</CardTitle>
             <div className="mt-2 max-w-md">
               <Label htmlFor="cliente-painel-pmoc">Cliente</Label>
-              <select
+              <SelectBuscavel
                 id="cliente-painel-pmoc"
-                value={clientePainelId}
-                onChange={(e) => setClientePainelId(e.target.value)}
-                className="flex h-11 w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm"
-              >
-                <option value="">Selecione um cliente para ver o plano de PMOC</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-                ))}
-              </select>
+                itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+                valor={clientePainelId}
+                onChange={setClientePainelId}
+                placeholder="Selecione um cliente para ver o plano de PMOC"
+                className="h-11 bg-white"
+              />
             </div>
           </CardHeader>
         </Card>

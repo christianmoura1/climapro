@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import ExecutarManutencaoModal from "../pmoc/ExecutarManutencaoModal";
 import VisualizarPMOCCliente from "../pmoc/VisualizarPMOCCliente";
 import { montarProgramacaoPMOC } from "@/lib/pmocDataVisita";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 // Situação da rodada do mês, vinda do registro da execução. Os nomes são os do
 // enum de manutencao_pmoc, não os do cabeçalho `pmoc`.
@@ -415,17 +416,14 @@ export default function MeusPMOCs({ clientes, empresaId, tecnicoId }) {
 
             <div className="flex items-center gap-2">
               <Label className="text-sm" htmlFor="filtro-cliente">Cliente:</Label>
-              <select
+              <SelectBuscavel
                 id="filtro-cliente"
-                value={filtros.cliente_id}
-                onChange={(e) => setFiltros({...filtros, cliente_id: e.target.value})}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="todos">Todos</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-                ))}
-              </select>
+                itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+                valor={filtros.cliente_id === 'todos' ? '' : filtros.cliente_id}
+                onChange={(valor) => setFiltros({...filtros, cliente_id: valor || 'todos'})}
+                opcaoTodos="Todos"
+                className="h-9 w-56"
+              />
             </div>
 
             <div className="flex items-center gap-2">

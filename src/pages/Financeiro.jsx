@@ -13,7 +13,6 @@ import { createPageUrl } from "@/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import LancamentoForm from "../components/financeiro/LancamentoForm";
 import LancamentosList from "../components/financeiro/LancamentosList";
@@ -26,6 +25,7 @@ import DetalheGastosTecnico from "../components/financeiro/DetalheGastosTecnico"
 import { PageLoading } from "@/components/ui/page-loading";
 import { ErrorState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { toast } from "@/components/ui/use-toast";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 export default function FinanceiroPage() {
   const navigate = useNavigate();
@@ -646,13 +646,13 @@ export default function FinanceiroPage() {
                 <CardTitle className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-orange-600"/>Créditos para Técnicos</CardTitle>
                 <div className="flex items-center gap-3">
                   <Filter className="w-4 h-4 text-muted-foreground" />
-                  <Select value={filtroTecnicoCreditos} onValueChange={setFiltroTecnicoCreditos}>
-                    <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos os Técnicos</SelectItem>
-                      {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <SelectBuscavel
+                    itens={tecnicos.map((t) => ({ valor: t.id, rotulo: t.nome, secundario: t.especialidade }))}
+                    valor={filtroTecnicoCreditos === 'todos' ? '' : filtroTecnicoCreditos}
+                    onChange={(valor) => setFiltroTecnicoCreditos(valor || 'todos')}
+                    opcaoTodos="Todos os Técnicos"
+                    className="w-full sm:w-48"
+                  />
                 </div>
               </div>
             </CardHeader>
@@ -726,13 +726,13 @@ export default function FinanceiroPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Filter className="w-4 h-4 text-muted-foreground" />
-                  <Select value={filtroTecnicoGastos} onValueChange={setFiltroTecnicoGastos}>
-                    <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos os Técnicos</SelectItem>
-                      {tecnicos.map(t => <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <SelectBuscavel
+                    itens={tecnicos.map((t) => ({ valor: t.id, rotulo: t.nome, secundario: t.especialidade }))}
+                    valor={filtroTecnicoGastos === 'todos' ? '' : filtroTecnicoGastos}
+                    onChange={(valor) => setFiltroTecnicoGastos(valor || 'todos')}
+                    opcaoTodos="Todos os Técnicos"
+                    className="w-full sm:w-48"
+                  />
                 </div>
               </div>
             </CardHeader>

@@ -8,6 +8,7 @@ import { Save, X, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState(equipamento || {
@@ -92,12 +93,14 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="equipamento-cliente">Cliente *</Label>
-              <select id="equipamento-cliente" value={formData.cliente_id} onChange={(event) => handleClienteChange(event.target.value)} required className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <option value="">Selecione um cliente</option>
-                {clientes.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-                ))}
-              </select>
+              <SelectBuscavel
+                id="equipamento-cliente"
+                itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+                valor={formData.cliente_id}
+                onChange={handleClienteChange}
+                placeholder="Selecione um cliente"
+                className="h-11"
+              />
             </div>
 
             <div className="space-y-2">

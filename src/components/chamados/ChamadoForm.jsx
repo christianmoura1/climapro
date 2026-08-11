@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 const STATUS_CHAMADO = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -47,7 +48,6 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
   const [mostrarMapa, setMostrarMapa] = useState(false);
   const [criarEvento, setCriarEvento] = useState(true);
-  const [buscaCliente, setBuscaCliente] = useState("");
   const [emailCliente, setEmailCliente] = useState("");
 
   // Estabelecimentos e equipamentos
@@ -60,9 +60,6 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   const ehNovoChamado = !chamado?.id;
 
   // Filtrar clientes pela busca
-  const clientesFiltrados = clientes.filter(cliente => 
-    cliente.nome.toLowerCase().includes(buscaCliente.toLowerCase())
-  );
 
   // Buscar dados do cliente quando selecionado
   useEffect(() => {
@@ -315,34 +312,15 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
             </div>
 
             <div className="space-y-2">
-              <Label>Cliente *</Label>
-              <Input
-                type="text"
-                placeholder="Digite para buscar cliente..."
-                value={buscaCliente}
-                onChange={(e) => setBuscaCliente(e.target.value)}
-                className="mb-2"
+              <Label htmlFor="chamado-cliente">Cliente *</Label>
+              <SelectBuscavel
+                id="chamado-cliente"
+                itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+                valor={currentChamado.cliente_id}
+                onChange={(valor) => setCurrentChamado({...currentChamado, cliente_id: valor})}
+                placeholder="Selecione o cliente"
+                textoVazio="Nenhum cliente encontrado"
               />
-              <select
-                value={currentChamado.cliente_id}
-                onChange={(e) => {
-                  setCurrentChamado({...currentChamado, cliente_id: e.target.value});
-                  setBuscaCliente("");
-                }}
-                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                required
-                size="15"
-              >
-                <option value="">Selecione o cliente</option>
-                {clientesFiltrados.map((cliente) => (
-                  <option key={cliente.id} value={cliente.id}>
-                    {cliente.nome}
-                  </option>
-                ))}
-              </select>
-              {buscaCliente && clientesFiltrados.length === 0 && (
-                <p className="text-sm text-muted-foreground mt-1">Nenhum cliente encontrado</p>
-              )}
             </div>
           </div>
 
@@ -606,16 +584,13 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                   {tecnicoFixo.nome}
                 </div>
               ) : (
-                <select
-                  value={currentChamado.tecnico_id}
-                  onChange={(e) => setCurrentChamado({...currentChamado, tecnico_id: e.target.value})}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
-                  <option value="">Selecione o técnico</option>
-                  {tecnicos.filter(t => t.status === 'ativo').map((tecnico) => (
-                    <option key={tecnico.id} value={tecnico.id}>{tecnico.nome}</option>
-                  ))}
-                </select>
+                <SelectBuscavel
+                  itens={tecnicos.filter(t => t.status === 'ativo').map((t) => ({ valor: t.id, rotulo: t.nome, secundario: t.especialidade }))}
+                  valor={currentChamado.tecnico_id}
+                  onChange={(valor) => setCurrentChamado({...currentChamado, tecnico_id: valor})}
+                  placeholder="Selecione o técnico"
+                  textoVazio="Nenhum técnico encontrado"
+                />
               )}
             </div>
           </div>
