@@ -41,6 +41,7 @@ export default function GerenciarTecnicosPage() {
     telefone: "",
     cpf: "",
     especialidade: "ambos",
+    nivel_acesso: "completo",
     tem_acesso_sistema: false,
     senha: "",
     confirmar_senha: ""
@@ -112,6 +113,7 @@ export default function GerenciarTecnicosPage() {
         email: data.email,
         telefone: data.telefone,
         especialidade: data.especialidade,
+        nivel_acesso: data.nivel_acesso || 'completo',
         empresa_id: user.empresa_id,
         status: 'ativo',
         total_atendimentos: 0
@@ -141,6 +143,7 @@ export default function GerenciarTecnicosPage() {
         telefone: "", 
         cpf: "", 
         especialidade: "ambos",
+    nivel_acesso: "completo",
         tem_acesso_sistema: false,
         senha: "",
         confirmar_senha: ""
@@ -182,6 +185,7 @@ export default function GerenciarTecnicosPage() {
         telefone: "",
         cpf: "",
         especialidade: "ambos",
+    nivel_acesso: "completo",
         tem_acesso_sistema: false,
         senha: "",
         confirmar_senha: ""
@@ -333,7 +337,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           nome: formData.nome,
           email: formData.email,
           telefone: formData.telefone,
-          especialidade: formData.especialidade
+          especialidade: formData.especialidade,
+          nivel_acesso: formData.nivel_acesso
         },
         senha: formData.senha
       });
@@ -350,6 +355,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
       telefone: tecnico.telefone,
       cpf: "", // CPF is not usually editable after creation
       especialidade: tecnico.especialidade,
+      nivel_acesso: tecnico.nivel_acesso || 'completo',
       tem_acesso_sistema: false,
       senha: "",
       confirmar_senha: ""
@@ -420,6 +426,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                 telefone: "", 
                 cpf: "", 
                 especialidade: "ambos",
+    nivel_acesso: "completo",
                 tem_acesso_sistema: false,
                 senha: "",
                 confirmar_senha: ""
@@ -499,6 +506,23 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                       <option value="climatizacao">Climatização</option>
                       <option value="ambos">Ambos</option>
                     </select>
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="nivel_acesso">Nível de acesso</Label>
+                    <select
+                      id="nivel_acesso"
+                      className="w-full rounded-md border border-border p-2 text-sm h-10 bg-background"
+                      value={formData.nivel_acesso}
+                      onChange={(e) => setFormData({...formData, nivel_acesso: e.target.value})}
+                    >
+                      <option value="completo">Completo — cadastra cliente e equipamento, e abre chamado</option>
+                      <option value="execucao">Execução — só atende os chamados e faz o PMOC</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Os dois executam chamado e PMOC. A diferença é quem pode cadastrar em campo.
+                      O bloqueio vale no banco, não só na tela.
+                    </p>
                   </div>
                 </div>
 
@@ -584,6 +608,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                         telefone: "", 
                         cpf: "", 
                         especialidade: "ambos",
+    nivel_acesso: "completo",
                         tem_acesso_sistema: false,
                         senha: "",
                         confirmar_senha: ""
@@ -624,6 +649,10 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                         <p className="text-sm text-muted-foreground">{tecnico.email}</p>
                         <p className="text-sm text-muted-foreground mt-1">
                           {tecnico.telefone} • {tecnico.especialidade}
+                          {' • '}
+                          <span className={tecnico.nivel_acesso === 'execucao' ? 'text-amber-700' : 'text-emerald-700'}>
+                            {tecnico.nivel_acesso === 'execucao' ? 'só execução' : 'acesso completo'}
+                          </span>
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {tecnico.total_atendimentos} atendimentos realizados
