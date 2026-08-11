@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ErrorState, FilterEmptyState, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { useEmpresa } from "@/hooks/useEmpresa";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 export default function EquipamentosPage() {
   const { atingiuLimite, temModulo } = useEmpresa();
@@ -342,12 +343,14 @@ export default function EquipamentosPage() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="filtro-cliente-equipamentos">Cliente</Label>
-            <select id="filtro-cliente-equipamentos" value={filtroCliente} onChange={(event) => setFiltroCliente(event.target.value)} className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <option value="">Todos os clientes</option>
-              {clientes.map((cliente) => (
-                <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
-              ))}
-            </select>
+            <SelectBuscavel
+              id="filtro-cliente-equipamentos"
+              itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+              valor={filtroCliente}
+              onChange={setFiltroCliente}
+              opcaoTodos="Todos os clientes"
+              className="h-11"
+            />
           </div>
         </div>
 

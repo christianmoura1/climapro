@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Save, X, Plus, Trash2, FileText } from "lucide-react";
 import { ITENS_ORCAMENTO } from "@/lib/itensOrcamento";
 import { gerarTextoProposta } from "@/lib/propostaTexto";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
 const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -80,18 +81,14 @@ export default function OrcamentoForm({ orcamento, clientes, empresaNome, onSubm
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="cliente_id">Cliente *</Label>
-              <select
+              <SelectBuscavel
                 id="cliente_id"
-                value={form.cliente_id}
-                onChange={(e) => setForm({ ...form, cliente_id: e.target.value })}
-                required
-                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <option value="">Selecione um cliente</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nome}</option>
-                ))}
-              </select>
+                itens={clientes.map((c) => ({ valor: c.id, rotulo: c.nome, secundario: c.endereco }))}
+                valor={form.cliente_id}
+                onChange={(valor) => setForm({ ...form, cliente_id: valor })}
+                placeholder="Selecione um cliente"
+                className="h-11"
+              />
             </div>
 
             <div className="space-y-1.5">
