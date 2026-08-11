@@ -16,7 +16,8 @@ import {
   TrendingDown,
   Lock,
   Plus,
-  Wrench
+  Wrench,
+  UserPlus
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link import
 
@@ -32,6 +33,7 @@ import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 import { toast } from "@/components/ui/use-toast";
 import ChamadoForm from "@/components/chamados/ChamadoForm";
 import EquipamentoForm from "@/components/equipamentos/EquipamentoForm";
+import ClienteForm from "@/components/clientes/ClienteForm";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper function for creating page URLs, as implied by the outline.
@@ -54,6 +56,7 @@ export default function TecnicoDashboard() {
   const [showRegistrarPontoModal, setShowRegistrarPontoModal] = useState(false); // New state to control Ponto Eletrônico modal visibility
   const [showNovoChamado, setShowNovoChamado] = useState(false);
   const [showNovoEquipamento, setShowNovoEquipamento] = useState(false);
+  const [showNovoCliente, setShowNovoCliente] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -149,6 +152,27 @@ export default function TecnicoDashboard() {
     onError: (error) => {
       console.error("Erro ao abrir chamado:", error);
       toast({ description: `Não foi possível abrir o chamado: ${error.message}`, variant: "destructive" });
+    },
+  });
+
+  // Nível de acesso do técnico. 'completo' cadastra cliente, equipamento e
+  // abre chamado; 'execucao' só atende o que é dele. Técnico sem nível gravado
+  // (cadastro antigo) conta como completo, que é o que ele já podia fazer.
+  const podeCadastrar = (tecnico?.nivel_acesso || 'completo') === 'completo';
+
+  const criarClienteMutation = useMutation({
+    mutationFn: (clienteData) => base44.entities.Cliente.create({
+      ...clienteData,
+      empresa_id: user.empresa_id,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+      setShowNovoCliente(false);
+      toast({ description: "Cliente cadastrado com sucesso.", variant: "success" });
+    },
+    onError: (error) => {
+      console.error("Erro ao cadastrar cliente:", error);
+      toast({ description: `Não foi possível cadastrar o cliente: ${error.message}`, variant: "destructive" });
     },
   });
 
@@ -327,6 +351,10 @@ export default function TecnicoDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Cadastro em campo é do técnico de nível completo. Quem é de execução
+            não vê os botões, e o RLS recusaria de qualquer forma — esconder é
+            para ele não tentar e levar um erro seco. */}
+        {podeCadastrar && (
         <section className="mb-6 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 shadow-sm sm:p-5" aria-labelledby="acoes-campo-title">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -334,10 +362,14 @@ export default function TecnicoDashboard() {
               <h2 id="acoes-campo-title" className="mt-1 text-lg font-bold text-foreground">Registre o atendimento no momento em que ele acontece</h2>
               <p className="mt-1 text-sm text-muted-foreground">O chamado fica atribuído a você e o equipamento vinculado à sua empresa.</p>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Button onClick={() => setShowNovoChamado(true)} className="min-h-12 justify-center bg-blue-600 px-5 hover:bg-blue-700">
                 <Plus className="mr-2 h-5 w-5" />
                 Novo chamado
+              </Button>
+              <Button onClick={() => setShowNovoCliente(true)} variant="outline" className="min-h-12 justify-center border-blue-300 bg-white px-5 text-blue-800 hover:bg-blue-50">
+                <UserPlus className="mr-2 h-5 w-5" />
+                Cadastrar cliente
               </Button>
               <Button onClick={() => setShowNovoEquipamento(true)} variant="outline" className="min-h-12 justify-center border-blue-300 bg-white px-5 text-blue-800 hover:bg-blue-50">
                 <Wrench className="mr-2 h-5 w-5" />
@@ -346,6 +378,7 @@ export default function TecnicoDashboard() {
             </div>
           </div>
         </section>
+        )}
         {/* Alertas de orçamento */}
         {percentualGasto >= 80 && saldoInfo.orcamento > 0 && (
           <Card className="mb-6 border-2 border-orange-200 bg-orange-50">
@@ -561,6 +594,20 @@ export default function TecnicoDashboard() {
             tecnicoFixo={tecnico}
             onSubmit={(chamadoData) => criarChamadoMutation.mutate({ chamadoData })}
             onCancel={() => setShowNovoChamado(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showNovoCliente} onOpenChange={setShowNovoCliente}>
+        <DialogContent className="p-0 sm:max-w-4xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Cadastrar cliente</DialogTitle>
+            <DialogDescription>Cadastre um cliente novo para a sua empresa.</DialogDescription>
+          </DialogHeader>
+          <ClienteForm
+            onSubmit={(clienteData) => criarClienteMutation.mutate(clienteData)}
+            onCancel={() => setShowNovoCliente(false)}
+            isLoading={criarClienteMutation.isPending}
           />
         </DialogContent>
       </Dialog>
