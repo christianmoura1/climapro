@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
+import { BotaoUpload } from "@/components/ui/botao-upload";
 
 const STATUS_CHAMADO = {
   pendente: { color: "bg-orange-100 text-orange-800", label: "Pendente" },
@@ -131,8 +132,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     }
   };
 
-  const handlePhotoUpload = async (e) => {
-    const files = Array.from(e.target.files);
+  const handlePhotoUpload = async (arquivos) => {
+    const files = Array.isArray(arquivos) ? arquivos : [arquivos];
     
     if (files.length === 0) return;
 
@@ -164,8 +165,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     e.target.value = ''; // Clear input to allow re-uploading the same file
   };
 
-  const handlePhotoFinalizacaoUpload = async (e) => {
-    const files = Array.from(e.target.files);
+  const handlePhotoFinalizacaoUpload = async (arquivos) => {
+    const files = Array.isArray(arquivos) ? arquivos : [arquivos];
     
     if (files.length === 0) return;
 
@@ -202,8 +203,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     e.target.value = '';
   };
 
-  const handleVideoUpload = async (e) => {
-    const files = Array.from(e.target.files);
+  const handleVideoUpload = async (arquivos) => {
+    const files = Array.isArray(arquivos) ? arquivos : [arquivos];
     
     if (files.length === 0) return;
 
@@ -607,26 +608,21 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
           {/* Upload de Fotos Iniciais */}
           <div className="space-y-2">
             <Label>Fotos do Local/Problema</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-4">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handlePhotoUpload}
-                disabled={uploadingPhoto}
-                className="hidden"
+            <div className="relative border-2 border-dashed border-border rounded-lg p-4">
+              <BotaoUpload
                 id="photo-upload"
-              />
-              <label
-                htmlFor="photo-upload"
-                className="flex flex-col items-center justify-center cursor-pointer"
+                multiple
+                onArquivos={handlePhotoUpload}
+                disabled={uploadingPhoto}
+                variant="ghost"
+                className="h-auto w-full flex-col py-4"
               >
                 <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                 <span className="text-sm text-muted-foreground">
                   {uploadingPhoto ? 'Fazendo upload...' : 'Clique para adicionar fotos'}
                 </span>
                 <span className="text-xs text-muted-foreground mt-1">PNG, JPG até 10MB</span>
-              </label>
+              </BotaoUpload>
             </div>
 
             {photoPreview.length > 0 && (
@@ -680,19 +676,14 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               {/* Fotos de Finalização */}
               <div className="space-y-2">
                 <Label>Fotos de Finalização (até 10)</Label>
-                <div className="border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoFinalizacaoUpload}
-                    disabled={uploadingPhoto || photosFinalizacao.length >= 10}
-                    className="hidden"
+                <div className="relative border-2 border-dashed border-green-300 rounded-lg p-4 bg-green-50">
+                  <BotaoUpload
                     id="photo-finalizacao-upload"
-                  />
-                  <label
-                    htmlFor="photo-finalizacao-upload"
-                    className="flex flex-col items-center justify-center cursor-pointer"
+                    multiple
+                    onArquivos={handlePhotoFinalizacaoUpload}
+                    disabled={uploadingPhoto || photosFinalizacao.length >= 10}
+                    variant="ghost"
+                    className="h-auto w-full flex-col py-4"
                   >
                     <ImageIcon className="w-8 h-8 text-green-600 mb-2" />
                     <span className="text-sm text-green-800">
@@ -701,7 +692,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                     <span className="text-xs text-green-600 mt-1">
                       {photosFinalizacao.length}/10 fotos
                     </span>
-                  </label>
+                  </BotaoUpload>
                 </div>
 
                 {photosFinalizacao.length > 0 && (
@@ -729,19 +720,15 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               {/* Vídeos de Finalização */}
               <div className="space-y-2">
                 <Label>Vídeos de Finalização (até 2)</Label>
-                <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
-                  <input
-                    type="file"
+                <div className="relative border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50">
+                  <BotaoUpload
+                    id="video-finalizacao-upload"
                     accept="video/*"
                     multiple
-                    onChange={handleVideoUpload}
+                    onArquivos={handleVideoUpload}
                     disabled={uploadingVideo || videosFinalizacao.length >= 2}
-                    className="hidden"
-                    id="video-finalizacao-upload"
-                  />
-                  <label
-                    htmlFor="video-finalizacao-upload"
-                    className="flex flex-col items-center justify-center cursor-pointer"
+                    variant="ghost"
+                    className="h-auto w-full flex-col py-4"
                   >
                     <Video className="w-8 h-8 text-blue-600 mb-2" />
                     <span className="text-sm text-blue-800">
@@ -750,7 +737,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                     <span className="text-xs text-blue-600 mt-1">
                       {videosFinalizacao.length}/2 vídeos (máx 50MB cada)
                     </span>
-                  </label>
+                  </BotaoUpload>
                 </div>
 
                 {videosFinalizacao.length > 0 && (

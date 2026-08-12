@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
+import { BotaoUpload } from "@/components/ui/botao-upload";
 
 export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState(equipamento || {
@@ -62,8 +63,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     });
   };
 
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+  const handlePhotoUpload = async (file) => {
     if (!file) return;
 
     setUploadingPhoto(true);
@@ -255,23 +255,15 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
 
           <div className="space-y-2">
             <Label htmlFor="foto-upload">Foto do equipamento</Label>
-            <div className="flex gap-4 items-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                disabled={uploadingPhoto}
-                className="hidden"
-                capture="environment"
+            <div className="relative flex gap-4 items-center">
+              <BotaoUpload
                 id="foto-upload"
-              />
-              <label
-                htmlFor="foto-upload"
-                className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border px-4 py-2 hover:bg-muted"
+                onArquivos={handlePhotoUpload}
+                disabled={uploadingPhoto}
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4 mr-2" />
                 {uploadingPhoto ? 'Enviando...' : 'Selecionar Foto'}
-              </label>
+              </BotaoUpload>
               {formData.foto_url && (
                 <img
                   src={formData.foto_url}
