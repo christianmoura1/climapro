@@ -20,6 +20,34 @@ import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } fr
 import { mensagemDeLimite } from "@/lib/limitesPlano";
 import { useEmpresa } from "@/hooks/useEmpresa";
 
+// O payload do cliente era montado campo a campo, e isso já engoliu coluna
+// nova em silêncio duas vezes (senha_acesso_publico_hash e depois
+// dia_execucao_pmoc): a tela salvava, ninguém via erro, o campo simplesmente
+// não ia. Agora vai tudo que o formulário devolve, menos o que não é coluna
+// (senha_portal, que vai para a Edge Function) e o que nunca se atualiza pela
+// tela (id, chaves e carimbos de tempo).
+const NAO_VAO_PARA_O_BANCO = new Set([
+  'senha_portal',
+  'id',
+  'empresa_id',
+  'created_at',
+  'updated_at',
+  'created_date',
+  'updated_date',
+  'created_by',
+]);
+
+function camposDoCliente(clienteData) {
+  const payload = {};
+  for (const [campo, valor] of Object.entries(clienteData)) {
+    if (NAO_VAO_PARA_O_BANCO.has(campo)) continue;
+    payload[campo] = valor;
+  }
+  payload.estabelecimentos = clienteData.estabelecimentos || [];
+  payload.dia_execucao_pmoc = clienteData.dia_execucao_pmoc ?? null;
+  return payload;
+}
+
 export default function ClientesPage() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,20 +140,8 @@ export default function ClientesPage() {
       }
 
       const cliente = await base44.entities.Cliente.create({
-        nome: clienteData.nome,
-        email: clienteData.email,
-        telefone: clienteData.telefone,
-        whatsapp: clienteData.whatsapp,
-        endereco: clienteData.endereco,
-        latitude: clienteData.latitude,
-        longitude: clienteData.longitude,
-        tipo_estabelecimento: clienteData.tipo_estabelecimento,
-        observacoes: clienteData.observacoes,
-        dia_execucao_pmoc: clienteData.dia_execucao_pmoc ?? null,
-        tem_acesso_portal: clienteData.tem_acesso_portal,
-        estabelecimentos: clienteData.estabelecimentos || [],
+        ...camposDoCliente(clienteData),
         empresa_id: empresaId,
-        ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
       });
 
       if (clienteData.tem_acesso_portal && clienteData.senha_portal) {
@@ -164,21 +180,7 @@ export default function ClientesPage() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, clienteData }) => {
-      const cliente = await base44.entities.Cliente.update(id, {
-        nome: clienteData.nome,
-        email: clienteData.email,
-        telefone: clienteData.telefone,
-        whatsapp: clienteData.whatsapp,
-        endereco: clienteData.endereco,
-        latitude: clienteData.latitude,
-        longitude: clienteData.longitude,
-        tipo_estabelecimento: clienteData.tipo_estabelecimento,
-        observacoes: clienteData.observacoes,
-        dia_execucao_pmoc: clienteData.dia_execucao_pmoc ?? null,
-        tem_acesso_portal: clienteData.tem_acesso_portal,
-        estabelecimentos: clienteData.estabelecimentos || [],
-        ...(clienteData.senha_acesso_publico_hash ? { senha_acesso_publico_hash: clienteData.senha_acesso_publico_hash } : {})
-      });
+      const cliente = await base44.entities.Cliente.update(id, camposDoCliente(clienteData));
       if (clienteData.tem_acesso_portal && clienteData.senha_portal) {
         await base44.integrations.Core.GerenciarAcessoCliente({
           cliente_id: id,

@@ -11,12 +11,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 import { notificarPorEmail } from "@/lib/notificacoes";
-
-// A utility function for generating page URLs. In a full application,
-// this would typically come from a routing library (e.g., Next.js useRouter, React Router).
-const createPageUrl = (pageName) => {
-  return `/${pageName.toLowerCase()}`;
-};
+// Tinha um `createPageUrl` local aqui que passava o nome para minúsculo e
+// devolvia "/chamados". A rota real é "/Chamados": o React Router diferencia
+// maiúscula e o rewrite da Vercel também, então "Ver Chamado" caía no
+// PageNotFound. Usar o utilitário de verdade resolve.
+import { createPageUrl } from "@/utils";
 
 export default function DetalhesEventoModal({ evento, onClose, onUpdate, clientes, tecnicos }) {
   const [criarChamado, setCriarChamado] = useState(false);

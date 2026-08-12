@@ -4,24 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Cpu, MapPin, Calendar, Trash2, Eye, QrCode } from "lucide-react"; // Import Eye icon
 import { format } from "date-fns";
-import { useNavigate } from 'react-router-dom';
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { statusManutencao, STATUS_MANUTENCAO_CONFIG, LABEL_PERIODICIDADE } from "@/lib/pmocChecklist";
-
-// This is a placeholder for `createPageUrl`. In a real application,
-// this function would typically be imported from a routing utility
-// or defined globally based on your project's routing strategy (e.g., Next.js, Remix, custom).
-// For this standalone file to be functional, a basic implementation is provided.
-const createPageUrl = (pageName) => {
-  switch (pageName) {
-    case "EquipamentoDetalhes":
-      return "/equipamentos/detalhes"; // Adjust this path to your actual equipment details page route
-    // Add other cases as needed for different page names
-    default:
-      return `/${pageName.toLowerCase()}`;
-  }
-};
 
 const tipoConfig = {
   ar_condicionado: { label: "Ar Condicionado", color: "bg-blue-100 text-blue-800" },
@@ -33,8 +18,6 @@ const tipoConfig = {
 };
 
 export default function EquipamentosList({ equipamentos, clientes, isLoading, onEdit, onDelete, onView, onQrCode }) {
-  const navigate = useNavigate(); // Initialize useNavigate hook
-
   if (isLoading) {
     return (
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
