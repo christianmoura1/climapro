@@ -70,15 +70,36 @@ export default function BootDiagnostics({ children }) {
       console.error('[CLIMAPRO-BOOT] Erro ao verificar cache:', e);
     }
 
+    // Avisos do navegador que chegam como "erro" mas não quebram nada.
+    //
+    // "ResizeObserver loop completed with undelivered notifications" é o mais
+    // comum: o navegador só está dizendo que adiou medições para o quadro
+    // seguinte, o que é normal em lista que muda de tamanho enquanto se digita.
+    // A especificação trata isso como aviso, mas o Chrome e o Safari mandam
+    // pelo window.onerror — e este handler cobria a tela inteira com "Erro ao
+    // Carregar" por causa disso.
+    const ERROS_BENIGNOS = [
+      'removeChild',
+      'ResizeObserver loop',
+      'Non-Error promise rejection captured',
+    ];
+
     // Registrar handlers de erro global
     const handleError = function(event) {
-      // Ignorar erros de removeChild (são esperados em alguns casos)
-      if (event.message && event.message.includes('removeChild')) {
-        console.warn('[CLIMAPRO-BOOT] Erro removeChild ignorado (esperado)');
+      if (event.message && ERROS_BENIGNOS.some((t) => event.message.includes(t))) {
+        console.warn('[CLIMAPRO-BOOT] Aviso do navegador ignorado:', event.message);
         event.preventDefault();
         return;
       }
-      
+
+      // Depois que o app subiu, erro solto não pode mais derrubar a tela: quem
+      // trata falha de renderização é o ErrorBoundary, que sabe qual pedaço
+      // quebrou. Este aqui existe para diagnosticar o carregamento.
+      if (window.__climapro_initialized) {
+        console.error('[CLIMAPRO-BOOT] Erro após a inicialização (não bloqueia a tela):', event.message);
+        return;
+      }
+
       const errorMsg = event.message + ' | ' + event.filename + ':' + event.lineno;
       console.error('[CLIMAPRO-BOOT] Erro global capturado:', errorMsg);
       
@@ -100,6 +121,17 @@ export default function BootDiagnostics({ children }) {
 
     const handleUnhandledRejection = function(event) {
       const errorMsg = String(event.reason);
+
+      if (ERROS_BENIGNOS.some((t) => errorMsg.includes(t))) {
+        console.warn('[CLIMAPRO-BOOT] Aviso ignorado:', errorMsg);
+        return;
+      }
+
+      if (window.__climapro_initialized) {
+        console.error('[CLIMAPRO-BOOT] Promise rejeitada após a inicialização (não bloqueia a tela):', errorMsg);
+        return;
+      }
+
       console.error('[CLIMAPRO-BOOT] Promise rejeitada:', errorMsg);
       
       try {
