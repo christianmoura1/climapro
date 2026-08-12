@@ -68,7 +68,10 @@ export function SelectBuscavel({
           }}
         >
           <CommandInput placeholder={textoBusca} />
-          <CommandList>
+          {/* Altura fixa de propósito. Lista que encolhe a cada tecla faz o
+              popover se remedir sem parar, e é isso que dispara o aviso
+              "ResizeObserver loop" do Safari. */}
+          <CommandList className="h-64">
             <CommandEmpty>{textoVazio}</CommandEmpty>
             <CommandGroup>
               {opcaoTodos && (
