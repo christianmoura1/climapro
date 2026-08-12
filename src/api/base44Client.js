@@ -38,6 +38,32 @@ const SORT_FIELD_ALIASES = {
   updated_date: 'updated_at',
 };
 
+// Herança do Base44: lá as colunas de data se chamavam `created_date` e
+// `updated_date`. Aqui o `select('*')` devolve os nomes reais do Postgres
+// (`created_at`/`updated_at`), e o alias acima só traduzia a string de
+// ordenação. Resultado: ~18 telas liam `chamado.created_date` e recebiam
+// `undefined` — a data simplesmente não aparecia, sem erro nenhum na tela.
+//
+// Em vez de caçar cada leitura, o alias é devolvido junto da linha. É de
+// leitura apenas: `sanitizeWrite` remove os dois na volta, senão um payload
+// montado com spread mandaria uma coluna que não existe e o Postgres
+// reclamaria.
+const DATE_ALIASES = {
+  created_date: 'created_at',
+  updated_date: 'updated_at',
+};
+
+function withDateAliases(row) {
+  if (Array.isArray(row)) return row.map(withDateAliases);
+  if (!row || typeof row !== 'object') return row;
+
+  const comAlias = { ...row };
+  for (const [alias, real] of Object.entries(DATE_ALIASES)) {
+    if (real in row && !(alias in row)) comAlias[alias] = row[real];
+  }
+  return comAlias;
+}
+
 function tableFor(entityName) {
   const table = ENTITY_TABLE_MAP[entityName];
   if (!table) {
@@ -61,7 +87,7 @@ function applySort(query, sortString) {
 
 function unwrap({ data, error }) {
   if (error) throw error;
-  return data;
+  return withDateAliases(data);
 }
 
 // O Base44 (schemaless) tolerava "" em campos de data/UUID; o Postgres não
@@ -73,6 +99,10 @@ function sanitizeWrite(payload) {
   const clean = {};
   for (const [key, value] of Object.entries(payload)) {
     if (value === undefined) continue;
+    // Aliases só existem na volta da leitura. Se voltarem numa escrita (um
+    // payload montado com spread da linha lida), o Postgres não tem essas
+    // colunas e o insert/update quebra.
+    if (key in DATE_ALIASES) continue;
     clean[key] = value === '' ? null : value;
   }
   return clean;
