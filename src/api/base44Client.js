@@ -31,6 +31,7 @@ const ENTITY_TABLE_MAP = {
   PontoEletronico: 'ponto_eletronico',
   Tecnico: 'tecnico',
   ValorTecnico: 'valor_tecnico',
+  WhatsappMensagem: 'whatsapp_mensagem',
 };
 
 const SORT_FIELD_ALIASES = {

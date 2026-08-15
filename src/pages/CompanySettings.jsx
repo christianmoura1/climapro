@@ -11,6 +11,7 @@ import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
 import { ErrorState, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { toast } from "@/components/ui/use-toast";
+import NotificacoesWhatsApp from "@/components/empresa/NotificacoesWhatsApp";
 
 export default function CompanySettings() {
   const navigate = useNavigate();
@@ -322,17 +323,10 @@ export default function CompanySettings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-none mt-6 bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-blue-900 mb-3">📱 Como funcionam as Notificações</h3>
-            <ul className="space-y-2 text-sm text-blue-800">
-              <li>✅ Quando um cliente abre um chamado → WhatsApp da empresa é aberto automaticamente</li>
-              <li>✅ Quando você atribui um chamado a um técnico → WhatsApp do técnico é aberto automaticamente</li>
-              <li>✅ A mensagem já vem pronta, basta clicar em ENVIAR</li>
-              <li>✅ Certifique-se de cadastrar os números de telefone com DDD correto</li>
-            </ul>
-          </CardContent>
-        </Card>
+        {/* O card que ficava aqui explicava o WhatsApp antigo, aquele que só
+            abria a conversa já preenchida para alguém apertar enviar na mão.
+            Agora o envio é automático e a configuração é logo abaixo. */}
+        <NotificacoesWhatsApp empresa={empresa} />
     </PageShell>
   );
 }
