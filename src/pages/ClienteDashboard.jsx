@@ -191,67 +191,20 @@ export default function ClienteDashboard() {
         prioridade: data.prioridade || 'media',
       });
 
-      // Buscar dados da empresa
-      const empresas = await base44.entities.Empresa.list();
-      const minhaEmpresa = empresas.find(e => e.id === empresaIdFinal);
-
-      return { chamado, empresa: minhaEmpresa };
+      return { chamado };
     },
-    onSuccess: ({ chamado, empresa }) => {
+    // A empresa é avisada pelo gatilho no banco, que enfileira a mensagem e a
+    // Edge Function entrega pelo uazapi. Aqui era o fluxo antigo: montava o
+    // texto na mão, abria uma aba no wa.me e pedia para o cliente apertar
+    // enviar. Além de virar estorvo agora, dependia do cliente concluir um
+    // passo para a empresa ficar sabendo do chamado dele.
+    onSuccess: ({ chamado }) => {
       queryClient.invalidateQueries(['meus-chamados-cliente']);
       setShowChamadoForm(false);
-      
-      // Criar mensagem para WhatsApp
-      const mensagem = `🔔 *NOVO CHAMADO ABERTO*
-
-*#${chamado.numero_chamado}*
-
-📋 *DETALHES:*
-Cliente: ${cliente.nome}
-Título: ${chamado.titulo}
-Descrição: ${chamado.descricao}
-Local: ${chamado.local || 'Não informado'}
-Prioridade: ${chamado.prioridade}
-
-📞 *Contato:*
-Tel: ${cliente.telefone}
-Email: ${cliente.email}
-
-🌐 *Acesse o sistema:*
-https://geradordepmoc.com.br/Chamados`;
-
-      // Pegar telefone da empresa (remover caracteres especiais)
-      const telefoneEmpresa = empresa?.telefone?.replace(/\D/g, '') || '';
-      
-      if (telefoneEmpresa) {
-        // Abrir WhatsApp Web com mensagem pronta
-        const whatsappUrl = `https://wa.me/${telefoneEmpresa}?text=${encodeURIComponent(mensagem)}`;
-        window.open(whatsappUrl, '_blank');
-        
-        toast({ description: `✅ Chamado criado com sucesso!
-
-📱 O WhatsApp foi aberto automaticamente com a notificação.
-
-Clique em ENVIAR para notificar a empresa.`, variant: "success" });
-      } else {
-        // Se não tiver WhatsApp, copiar para clipboard
-        navigator.clipboard.writeText(mensagem).then(() => {
-          toast({ description: `✅ Chamado criado com sucesso!
-
-📋 Mensagem copiada para área de transferência.
-
-Por favor, envie para a empresa:
-📱 ${empresa?.telefone || 'Telefone não cadastrado'}`, variant: "success" });
-        }).catch(() => {
-            toast({ description: `✅ Chamado criado com sucesso!
-
-⚠️ Não foi possível copiar a mensagem automaticamente.
-
-Por favor, copie e envie manualmente para a empresa:
-${mensagem}
-`, variant: "success" });
-        });
-      }
+      toast({
+        description: `✅ Chamado #${chamado.numero_chamado} aberto. A empresa já foi avisada.`,
+        variant: "success",
+      });
     },
     onError: (error) => {
       console.error("❌ ERRO ao criar chamado:", error);
