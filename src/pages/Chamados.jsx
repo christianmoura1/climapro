@@ -34,6 +34,15 @@ export default function ChamadosPage() {
   const [forceRender, setForceRender] = useState(0);
   const queryClient = useQueryClient();
 
+  // O formulário é inline, não é modal. Sem rolar até ele, quem está no meio
+  // de uma lista de 148 chamados clica em "Novo Chamado" e não vê nada mudar.
+  const areaFormulario = useRef(null);
+  useEffect(() => {
+    if (showForm) {
+      areaFormulario.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showForm]);
+
   const [visualizacao, setVisualizacao] = useState('kanban'); // 'kanban' ou 'lista'
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -551,7 +560,14 @@ ClimaPro - Sistema de Gestão`
                 </Button>
               </div>
               <Button
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => {
+                  // Era um toggle puro. Se o formulário estivesse aberto
+                  // editando um chamado, "Novo Chamado" só fechava a tela, e
+                  // no clique seguinte reabria ainda em modo de edição.
+                  setEditingChamado(null);
+                  setPrefillChamado(null);
+                  setShowForm(true);
+                }}
                 className="w-full bg-blue-600 hover:bg-blue-700 sm:w-auto"
               >
                 <Plus className="w-5 h-5 mr-2" />
@@ -612,6 +628,26 @@ ClimaPro - Sistema de Gestão`
           </div>
         </div>
 
+        {/* O formulário fica aqui em cima, logo abaixo do botão que o abre.
+            Antes ele vinha depois do bloco laranja de aguardando aprovação, e
+            com cinco chamados nesse bloco ele nascia fora da tela: clicar em
+            "Novo Chamado" parecia não fazer nada. */}
+        {showForm && (
+          <div ref={areaFormulario}>
+            <ChamadoForm
+              chamado={editingChamado || prefillChamado}
+              clientes={clientes}
+              tecnicos={tecnicos}
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingChamado(null);
+                setPrefillChamado(null);
+              }}
+            />
+          </div>
+        )}
+
         {/* Seção de Chamados Aguardando Aprovação */}
         {chamadosAguardandoAprovacao.length > 0 && (
           <Card className="mb-8 shadow-lg border-2 border-orange-200 bg-orange-50">
@@ -668,20 +704,6 @@ ClimaPro - Sistema de Gestão`
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {showForm && (
-          <ChamadoForm
-            chamado={editingChamado || prefillChamado}
-            clientes={clientes}
-            tecnicos={tecnicos}
-            onSubmit={handleSubmit}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingChamado(null);
-              setPrefillChamado(null);
-            }}
-          />
         )}
 
         {chamados.length === 0 ? (
