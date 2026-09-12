@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Printer } from "lucide-react";
+import { Plus, Search, Printer, Layers } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 import EquipamentoForm from "../components/equipamentos/EquipamentoForm";
@@ -11,6 +11,7 @@ import EquipamentosList from "../components/equipamentos/EquipamentosList";
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import QRCodeEquipamentoModal from "../components/equipamentos/QRCodeEquipamentoModal";
 import ImprimirQRCodesEquipamentos from "../components/equipamentos/ImprimirQRCodesEquipamentos";
+import CadastroLoteEquipamentos from "../components/equipamentos/CadastroLoteEquipamentos";
 import { PageLoading } from "@/components/ui/page-loading";
 import { toast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ export default function EquipamentosPage() {
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [gerandoQrPara, setGerandoQrPara] = useState(null);
   const [imprimindoTodosQr, setImprimindoTodosQr] = useState(false);
+  const [showLote, setShowLote] = useState(false);
   const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
 
@@ -119,6 +121,24 @@ export default function EquipamentosPage() {
     }
   });
 
+  const criarLoteMutation = useMutation({
+    mutationFn: (linhas) => base44.entities.Equipamento.bulkCreate(linhas),
+    onSuccess: (criados) => {
+      queryClient.invalidateQueries(['equipamentos']);
+      setShowLote(false);
+      const quantos = criados?.length ?? 0;
+      toast({
+        description: `✅ ${quantos} equipamento${quantos !== 1 ? 's' : ''} cadastrado${quantos !== 1 ? 's' : ''}. `
+          + 'Use "Imprimir QR Codes" para gerar as etiquetas.',
+        variant: "success",
+      });
+    },
+    onError: (error) => {
+      console.error("Erro ao cadastrar lote:", error);
+      toast({ description: `❌ Nada foi gravado: ${error.message || 'tente novamente.'}`, variant: "destructive" });
+    }
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Equipamento.update(id, data),
     onSuccess: () => {
@@ -205,6 +225,26 @@ export default function EquipamentosPage() {
         empresa_id: user.empresa_id
       });
     }
+  };
+
+  // O lote usa o mesmo pré-teste de plano do cadastro unitário, só que uma vez
+  // para o lote inteiro: são todos do mesmo cliente, então ou passa ou não passa.
+  const handleSubmitLote = (linhas) => {
+    if (linhas.length === 0) return;
+    const clienteId = linhas[0].cliente_id;
+    const ligandoPmocEmClienteNovo = linhas.some((l) => l.pmoc_ativo)
+      && !clientesComPmoc.has(clienteId);
+
+    if (ligandoPmocEmClienteNovo && atingiuLimite('limite_clientes_pmoc', clientesComPmoc.size)) {
+      toast({
+        description: `⚠️ Seu plano inclui PMOC para ${empresa?.limite_clientes_pmoc} cliente(s). `
+          + `Suba de plano em Planos para atender mais clientes com PMOC.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    criarLoteMutation.mutate(linhas.map((l) => ({ ...l, empresa_id: user.empresa_id })));
   };
 
   const handleDelete = (equipamento) => {
@@ -303,8 +343,21 @@ export default function EquipamentosPage() {
                 </Button>
               )}
               <Button
+                variant="outline"
+                onClick={() => {
+                  setShowLote((aberto) => !aberto);
+                  setShowForm(false);
+                  setEditingEquipamento(null);
+                }}
+                className="w-full sm:w-auto"
+              >
+                <Layers className="w-5 h-5 mr-2" />
+                Cadastrar em lote
+              </Button>
+              <Button
                 onClick={() => {
                   setShowForm(!showForm);
+                  setShowLote(false);
                   setEditingEquipamento(null);
                 }}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 sm:w-auto"
@@ -315,6 +368,16 @@ export default function EquipamentosPage() {
             </>
           }
         />
+
+        {showLote && (
+          <CadastroLoteEquipamentos
+            clientes={clientes}
+            equipamentos={equipamentos}
+            onSubmit={handleSubmitLote}
+            onCancel={() => setShowLote(false)}
+            isLoading={criarLoteMutation.isPending}
+          />
+        )}
 
         {showForm && (
           <EquipamentoForm
