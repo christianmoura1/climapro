@@ -66,6 +66,15 @@ export const publicPages = [
     schemaType: "WebApplication",
   },
   {
+    path: "/pmoc-para-hoteis",
+    title: "PMOC para hotéis e condomínios: levantamento gratuito | ClimaPro",
+    description:
+      "Hotel, condomínio ou rede com muitos aparelhos de ar-condicionado? Agende um levantamento gratuito do parque, veja como está sua documentação de PMOC e acompanhe cada visita por um portal.",
+    eyebrow: "Para hotéis, condomínios e redes",
+    schemaType: "WebPage",
+    areaServed: ["Vitória", "Vila Velha", "Serra", "Cariacica", "Viana", "Guarapari"],
+  },
+  {
     path: "/pmoc/curitiba",
     title: "PMOC em Curitiba: guia e sistema para empresas | ClimaPro",
     description: "Entenda o PMOC em Curitiba e organize clientes, equipamentos, cronograma, checklist, fotos e assinaturas em um sistema para climatização.",

@@ -1800,3 +1800,118 @@
   .m-region-panel__head { align-items: flex-start; gap: 1rem; }
   .m-region-panel__head small { text-align: right; }
 }
+
+/* ==========================================================================
+   Formulário de captação do cliente final (/pmoc-para-hoteis)
+   ========================================================================== */
+
+.m-lead {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 18px;
+  padding: clamp(20px, 4vw, 36px);
+  max-width: 760px;
+  margin: 0 auto;
+  box-shadow: 0 18px 40px -30px rgba(15, 23, 42, 0.45);
+}
+
+.m-lead h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  line-height: 1.25;
+}
+
+.m-lead__lead {
+  margin: 0 0 24px;
+  color: #475569;
+}
+
+.m-lead__form {
+  display: grid;
+  gap: 16px;
+}
+
+.m-lead__row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+  .m-lead__row { grid-template-columns: 1fr; }
+}
+
+.m-lead__form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.m-lead__form input,
+.m-lead__form textarea {
+  font: inherit;
+  font-weight: 400;
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.m-lead__form input:focus-visible,
+.m-lead__form textarea:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
+}
+
+.m-lead__form .m-button {
+  justify-self: start;
+  border: 0;
+  cursor: pointer;
+}
+
+.m-lead__form .m-button[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Isca de robô: sai da tela sem display:none, que alguns robôs detectam e
+   pulam. Leitor de tela ignora pelo aria-hidden do container. */
+.m-lead__isca {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.m-lead__erro {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
+
+.m-lead__nota {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.m-lead--ok {
+  text-align: center;
+}
+
+.m-lead--ok h2 {
+  margin-bottom: 12px;
+}
+
+.m-lead--ok p {
+  color: #475569;
+  margin: 0 auto 20px;
+  max-width: 52ch;
+}
