@@ -2,7 +2,7 @@
 // devolve a URL de pagamento. Chamada pelo front-end (Planos.jsx).
 import { corsHeaders } from '../_shared/cors.ts';
 import { supabaseAdmin, getRequestingProfile } from '../_shared/clients.ts';
-import { stripePost, priceDoPlano } from '../_shared/stripe.ts';
+import { stripePost, priceDoPlano, conferirPrice } from '../_shared/stripe.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -29,10 +29,25 @@ Deno.serve(async (req) => {
     // Qualquer coisa que não seja 'anual' é cobrada no mensal: um ciclo
     // digitado errado não pode virar uma cobrança de doze meses.
     const ciclo = corpo?.ciclo === 'anual' ? 'anual' : 'mensal';
-    const priceId = priceDoPlano(plano, ciclo);
+    const priceId = await priceDoPlano(plano, ciclo);
     if (!priceId) {
       return new Response(JSON.stringify({ error: `Plano ${plano} não tem preço ${ciclo} configurado.` }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Confere no Stripe antes de abrir o checkout. Sem isto, um price apontado
+    // para o valor antigo cobraria calado enquanto a tela anuncia o novo — foi
+    // o risco que apareceu quando o preço mudou e os secrets ficaram para trás.
+    const divergencia = await conferirPrice(priceId, plano, ciclo);
+    if (divergencia) {
+      console.error('Price divergente:', divergencia);
+      return new Response(JSON.stringify({
+        error: 'O preço cadastrado no Stripe não bate com o que está na página de Planos. '
+          + 'Ninguém foi cobrado. Avise o suporte para corrigir antes de assinar.',
+      }), {
+        status: 409,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
