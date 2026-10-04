@@ -24,8 +24,9 @@ import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/api/supabaseClient";
 import { previewNumero } from "@/lib/whatsapp";
+import { gerarRelatorioPdf, nomeDoArquivo } from "@/lib/relatorioPdf";
 
-export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClose }) {
+export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empresa, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
   const [observacoesTecnico, setObservacoesTecnico] = useState(chamado.observacoes_tecnico || "");
   const [modoEdicao, setModoEdicao] = useState(false);
@@ -87,11 +88,34 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
         if (!numeroFinal) {
           avisoEnvio = 'Relatório não enviado: número de WhatsApp em branco ou incompleto.';
         } else {
+          // O PDF é gerado aqui no navegador e sobe para o bucket público. Se
+          // falhar, a mensagem sai mesmo assim com o resumo em texto: perder o
+          // anexo é bem melhor do que o cliente não receber nada.
+          let urlRelatorio = null;
+          try {
+            const pdf = await gerarRelatorioPdf({
+              chamado: { ...chamado, observacoes_tecnico: observacoesTecnico, observacoes_empresa: observacoesEmpresa },
+              cliente,
+              tecnico,
+              empresa,
+            });
+            const arquivo = new File([pdf], nomeDoArquivo(chamado), { type: 'application/pdf' });
+            const enviado = await base44.integrations.Core.UploadFile({ file: arquivo });
+            urlRelatorio = enviado?.file_url || null;
+          } catch (erro) {
+            console.error('[aprovar] falhou ao gerar/subir o PDF:', erro);
+          }
+
           const { error } = await supabase.rpc('whatsapp_enviar_relatorio', {
             p_chamado_id: chamado.id,
             p_destino: whatsappCliente,
+            p_url_relatorio: urlRelatorio,
           });
-          if (error) avisoEnvio = `Chamado aprovado, mas o relatório não saiu: ${error.message}`;
+          if (error) {
+            avisoEnvio = `Chamado aprovado, mas o relatório não saiu: ${error.message}`;
+          } else if (!urlRelatorio) {
+            avisoEnvio = 'Chamado aprovado e resumo enviado, mas o PDF não foi gerado. Reenvie pela tela do chamado.';
+          }
         }
       }
 
