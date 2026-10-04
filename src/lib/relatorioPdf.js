@@ -7,19 +7,29 @@ import { jsPDF } from "jspdf";
 // para subir no Storage e ir no WhatsApp do cliente, sem passar por janela
 // nenhuma.
 //
-// Sem emoji no texto: as fontes padrão do jsPDF são WinAnsi e emoji sai como
-// quadrado. Acento vai bem, que é o que importa em português.
+// Este documento vai para a mão do cliente final e, no caso de hotel e
+// condomínio, é o que fica arquivado para mostrar à fiscalização. Então o
+// acabamento importa tanto quanto o conteúdo.
+//
+// Sem emoji: as fontes padrão do jsPDF são WinAnsi e emoji sai como quadrado.
+// Acento vai bem, que é o que importa em português.
 
-const MARGEM = 15;
 const LARGURA = 210; // A4 em mm
 const ALTURA = 297;
+const MARGEM = 16;
 const UTIL = LARGURA - MARGEM * 2;
 
+const MARINHO = [23, 48, 92];
 const AZUL = [37, 99, 235];
-const CINZA = [75, 85, 99];
-const PRETO = [31, 41, 55];
+const VERDE = [22, 101, 52];
+const VERDE_FUNDO = [220, 252, 231];
+const TEXTO = [31, 41, 55];
+const SUAVE = [107, 114, 128];
+const CARTAO = [247, 248, 250];
+const BORDA = [226, 232, 240];
+const BRANCO = [255, 255, 255];
 
-function formatarData(valor) {
+function formatarDataHora(valor) {
   if (!valor) return null;
   const d = new Date(valor);
   if (Number.isNaN(d.getTime())) return null;
@@ -27,6 +37,13 @@ function formatarData(valor) {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
+}
+
+function formatarData(valor) {
+  if (!valor) return null;
+  const d = new Date(`${valor}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("pt-BR");
 }
 
 // Busca a imagem e devolve dataURL. Volta null em qualquer falha: foto que não
@@ -49,7 +66,6 @@ async function comoDataUrl(url) {
   }
 }
 
-// Proporção real da imagem, para a foto não sair esticada.
 function medir(dataUrl) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -59,235 +75,370 @@ function medir(dataUrl) {
   });
 }
 
+// O jsPDF exige o formato certo no addImage. Passar "JPEG" num PNG faz ele
+// recusar a imagem, e como a chamada fica dentro de try/catch o resultado é
+// um buraco branco no relatório, sem erro nenhum. Foi exatamente o que
+// aconteceu na primeira versão.
+function formatoDaImagem(dataUrl) {
+  const achado = /^data:image\/([a-z0-9+]+)/i.exec(dataUrl || "");
+  const tipo = (achado?.[1] || "").toUpperCase();
+  if (tipo === "JPG") return "JPEG";
+  return ["JPEG", "PNG", "WEBP"].includes(tipo) ? tipo : null;
+}
+
+async function prepararImagem(url) {
+  const dados = await comoDataUrl(url);
+  if (!dados) return null;
+  const formato = formatoDaImagem(dados);
+  if (!formato) {
+    console.warn("[relatorioPdf] formato de imagem não suportado pelo PDF:", dados.slice(0, 30));
+    return null;
+  }
+  const tamanho = await medir(dados);
+  return { dados, formato, w: tamanho?.w || 4, h: tamanho?.h || 3 };
+}
+
 export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
-  let y = MARGEM;
+  let y = 0;
 
-  const quebrarSePreciso = (altura) => {
-    if (y + altura > ALTURA - MARGEM) {
-      doc.addPage();
-      y = MARGEM;
-    }
+  const novaPagina = () => {
+    doc.addPage();
+    y = MARGEM + 4;
   };
 
-  const titulo = (texto) => {
-    quebrarSePreciso(14);
-    doc.setFontSize(12);
+  const espaco = (altura) => {
+    if (y + altura > ALTURA - 18) novaPagina();
+  };
+
+  // ============ CABEÇALHO ============
+  const logo = await prepararImagem(empresa?.logo_url);
+  const alturaFaixa = 34;
+
+  doc.setFillColor(...MARINHO);
+  doc.rect(0, 0, LARGURA, alturaFaixa, "F");
+  // Fio de destaque embaixo da faixa
+  doc.setFillColor(...AZUL);
+  doc.rect(0, alturaFaixa, LARGURA, 1.2, "F");
+
+  if (logo) {
+    // A logo entra numa caixa branca: logo colorida sobre fundo marinho
+    // costuma sumir, e a maioria vem com fundo transparente.
+    const alturaMax = 16;
+    const alturaLogo = Math.min(alturaMax, (46 * logo.h) / logo.w);
+    const larguraLogo = (alturaLogo * logo.w) / logo.h;
+    doc.setFillColor(...BRANCO);
+    doc.roundedRect(MARGEM - 2, 9, larguraLogo + 4, alturaLogo + 4, 1.5, 1.5, "F");
+    try {
+      doc.addImage(logo.dados, logo.formato, MARGEM, 11, larguraLogo, alturaLogo);
+    } catch (erro) {
+      console.warn("[relatorioPdf] não consegui desenhar a logo:", erro);
+    }
+  } else {
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...AZUL);
-    doc.text(texto, MARGEM, y);
-    y += 2;
-    doc.setDrawColor(229, 231, 235);
+    doc.setFontSize(17);
+    doc.setTextColor(...BRANCO);
+    doc.text(empresa?.nome || "ClimaPro", MARGEM, 17);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(203, 213, 225);
+    const contato = [empresa?.cnpj ? `CNPJ ${empresa.cnpj}` : null, empresa?.telefone]
+      .filter(Boolean).join("   ");
+    if (contato) doc.text(contato, MARGEM, 23);
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(...BRANCO);
+  doc.text("RELATÓRIO DE ATENDIMENTO", LARGURA - MARGEM, 15, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(147, 197, 253);
+  doc.text(`#${chamado?.numero_chamado || chamado?.id?.slice(0, 8) || ""}`,
+    LARGURA - MARGEM, 21.5, { align: "right" });
+  doc.setFontSize(8);
+  doc.setTextColor(203, 213, 225);
+  const emissao = new Date().toLocaleDateString("pt-BR");
+  doc.text(`Emitido em ${emissao}`, LARGURA - MARGEM, 27, { align: "right" });
+
+  y = alturaFaixa + 9;
+
+  // Linha de contato da empresa (quando a logo ocupou o espaço do nome)
+  if (logo) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXTO);
+    doc.text(empresa?.nome || "ClimaPro", MARGEM, y);
+    y += 4.5;
+  }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...SUAVE);
+  const rodapeEmpresa = [
+    empresa?.cnpj ? `CNPJ ${empresa.cnpj}` : null,
+    empresa?.telefone,
+    empresa?.email_contato,
+    empresa?.endereco,
+  ].filter(Boolean).join("   •   ");
+  if (rodapeEmpresa) {
+    for (const parte of doc.splitTextToSize(rodapeEmpresa, UTIL)) {
+      doc.text(parte, MARGEM, y);
+      y += 3.6;
+    }
+  }
+  y += 5;
+
+  // ============ FAIXA DE STATUS ============
+  const dados = [
+    ["Abertura", formatarDataHora(chamado?.data_abertura || chamado?.created_at) || "—"],
+    ["Conclusão", formatarDataHora(chamado?.data_finalizacao) || "—"],
+  ];
+
+  doc.setFillColor(...CARTAO);
+  doc.setDrawColor(...BORDA);
+  doc.roundedRect(MARGEM, y, UTIL, 19, 2, 2, "FD");
+
+  let x = MARGEM + 5;
+  for (const [rotulo, valor] of dados) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...SUAVE);
+    doc.text(rotulo.toUpperCase(), x, y + 7);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...TEXTO);
+    doc.text(valor, x, y + 13);
+    x += 52;
+  }
+
+  // Selo de finalizado
+  doc.setFillColor(...VERDE_FUNDO);
+  doc.roundedRect(LARGURA - MARGEM - 34, y + 5.5, 29, 8, 4, 4, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(...VERDE);
+  doc.text("FINALIZADO", LARGURA - MARGEM - 19.5, y + 11, { align: "center" });
+
+  y += 26;
+
+  // ============ AJUDANTES DE SEÇÃO ============
+  const secao = (texto) => {
+    espaco(16);
+    doc.setFillColor(...AZUL);
+    doc.rect(MARGEM, y - 3.6, 1.6, 5, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(...MARINHO);
+    doc.text(texto, MARGEM + 4.5, y);
+    y += 2.5;
+    doc.setDrawColor(...BORDA);
+    doc.setLineWidth(0.3);
     doc.line(MARGEM, y, LARGURA - MARGEM, y);
     y += 6;
   };
 
-  const linha = (rotulo, valor) => {
-    if (!valor) return;
-    const texto = String(valor);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...CINZA);
-    const larguraRotulo = 45;
-    const partes = doc.splitTextToSize(texto, UTIL - larguraRotulo);
-    quebrarSePreciso(partes.length * 5 + 2);
-    doc.text(rotulo, MARGEM, y);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(...PRETO);
-    doc.text(partes, MARGEM + larguraRotulo, y);
-    y += partes.length * 5 + 1;
+  // Dois cartões lado a lado, para cliente e técnico.
+  const cartaoDuplo = (esquerda, direita) => {
+    const larguraCartao = (UTIL - 5) / 2;
+    const linhas = Math.max(esquerda.itens.length, direita.itens.length);
+    const altura = 12 + linhas * 6;
+    espaco(altura + 4);
+
+    [[esquerda, MARGEM], [direita, MARGEM + larguraCartao + 5]].forEach(([bloco, px]) => {
+      doc.setFillColor(...CARTAO);
+      doc.setDrawColor(...BORDA);
+      doc.roundedRect(px, y, larguraCartao, altura, 2, 2, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...AZUL);
+      doc.text(bloco.titulo.toUpperCase(), px + 5, y + 7);
+
+      let ly = y + 14;
+      for (const [rotulo, valor] of bloco.itens) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(...SUAVE);
+        doc.text(rotulo, px + 5, ly);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...TEXTO);
+        const texto = doc.splitTextToSize(String(valor || "—"), larguraCartao - 32)[0] || "—";
+        doc.text(texto, px + 26, ly);
+        ly += 6;
+      }
+    });
+
+    y += altura + 7;
   };
 
-  const paragrafo = (texto) => {
+  const blocoTexto = (rotulo, texto) => {
     if (!texto) return;
-    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...SUAVE);
+    espaco(10);
+    doc.text(rotulo.toUpperCase(), MARGEM, y);
+    y += 4.5;
+
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...PRETO);
-    const partes = doc.splitTextToSize(String(texto), UTIL);
-    for (const parte of partes) {
-      quebrarSePreciso(5);
+    doc.setFontSize(9.5);
+    doc.setTextColor(...TEXTO);
+    for (const parte of doc.splitTextToSize(String(texto), UTIL - 4)) {
+      espaco(5);
       doc.text(parte, MARGEM, y);
-      y += 5;
+      y += 4.8;
     }
-    y += 2;
+    y += 3;
   };
 
-  // ---------- cabeçalho ----------
-  const logo = await comoDataUrl(empresa?.logo_url);
-  if (logo) {
-    const tam = await medir(logo);
-    if (tam) {
-      const altura = Math.min(20, (40 * tam.h) / tam.w);
-      const largura = (altura * tam.w) / tam.h;
-      try {
-        doc.addImage(logo, "PNG", MARGEM, y, largura, altura);
-        y += altura + 4;
-      } catch {
-        // logo em formato que o jsPDF não aceita: segue sem ela
-      }
+  // ============ CLIENTE E TÉCNICO ============
+  secao("Identificação");
+  cartaoDuplo(
+    {
+      titulo: "Cliente",
+      itens: [
+        ["Nome", cliente?.nome],
+        ["Telefone", cliente?.telefone],
+        ["Local", chamado?.local || cliente?.endereco],
+      ],
+    },
+    {
+      titulo: "Técnico responsável",
+      itens: [
+        ["Nome", tecnico?.nome],
+        ["Telefone", tecnico?.telefone],
+        ["Serviço", chamado?.titulo],
+      ],
     }
-  }
+  );
 
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...AZUL);
-  doc.text(empresa?.nome || "ClimaPro", MARGEM, y);
-  y += 6;
+  // ============ SERVIÇO ============
+  secao("Serviço executado");
+  blocoTexto("Problema relatado", chamado?.descricao);
+  blocoTexto("O que foi feito", chamado?.observacoes_tecnico);
+  blocoTexto("Observações da empresa", chamado?.observacoes_empresa);
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...CINZA);
-  const contato = [
-    empresa?.cnpj ? `CNPJ: ${empresa.cnpj}` : null,
-    empresa?.telefone,
-    empresa?.email_contato,
-  ].filter(Boolean).join("  |  ");
-  if (contato) { doc.text(contato, MARGEM, y); y += 4; }
-  if (empresa?.endereco) { doc.text(empresa.endereco, MARGEM, y); y += 4; }
-
-  y += 2;
-  doc.setDrawColor(...AZUL);
-  doc.setLineWidth(0.8);
-  doc.line(MARGEM, y, LARGURA - MARGEM, y);
-  doc.setLineWidth(0.2);
-  y += 8;
-
-  doc.setFontSize(15);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...PRETO);
-  doc.text("Relatório de Atendimento", MARGEM, y);
-  y += 9;
-
-  // ---------- dados ----------
-  titulo("Informações do chamado");
-  linha("Número:", `#${chamado.numero_chamado || chamado.id?.slice(0, 8)}`);
-  linha("Título:", chamado.titulo);
-  linha("Abertura:", formatarData(chamado.data_abertura || chamado.created_at));
-  linha("Conclusão:", formatarData(chamado.data_finalizacao));
-  linha("Status:", "Finalizado");
-  y += 3;
-
-  titulo("Cliente");
-  linha("Nome:", cliente?.nome);
-  linha("Telefone:", cliente?.telefone);
-  linha("Local:", chamado.local || cliente?.endereco);
-  y += 3;
-
-  titulo("Técnico responsável");
-  linha("Nome:", tecnico?.nome);
-  linha("Telefone:", tecnico?.telefone);
-  y += 3;
-
-  titulo("Serviço");
-  if (chamado.descricao) {
-    doc.setFontSize(10);
+  const proxima = formatarData(chamado?.data_lembrete_proxima_manutencao);
+  if (proxima) {
+    espaco(14);
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(191, 219, 254);
+    doc.roundedRect(MARGEM, y, UTIL, 11, 2, 2, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...CINZA);
-    quebrarSePreciso(6);
-    doc.text("Problema relatado", MARGEM, y);
-    y += 5;
-    paragrafo(chamado.descricao);
+    doc.setFontSize(9);
+    doc.setTextColor(...AZUL);
+    doc.text("Próxima manutenção prevista", MARGEM + 5, y + 7);
+    doc.setTextColor(...TEXTO);
+    doc.text(proxima, LARGURA - MARGEM - 5, y + 7, { align: "right" });
+    y += 17;
   }
-  if (chamado.observacoes_tecnico) {
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...CINZA);
-    quebrarSePreciso(6);
-    doc.text("O que foi feito", MARGEM, y);
-    y += 5;
-    paragrafo(chamado.observacoes_tecnico);
-  }
-  if (chamado.observacoes_empresa) {
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...CINZA);
-    quebrarSePreciso(6);
-    doc.text("Observações da empresa", MARGEM, y);
-    y += 5;
-    paragrafo(chamado.observacoes_empresa);
-  }
-  if (chamado.data_lembrete_proxima_manutencao) {
-    const d = new Date(`${chamado.data_lembrete_proxima_manutencao}T12:00:00`);
-    linha("Próxima manutenção:", d.toLocaleDateString("pt-BR"));
-  }
-  y += 3;
 
-  // ---------- fotos ----------
-  const fotos = (chamado.fotos_finalizacao || []).slice(0, 8);
+  // ============ FOTOS ============
+  // Carrega tudo antes de desenhar. Assim, se nenhuma foto puder entrar, o
+  // título nem é impresso, em vez de sobrar um bloco em branco.
+  const fotos = [];
+  for (const url of (chamado?.fotos_finalizacao || []).slice(0, 9)) {
+    const imagem = await prepararImagem(url);
+    if (imagem) fotos.push(imagem);
+  }
+
   if (fotos.length > 0) {
-    titulo("Registro fotográfico");
+    secao("Registro fotográfico");
     const colunas = 3;
-    const vao = 4;
-    const largura = (UTIL - vao * (colunas - 1)) / colunas;
+    const vao = 5;
+    const larguraBox = (UTIL - vao * (colunas - 1)) / colunas;
+    const alturaBox = larguraBox * 0.75;
+
     let coluna = 0;
-    let alturaLinha = 0;
+    fotos.forEach((foto, indice) => {
+      if (coluna === 0) espaco(alturaBox + 10);
+      const px = MARGEM + coluna * (larguraBox + vao);
 
-    for (const url of fotos) {
-      const dados = await comoDataUrl(url);
-      if (!dados) continue;
-      const tam = await medir(dados);
-      const altura = tam ? Math.min((largura * tam.h) / tam.w, 55) : 40;
+      doc.setFillColor(...BRANCO);
+      doc.setDrawColor(...BORDA);
+      doc.roundedRect(px, y, larguraBox, alturaBox, 1.5, 1.5, "FD");
 
-      if (coluna === 0) {
-        quebrarSePreciso(altura + 4);
-        alturaLinha = altura;
-      } else {
-        alturaLinha = Math.max(alturaLinha, altura);
-      }
-
+      // Encaixa a foto dentro da caixa sem distorcer
+      const escala = Math.min(larguraBox / foto.w, alturaBox / foto.h);
+      const lf = foto.w * escala;
+      const hf = foto.h * escala;
       try {
-        doc.addImage(dados, "JPEG", MARGEM + coluna * (largura + vao), y, largura, altura);
-      } catch {
-        // formato que o jsPDF não aceita: pula essa foto
+        doc.addImage(foto.dados, foto.formato,
+          px + (larguraBox - lf) / 2, y + (alturaBox - hf) / 2, lf, hf);
+      } catch (erro) {
+        console.warn("[relatorioPdf] não consegui desenhar uma foto:", erro);
       }
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...SUAVE);
+      doc.text(`Foto ${indice + 1}`, px + larguraBox / 2, y + alturaBox + 4, { align: "center" });
 
       coluna += 1;
       if (coluna === colunas) {
-        y += alturaLinha + vao;
+        y += alturaBox + 10;
         coluna = 0;
-        alturaLinha = 0;
+      }
+    });
+    if (coluna !== 0) y += alturaBox + 10;
+    y += 1;
+  }
+
+  // ============ ASSINATURA ============
+  const assinatura = await prepararImagem(chamado?.assinatura_cliente);
+  const quemAssinou = chamado?.nome_cliente_confirmacao || cliente?.nome;
+
+  if (assinatura || quemAssinou) {
+    secao("Confirmação do serviço");
+    const alturaBox = 40;
+    espaco(alturaBox + 6);
+
+    doc.setFillColor(...CARTAO);
+    doc.setDrawColor(...BORDA);
+    doc.roundedRect(MARGEM, y, UTIL, alturaBox, 2, 2, "FD");
+
+    if (assinatura) {
+      const larguraMax = 62;
+      const alturaMax = 20;
+      const escala = Math.min(larguraMax / assinatura.w, alturaMax / assinatura.h);
+      const la = assinatura.w * escala;
+      const ha = assinatura.h * escala;
+      try {
+        doc.addImage(assinatura.dados, assinatura.formato,
+          MARGEM + (UTIL - la) / 2, y + 7, la, ha);
+      } catch (erro) {
+        console.warn("[relatorioPdf] não consegui desenhar a assinatura:", erro);
       }
     }
-    if (coluna !== 0) y += alturaLinha + vao;
-    y += 2;
-  }
 
-  // ---------- assinatura ----------
-  const assinatura = await comoDataUrl(chamado.assinatura_cliente);
-  if (assinatura) {
-    titulo("Confirmação do serviço");
-    const tam = await medir(assinatura);
-    const largura = 70;
-    const altura = tam ? Math.min((largura * tam.h) / tam.w, 35) : 25;
-    quebrarSePreciso(altura + 12);
-    try {
-      doc.addImage(assinatura, "PNG", MARGEM, y, largura, altura);
-      y += altura + 2;
-    } catch {
-      // assinatura ilegível para o jsPDF: segue sem a imagem
-    }
-    doc.setDrawColor(...CINZA);
-    doc.line(MARGEM, y, MARGEM + largura, y);
-    y += 4;
+    doc.setDrawColor(...SUAVE);
+    doc.setLineWidth(0.3);
+    doc.line(MARGEM + UTIL / 2 - 35, y + 29, MARGEM + UTIL / 2 + 35, y + 29);
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
+    doc.setTextColor(...TEXTO);
+    doc.text(quemAssinou || "Cliente", MARGEM + UTIL / 2, y + 33.5, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(...CINZA);
-    doc.text(chamado.nome_cliente_confirmacao || cliente?.nome || "Cliente", MARGEM, y);
-    y += 6;
+    doc.setFontSize(7.5);
+    doc.setTextColor(...SUAVE);
+    doc.text("Confirmação do serviço executado", MARGEM + UTIL / 2, y + 37.5, { align: "center" });
+
+    y += alturaBox + 6;
   }
 
-  // ---------- rodapé em todas as páginas ----------
+  // ============ RODAPÉ EM TODAS AS PÁGINAS ============
   const paginas = doc.getNumberOfPages();
   for (let p = 1; p <= paginas; p++) {
     doc.setPage(p);
-    doc.setFontSize(8);
+    doc.setDrawColor(...BORDA);
+    doc.setLineWidth(0.3);
+    doc.line(MARGEM, ALTURA - 13, LARGURA - MARGEM, ALTURA - 13);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(156, 163, 175);
-    doc.text(
-      `Emitido em ${new Date().toLocaleString("pt-BR")}  |  Página ${p} de ${paginas}`,
-      MARGEM,
-      ALTURA - 8
-    );
+    doc.setFontSize(7.5);
+    doc.setTextColor(...SUAVE);
+    doc.text(empresa?.nome || "ClimaPro", MARGEM, ALTURA - 8.5);
+    doc.text(`Página ${p} de ${paginas}`, LARGURA - MARGEM, ALTURA - 8.5, { align: "right" });
   }
 
   return doc.output("blob");
