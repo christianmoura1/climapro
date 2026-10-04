@@ -523,6 +523,7 @@ ClimaPro - Sistema de Gestão`
         chamado={aprovandoChamado.chamado}
         cliente={aprovandoChamado.cliente}
         tecnico={aprovandoChamado.tecnico}
+        empresa={empresaAtual}
         onClose={() => {
           setAprovandoChamado(null);
           queryClient.invalidateQueries(['chamados-aguardando-aprovacao', user?.empresa_id]); // Refresh approval list
