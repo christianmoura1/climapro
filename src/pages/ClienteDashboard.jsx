@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   Calendar,
   CalendarRange,
@@ -34,6 +35,7 @@ import CadernoManutencaoPDF from "../components/pmoc/CadernoManutencaoPDF";
 import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocDataVisita";
 import { PageLoading } from "@/components/ui/page-loading";
 import SinoNotificacoes from "@/components/ui/sino-notificacoes";
+import { SelectBuscavel } from "@/components/ui/select-buscavel";
 import { toast } from "@/components/ui/use-toast";
 
 export default function ClienteDashboard() {
@@ -160,6 +162,25 @@ export default function ClienteDashboard() {
 
   const orcamentosVisiveis = orcamentos.filter((item) => !['rascunho', 'cancelado'].includes(item.status));
   // Inclui chamados antigos com equipamento_id e rodadas com equipamentos_ids.
+  // Itens da busca de equipamento. O secundário entra na pesquisa do
+  // SelectBuscavel, então local e número de série também encontram o aparelho,
+  // e o contador de atendimentos ajuda a reconhecer qual é qual.
+  const itensBuscaEquipamento = equipamentos.map((item) => {
+    const atendimentos = meusChamados.filter(
+      (c) => c.equipamento_id === item.id || c.equipamentos_ids?.includes(item.id)
+    ).length;
+    const detalhes = [
+      item.estabelecimento_nome || item.localizacao,
+      item.numero_serie,
+      atendimentos > 0 ? `${atendimentos} atendimento${atendimentos > 1 ? 's' : ''}` : 'sem atendimento ainda',
+    ].filter(Boolean);
+    return {
+      valor: item.id,
+      rotulo: [item.numero_equipamento, item.marca, item.modelo].filter(Boolean).join(' · ') || 'Equipamento',
+      secundario: detalhes.join(' · '),
+    };
+  });
+
   const chamadosEquipamento = visualizandoEquipamento
     ? meusChamados.filter((item) => item.equipamento_id === visualizandoEquipamento.id || item.equipamentos_ids?.includes(visualizandoEquipamento.id))
     : [];
@@ -495,6 +516,33 @@ export default function ClienteDashboard() {
             <p className="text-sm text-muted-foreground">Consulte os dados, o histórico de manutenção e o QR Code de cada ativo.</p>
           </CardHeader>
           <CardContent className="p-6">
+            {/* Atalho para o histórico. Com quinze aparelhos, achar o cartão
+                certo no meio da grade e depois clicar em "Histórico" é busca
+                visual; aqui o cliente digita três letras e chega direto. */}
+            {equipamentos.length > 1 && (
+              <div className="mb-6 rounded-lg border bg-muted/40 p-4">
+                <Label htmlFor="busca-historico" className="text-sm font-medium">
+                  Ver o histórico de um equipamento
+                </Label>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Digite o número, a marca ou o local para encontrar.
+                </p>
+                <SelectBuscavel
+                  id="busca-historico"
+                  itens={itensBuscaEquipamento}
+                  valor=""
+                  onChange={(id) => {
+                    const alvo = equipamentos.find((e) => e.id === id);
+                    if (alvo) handleVisualizarEquipamento(alvo);
+                  }}
+                  placeholder="Escolha o equipamento"
+                  textoBusca="Número, marca, modelo ou local..."
+                  textoVazio="Nenhum equipamento com esse termo."
+                  className="bg-background"
+                />
+              </div>
+            )}
+
             <EquipamentosClientePortal
               equipamentos={equipamentos}
               onHistorico={handleVisualizarEquipamento}
