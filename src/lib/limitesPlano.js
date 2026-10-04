@@ -20,10 +20,10 @@ export function chamadosDoMes(chamados = [], referencia = new Date()) {
 export function mensagemDeLimite(erro) {
   const texto = String(erro?.message || '');
   if (texto.includes('LIMITE_CHAMADOS')) {
-    return 'Você atingiu o limite de chamados do mês no plano Free. O plano Basic, por R$ 39,90/mês, tira esse teto.';
+    return 'Você atingiu o limite de chamados do mês no plano Free. O plano Basic, a partir de R$ 39,90/mês no anual, tira esse teto.';
   }
   if (texto.includes('LIMITE_CLIENTES')) {
-    return 'Você atingiu o limite de clientes do plano Free. O plano Basic, por R$ 39,90/mês, tira esse teto.';
+    return 'Você atingiu o limite de clientes do plano Free. O plano Basic, a partir de R$ 39,90/mês no anual, tira esse teto.';
   }
   return null;
 }

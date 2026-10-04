@@ -7,21 +7,38 @@
 
 export const ILIMITADO = 999999;
 
-// Ciclos de cobrança. O anual é "12 meses pelo preço de 10": dois meses de
-// graça, que dá 17% de desconto e é mais fácil de explicar numa ligação do
-// que uma porcentagem quebrada.
-export const MESES_PAGOS_NO_ANUAL = 10;
+// Ciclos de cobrança.
+//
+// O preço de tabela é o ANUAL — é ele que aparece na propaganda e é para ele
+// que a conta fecha. O mensal custa 20% mais caro, que é o preço de pagar
+// parcelado. Os dois valores são escritos à mão em cada plano, e não
+// calculados, porque preço com dois decimais quebrados ("R$ 47,88") faz a
+// pessoa desconfiar; todos terminam em ,90 de propósito.
+export function mensalidadeNoAnual(plano) {
+  return plano?.valorAnualMes || 0;
+}
 
+// O que sai do bolso de uma vez quando escolhe o anual.
 export function valorAnual(plano) {
-  return plano?.valor ? plano.valor * MESES_PAGOS_NO_ANUAL : 0;
+  return mensalidadeNoAnual(plano) * 12;
 }
 
 export function economiaAnual(plano) {
-  return plano?.valor ? plano.valor * (12 - MESES_PAGOS_NO_ANUAL) : 0;
+  if (!plano?.valor || !plano?.valorAnualMes) return 0;
+  return (plano.valor - plano.valorAnualMes) * 12;
 }
 
-export function percentualDesconto() {
-  return Math.round(((12 - MESES_PAGOS_NO_ANUAL) / 12) * 100);
+export function percentualDesconto(plano) {
+  if (!plano?.valor || !plano?.valorAnualMes) return 0;
+  return Math.round((1 - plano.valorAnualMes / plano.valor) * 100);
+}
+
+// Número que vai no seletor Mensal/Anual, acima dos cartões. Usa o menor
+// desconto da tabela para a promessa valer para qualquer plano que a pessoa
+// escolher depois.
+export function descontoDoAnual() {
+  const descontos = PLANOS.filter((p) => p.valor > 0).map(percentualDesconto);
+  return descontos.length ? Math.min(...descontos) : 0;
 }
 
 export function reais(valor) {
@@ -67,8 +84,9 @@ export const PLANOS = [
   {
     id: 'basic',
     nome: 'Basic',
-    preco: 'R$ 39,90/mês',
-    valor: 39.9,
+    preco: 'R$ 47,90/mês',
+    valor: 47.9,
+    valorAnualMes: 39.9,
     resumo: 'Para quem passou do volume do Free',
     tecnicos: 1,
     destaque: false,
@@ -76,15 +94,16 @@ export const PLANOS = [
     inclui: [
       'Chamados ilimitados',
       'Clientes ilimitados',
-      'PMOC de 1 cliente, com cronograma e caderno de manutenção',
+      'PMOC de 2 clientes, com cronograma e caderno de manutenção',
     ],
     naoInclui: ['Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
   },
   {
     id: 'profissional',
     nome: 'Profissional',
-    preco: 'R$ 79,90/mês',
-    valor: 79.9,
+    preco: 'R$ 95,90/mês',
+    valor: 95.9,
+    valorAnualMes: 79.9,
     resumo: 'Para a empresa que já tem contrato de PMOC',
     tecnicos: 3,
     tecnicoAdicional: 29,
@@ -102,8 +121,9 @@ export const PLANOS = [
   {
     id: 'empresa',
     nome: 'Empresa',
-    preco: 'R$ 197/mês',
-    valor: 197,
+    preco: 'R$ 236,90/mês',
+    valor: 236.9,
+    valorAnualMes: 197,
     resumo: 'Para quem tem equipe em campo e controla custo',
     tecnicos: 10,
     tecnicoAdicional: 29,
@@ -192,7 +212,7 @@ export const LIMITE_CLIENTES_FREE = 10;
 
 const APLICACAO_POR_PLANO = {
   free: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: LIMITE_CHAMADOS_FREE, limite_clientes: LIMITE_CLIENTES_FREE, limite_clientes_pmoc: 0, modulos_ativos: MODULOS_FREE },
-  basic: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_BASIC },
+  basic: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: 2, modulos_ativos: MODULOS_BASIC },
   profissional: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
   empresa: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
   enterprise: { limite_tecnicos: ILIMITADO, limite_empresas: ILIMITADO, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: { ...MODULOS_EMPRESA, api: true, white_label: true } },

@@ -66,7 +66,7 @@ export const LIMITES_POR_PLANO: Record<string, Record<string, number>> = {
   // graça. PMOC fica zerado — é o que o Basic entrega além do volume.
   // Mexeu aqui, confira src/lib/planos.js.
   free: { limite_tecnicos: 1, limite_clientes: 10, limite_empresas: 1, limite_chamados_mes: 10, limite_clientes_pmoc: 0 },
-  basic: { limite_tecnicos: 1, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 1 },
+  basic: { limite_tecnicos: 1, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 2 },
   profissional: { limite_tecnicos: 3, limite_clientes: 999999, limite_empresas: 1, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
   empresa: { limite_tecnicos: 10, limite_clientes: 999999, limite_empresas: 3, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
   enterprise: { limite_tecnicos: 999999, limite_clientes: 999999, limite_empresas: 999999, limite_chamados_mes: 999999, limite_clientes_pmoc: 999999 },
