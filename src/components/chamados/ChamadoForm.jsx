@@ -12,7 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
 import { idsDoChamado, vinculoDeEquipamentos } from "@/lib/equipamentosDoChamado";
-import { filtrarPorEstabelecimento } from "@/lib/estabelecimentos";
+import { filtrarPorEstabelecimento, iconeEstabelecimento } from "@/lib/estabelecimentos";
 import { BotaoUpload } from "@/components/ui/botao-upload";
 
 const STATUS_CHAMADO = {
@@ -404,11 +404,8 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                             : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
                         }`}
                       >
-                        {est.nome === 'casa' || est.nome === 'Casa' ? '🏠' :
-                         est.nome === 'loja' || est.nome === 'Loja' ? '🏪' :
-                         est.nome === 'escritorio' || est.nome === 'Escritório' || est.nome === 'escritório' ? '🏢' :
-                         est.nome === 'trabalho' || est.nome === 'Trabalho' ? '💼' :
-                         est.nome === 'empresa' || est.nome === 'Empresa' ? '🏭' : '📍'} {est.nome}
+                        {iconeEstabelecimento(est.nome)} {est.nome}
+                        {' '}({filtrarPorEstabelecimento(equipamentosCliente, est.nome).length})
                       </button>
                     ))}
                   </div>

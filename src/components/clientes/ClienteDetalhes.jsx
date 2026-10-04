@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { filtrarPorEstabelecimento, iconeEstabelecimento } from "@/lib/estabelecimentos";
 import { ArrowLeft, Building2, Phone, Mail, MapPin, Cpu, Edit, Trash2, Key, Eye, Copy, ClipboardList, Clock, X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
@@ -55,15 +56,16 @@ export default function ClienteDetalhes({
   const estabelecimentos = cliente.estabelecimentos || [];
   const estAtiva = estAtivaIdx !== null ? estabelecimentos[estAtivaIdx] : null;
 
-  // Equipamentos filtrados pelo estabelecimento ativo (por localizacao)
-  const equipamentosVisiveis = estAtiva
-    ? equipamentos.filter(eq => {
-        const loc = (eq.localizacao || "").toLowerCase();
-        const nome = estAtiva.nome.toLowerCase();
-        const end = (estAtiva.endereco || "").toLowerCase();
-        return loc.includes(nome) || (end && end.split(/[\s,]+/).filter(p => p.length > 3).some(p => loc.includes(p)));
-      })
-    : equipamentos;
+  // Equipamentos do estabelecimento ativo.
+  //
+  // Antes isto comparava `localizacao` com o nome e com pedaços do endereço do
+  // estabelecimento, por substring. Campo errado e critério frouxo: o vínculo
+  // mora em `estabelecimento_nome`, e "Rua Santa Terezinha" casava com
+  // qualquer equipamento que tivesse "santa" na localização.
+  //
+  // Agora usa a mesma função do resto do sistema, senão a contagem no botão e
+  // a lista que ele abre mostram números diferentes.
+  const equipamentosVisiveis = filtrarPorEstabelecimento(equipamentos, estAtiva?.nome || null);
 
   // Chamados filtrados pelo estabelecimento ativo (por local)
   const chamadosVisiveis = estAtiva
@@ -156,7 +158,7 @@ export default function ClienteDetalhes({
                     onClick={() => setEstAtivaIdx(null)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === null ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted-foreground border-border hover:bg-muted'}`}
                   >
-                    🏢 Todos ({estabelecimentos.length} estabelecimentos)
+                    🏢 Todos ({equipamentos.length} equipamentos)
                   </button>
                   {estabelecimentos.map((est, idx) => (
                     <button
@@ -165,11 +167,8 @@ export default function ClienteDetalhes({
                       onClick={() => setEstAtivaIdx(idx)}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${estAtivaIdx === idx ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted-foreground border-border hover:bg-muted'}`}
                     >
-                      {est.nome === 'Casa' || est.nome === 'casa' ? '🏠' :
-                       est.nome === 'Loja' || est.nome === 'loja' ? '🏪' :
-                       est.nome === 'Escritório' || est.nome === 'escritório' || est.nome === 'Escritorio' ? '🏢' :
-                       est.nome === 'Trabalho' || est.nome === 'trabalho' ? '💼' :
-                       est.nome === 'Empresa' || est.nome === 'empresa' ? '🏭' : '📍'} {est.nome}
+                      {iconeEstabelecimento(est.nome)} {est.nome}
+                      {' '}({filtrarPorEstabelecimento(equipamentos, est.nome).length})
                     </button>
                   ))}
                 </div>
