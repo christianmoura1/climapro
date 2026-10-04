@@ -22,16 +22,19 @@ export function iconeEstabelecimento(nome) {
 
 const nomeDoLocal = (equipamento) => String(equipamento?.estabelecimento_nome || '').trim();
 
-// O mesmo local é escrito de dois jeitos no sistema: um na ficha do cliente,
-// outro no cadastro do equipamento, cada um digitado à mão em momentos
-// diferentes. Na base real existe "Bento Colcholandia - Glória" na ficha e
-// "Bento Colcholandia- Gloria" no equipamento — espaço antes do hífen e acento
-// de diferença. Comparando texto exato, o filtro devolvia zero e a tela
-// escondia o campo.
+// O caso que motivou isto: o estabelecimento "Bento Colcholandia- Gloria "
+// está gravado com um ESPAÇO NO FIM, igualzinho na ficha do cliente e no
+// cadastro do equipamento. Os dois textos eram idênticos; quem quebrou a
+// comparação foi o `nomeDoLocal` acima, que fazia trim de um lado só. 26
+// caracteres contra 27, zero equipamentos, campo sumindo da tela.
 //
-// Então a comparação ignora acento, caixa, espaço repetido e espaço em volta
-// de hífen e vírgula. Não resolve erro de digitação de verdade ("Gloria" vs
-// "Gloría do Bento"), e nem deveria: aí são locais diferentes mesmo.
+// Normalizar os dois lados resolve a classe inteira do problema, não só esse
+// caso: espaço sobrando, caixa, acento e espaço em volta de hífen e vírgula —
+// tudo que vem de dois campos de texto livre digitados em momentos diferentes.
+//
+// O que NÃO se tenta adivinhar é erro de digitação de verdade: "Gloria" e
+// "Gloria- Vila Velha" seguem sendo locais diferentes, e devem ser mesmo (o
+// Bento tem os dois cadastrados).
 export function normalizarLocal(nome) {
   return String(nome || '')
     .normalize('NFD')
