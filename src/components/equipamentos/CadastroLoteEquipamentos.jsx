@@ -145,7 +145,7 @@ export default function CadastroLoteEquipamentos({ clientes, equipamentos = [], 
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="lote-modelo">Modelo *</Label>
+              <Label htmlFor="lote-modelo">Modelo</Label>
               <Input
                 id="lote-modelo"
                 value={comum.modelo}
