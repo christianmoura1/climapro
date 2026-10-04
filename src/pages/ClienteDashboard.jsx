@@ -36,6 +36,7 @@ import { dataVisitaDoMes, indexarAgendamentos, proximaVisita } from "@/lib/pmocD
 import { PageLoading } from "@/components/ui/page-loading";
 import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
+import { chamadosDoEquipamento } from "@/lib/equipamentosDoChamado";
 import { toast } from "@/components/ui/use-toast";
 
 export default function ClienteDashboard() {
@@ -166,9 +167,7 @@ export default function ClienteDashboard() {
   // SelectBuscavel, então local e número de série também encontram o aparelho,
   // e o contador de atendimentos ajuda a reconhecer qual é qual.
   const itensBuscaEquipamento = equipamentos.map((item) => {
-    const atendimentos = meusChamados.filter(
-      (c) => c.equipamento_id === item.id || c.equipamentos_ids?.includes(item.id)
-    ).length;
+    const atendimentos = chamadosDoEquipamento(meusChamados, item.id).length;
     const detalhes = [
       item.estabelecimento_nome || item.localizacao,
       item.numero_serie,
@@ -182,7 +181,7 @@ export default function ClienteDashboard() {
   });
 
   const chamadosEquipamento = visualizandoEquipamento
-    ? meusChamados.filter((item) => item.equipamento_id === visualizandoEquipamento.id || item.equipamentos_ids?.includes(visualizandoEquipamento.id))
+    ? chamadosDoEquipamento(meusChamados, visualizandoEquipamento.id)
     : [];
 
   // Buscar empresa
