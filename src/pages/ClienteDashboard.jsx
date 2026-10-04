@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Snowflake,
   Lock,
+  MapPin,
   FileText
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom"; // Added Link import
@@ -37,6 +38,7 @@ import { PageLoading } from "@/components/ui/page-loading";
 import SinoNotificacoes from "@/components/ui/sino-notificacoes";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
 import { chamadosDoEquipamento } from "@/lib/equipamentosDoChamado";
+import { listarEstabelecimentos, filtrarPorEstabelecimento, iconeEstabelecimento, rotuloDoEstabelecimento, SEM_ESTABELECIMENTO } from "@/lib/estabelecimentos";
 import { toast } from "@/components/ui/use-toast";
 
 export default function ClienteDashboard() {
@@ -49,6 +51,7 @@ export default function ClienteDashboard() {
   const [visualizandoChamado, setVisualizandoChamado] = useState(null);
   const [visualizandoEquipamento, setVisualizandoEquipamento] = useState(null);
   const [qrEquipamento, setQrEquipamento] = useState(null);
+  const [estabelecimentoFiltro, setEstabelecimentoFiltro] = useState(null);
   const [verPlanoAnual, setVerPlanoAnual] = useState(false);
   const [verCaderno, setVerCaderno] = useState(false);
   const [vendoExecucao, setVendoExecucao] = useState(null);
@@ -163,10 +166,14 @@ export default function ClienteDashboard() {
 
   const orcamentosVisiveis = orcamentos.filter((item) => !['rascunho', 'cancelado'].includes(item.status));
   // Inclui chamados antigos com equipamento_id e rodadas com equipamentos_ids.
+  const estabelecimentos = listarEstabelecimentos(cliente, equipamentos);
+  const equipamentosVisiveis = filtrarPorEstabelecimento(equipamentos, estabelecimentoFiltro);
+  const estabelecimentoAtivo = estabelecimentos.find((e) => e.nome === estabelecimentoFiltro);
+
   // Itens da busca de equipamento. O secundário entra na pesquisa do
   // SelectBuscavel, então local e número de série também encontram o aparelho,
   // e o contador de atendimentos ajuda a reconhecer qual é qual.
-  const itensBuscaEquipamento = equipamentos.map((item) => {
+  const itensBuscaEquipamento = equipamentosVisiveis.map((item) => {
     const atendimentos = chamadosDoEquipamento(meusChamados, item.id).length;
     const detalhes = [
       item.estabelecimento_nome || item.localizacao,
@@ -422,16 +429,62 @@ export default function ClienteDashboard() {
             <p className="text-sm text-muted-foreground">Consulte os dados, o histórico de manutenção e o QR Code de cada ativo.</p>
           </CardHeader>
           <CardContent className="p-6">
+            {/* Filtro por local, igual ao painel da empresa. O Bento tem 15
+                endereços e 16 aparelhos: sem isso, achar "o split da Glória" é
+                vasculhar a grade inteira. */}
+            {estabelecimentos.length > 1 && (
+              <div className="mb-5">
+                <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  Estabelecimentos
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEstabelecimentoFiltro(null)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      estabelecimentoFiltro === null
+                        ? 'border-green-600 bg-green-600 text-white'
+                        : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    🏢 Todos ({equipamentos.length})
+                  </button>
+                  {estabelecimentos.map((est) => (
+                    <button
+                      key={est.nome}
+                      type="button"
+                      onClick={() => setEstabelecimentoFiltro(est.nome)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        estabelecimentoFiltro === est.nome
+                          ? 'border-green-600 bg-green-600 text-white'
+                          : 'border-border bg-card text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      {est.nome === SEM_ESTABELECIMENTO ? '❔' : iconeEstabelecimento(est.nome)}{' '}
+                      {rotuloDoEstabelecimento(est)} ({est.quantidade})
+                    </button>
+                  ))}
+                </div>
+                {estabelecimentoAtivo?.endereco && (
+                  <p className="mt-2 rounded-md bg-muted px-3 py-2 text-sm">
+                    <strong>Endereço:</strong> {estabelecimentoAtivo.endereco}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Atalho para o histórico. Com quinze aparelhos, achar o cartão
                 certo no meio da grade e depois clicar em "Histórico" é busca
                 visual; aqui o cliente digita três letras e chega direto. */}
-            {equipamentos.length > 1 && (
+            {equipamentosVisiveis.length > 1 && (
               <div className="mb-6 rounded-lg border bg-muted/40 p-4">
                 <Label htmlFor="busca-historico" className="text-sm font-medium">
                   Ver o histórico de um equipamento
                 </Label>
                 <p className="mb-2 text-xs text-muted-foreground">
-                  Digite o número, a marca ou o local para encontrar.
+                  Digite o número, a marca ou o local para encontrar
+                  {estabelecimentoAtivo ? ` em ${rotuloDoEstabelecimento(estabelecimentoAtivo)}` : ''}.
                 </p>
                 <SelectBuscavel
                   id="busca-historico"
@@ -450,7 +503,7 @@ export default function ClienteDashboard() {
             )}
 
             <EquipamentosClientePortal
-              equipamentos={equipamentos}
+              equipamentos={equipamentosVisiveis}
               onHistorico={handleVisualizarEquipamento}
               onQrCode={setQrEquipamento}
             />
