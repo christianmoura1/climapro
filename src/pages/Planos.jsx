@@ -10,13 +10,14 @@ import { Check, X, AlertTriangle, CreditCard, Star, Users, Building2, ClipboardL
 import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
-import { PLANOS, nomeDoPlano, ehIlimitado, formatarLimite, ILIMITADO } from "@/lib/planos";
+import { PLANOS, valorAnual, economiaAnual, percentualDesconto, reais, nomeDoPlano, ehIlimitado, formatarLimite, ILIMITADO } from "@/lib/planos";
 import { chamadosDoMes } from "@/lib/limitesPlano";
 
 export default function PlanosPage() {
   const [user, setUser] = useState(null);
   const [empresa, setEmpresa] = useState(null);
   const [processando, setProcessando] = useState(null);
+  const [anual, setAnual] = useState(false);
 
   useEffect(() => {
     const carregar = async () => {
@@ -90,7 +91,7 @@ export default function PlanosPage() {
         toast({ description: 'O Free não exige pagamento — é só usar.' });
         return;
       }
-      const data = await invokeEdgeFunction('criar-checkout', { plano: plano.id });
+      const data = await invokeEdgeFunction('criar-checkout', { plano: plano.id, ciclo: anual ? 'anual' : 'mensal' });
       window.location.href = data.url;
     } catch (error) {
       console.error('Erro ao iniciar pagamento:', error);
@@ -228,9 +229,45 @@ export default function PlanosPage() {
         </div>
       )}
 
+      {/* Mensal x anual. O anual vem desmarcado: quem está decidindo quer ver
+          primeiro o valor da mensalidade, e o desconto aparece do lado como
+          motivo para trocar. */}
+      <div className="mb-6 flex flex-col items-center gap-2">
+        <div className="inline-flex rounded-full border bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => setAnual(false)}
+            className={`rounded-full px-5 py-1.5 text-sm font-medium transition ${
+              anual ? 'text-muted-foreground' : 'bg-background text-foreground shadow-sm'
+            }`}
+          >
+            Mensal
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnual(true)}
+            className={`flex items-center gap-2 rounded-full px-5 py-1.5 text-sm font-medium transition ${
+              anual ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'
+            }`}
+          >
+            Anual
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
+              -{percentualDesconto()}%
+            </span>
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          No anual você paga 12 meses pelo preço de 10.
+        </p>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {PLANOS.map((plano) => {
           const atual = plano.id === planoAtualId;
+          // No ciclo anual o plano atual continua clicável: quem já assina o
+          // mensal troca a frequência pelo Portal de Cobrança, e travar o
+          // botão esconderia a única porta para isso.
+          const bloqueado = atual && (!anual || plano.valor === 0);
           return (
             <Card
               key={plano.id}
@@ -250,11 +287,46 @@ export default function PlanosPage() {
 
               <CardHeader className="pb-3">
                 <CardTitle className="text-xl">{plano.nome}</CardTitle>
-                <p className="text-3xl font-bold text-foreground mt-2">{plano.preco}</p>
-                <p className="text-sm text-muted-foreground mt-1">{plano.resumo}</p>
+                {plano.valor === 0 ? (
+                  <p className="text-3xl font-bold text-foreground mt-2">Gratuito</p>
+                ) : anual ? (
+                  <>
+                    {/* No anual o que importa é a mensalidade equivalente: é
+                        com ela que o cliente compara com o concorrente. O
+                        total do ano vem logo abaixo para não parecer pegadinha. */}
+                    <p className="mt-2 text-sm text-muted-foreground line-through">
+                      {reais(plano.valor)}/mês
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {reais(valorAnual(plano) / 12)}
+                      <span className="text-base font-normal text-muted-foreground">/mês</span>
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {reais(valorAnual(plano))} cobrados uma vez por ano
+                    </p>
+                    <Badge className="mt-2 w-fit bg-green-100 text-green-800 hover:bg-green-100">
+                      Economiza {reais(economiaAnual(plano))} por ano
+                    </Badge>
+                  </>
+                ) : (
+                  <p className="text-3xl font-bold text-foreground mt-2">{plano.preco}</p>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">{plano.resumo}</p>
               </CardHeader>
 
               <CardContent className="flex-1 flex flex-col">
+                {/* "Tudo do X" era mais um item de lista com visto verde, do
+                    mesmo tamanho de "QR Code por equipamento". É a frase que
+                    mais vende a escada de planos e estava passando batido. */}
+                {plano.herda && (
+                  <div className="mb-3 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
+                    <Check className="h-4 w-4 shrink-0 text-indigo-700" />
+                    <span className="text-sm font-semibold text-indigo-900">
+                      Tudo do {plano.herda}
+                    </span>
+                  </div>
+                )}
+
                 <ul className="space-y-2 flex-1">
                   {plano.inclui.map((item) => (
                     <li key={item} className="flex items-start gap-2 text-sm">
@@ -273,18 +345,22 @@ export default function PlanosPage() {
                 <Button
                   className={`w-full mt-5 ${plano.destaque ? 'bg-indigo-600 hover:bg-indigo-700' : ''}`}
                   variant={plano.destaque ? 'default' : 'outline'}
-                  disabled={atual || processando === plano.id}
+                  disabled={bloqueado || processando === plano.id}
                   onClick={() => assinar(plano)}
                 >
-                  {atual
+                  {bloqueado
                     ? 'Plano atual'
                     : processando === plano.id
                       ? 'Abrindo...'
                       : plano.id === 'free'
                         ? 'Gratuito'
-                        : empresa?.stripe_subscription_id
-                          ? 'Trocar para este plano'
-                          : 'Assinar'}
+                        : atual
+                          ? 'Mudar para o anual'
+                          : empresa?.stripe_subscription_id
+                            ? 'Trocar para este plano'
+                            : anual
+                              ? 'Assinar anual'
+                              : 'Assinar'}
                 </Button>
               </CardContent>
             </Card>

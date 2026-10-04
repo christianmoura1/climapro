@@ -10,23 +10,48 @@ export function limparSecret(valor: string | undefined): string {
 
 const STRIPE_SECRET_KEY = limparSecret(Deno.env.get('STRIPE_SECRET_KEY'));
 
-// Preços (IDs price_...) configurados nos secrets — um por plano pago.
-export const PRECOS_POR_PLANO: Record<string, string | undefined> = {
-  basic: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC')),
-  profissional: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')),
-  empresa: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA')),
+// Preços (IDs price_...) configurados nos secrets — um por plano pago e
+// ciclo. O anual é um price separado no Stripe, com intervalo de 12 meses;
+// o secret correspondente termina em _ANUAL.
+//
+// Secret de anual que ainda não existe fica vazio: o checkout recusa o ciclo
+// e a pessoa vê um erro claro, em vez de ser cobrada no valor errado.
+export const PRECOS_POR_PLANO: Record<string, { mensal?: string; anual?: string }> = {
+  basic: {
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC')),
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC_ANUAL')),
+  },
+  profissional: {
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')),
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL_ANUAL')),
+  },
+  empresa: {
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA')),
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA_ANUAL')),
+  },
   // Planos antigos: mantidos para o webhook reconhecer assinaturas que já
   // existem. Não aparecem mais na página de Planos.
-  essencial: limparSecret(Deno.env.get('STRIPE_PRICE_ESSENCIAL')),
-  corporativo: limparSecret(Deno.env.get('STRIPE_PRICE_CORPORATIVO')),
+  essencial: { mensal: limparSecret(Deno.env.get('STRIPE_PRICE_ESSENCIAL')) },
+  corporativo: { mensal: limparSecret(Deno.env.get('STRIPE_PRICE_CORPORATIVO')) },
 };
+
+// Price do plano no ciclo pedido. Ciclo desconhecido cai no mensal.
+export function priceDoPlano(plano: string, ciclo?: string): string | undefined {
+  const precos = PRECOS_POR_PLANO[plano];
+  if (!precos) return undefined;
+  return (ciclo === 'anual' ? precos.anual : precos.mensal) || undefined;
+}
 
 // Preço do técnico avulso, cobrado por quantidade acima do que o plano inclui.
 export const PRECO_TECNICO_ADICIONAL = limparSecret(Deno.env.get('STRIPE_PRICE_TECNICO_ADICIONAL'));
 
+// O webhook recebe só o price da assinatura, então mensal e anual do mesmo
+// plano precisam cair no mesmo nome: o que a pessoa recebe é igual nos dois,
+// o que muda é a frequência da cobrança.
 export function planoDoPrice(priceId: string): string | null {
-  for (const [plano, id] of Object.entries(PRECOS_POR_PLANO)) {
-    if (id && id === priceId) return plano;
+  for (const [plano, precos] of Object.entries(PRECOS_POR_PLANO)) {
+    if (precos.mensal && precos.mensal === priceId) return plano;
+    if (precos.anual && precos.anual === priceId) return plano;
   }
   return null;
 }

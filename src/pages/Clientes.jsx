@@ -296,7 +296,7 @@ export default function ClientesPage() {
     if (atingiuLimite('limite_clientes', clientes.length)) {
       toast({
         description: `Seu plano permite ${empresa?.limite_clientes} cliente(s) e você já cadastrou ${clientes.length}. `
-          + 'O plano Basic, por R$ 29,90/mês, deixa ilimitado.',
+          + 'O plano Basic, por R$ 39,90/mês, deixa ilimitado.',
         variant: 'default',
       });
       return;

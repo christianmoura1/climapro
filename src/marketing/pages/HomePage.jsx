@@ -173,7 +173,7 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Comece pelo plano gratuito"
               title="Teste o fluxo com uma operação pequena"
-              description="O plano Free inclui até 40 chamados por mês, 20 clientes, 1 técnico e PMOC de 1 cliente. Passou disso, o Basic sai por R$ 29,90/mês sem limite de chamados nem de clientes. Os demais planos aparecem dentro do sistema."
+              description="O plano Free inclui até 40 chamados por mês, 20 clientes, 1 técnico e PMOC de 1 cliente. Passou disso, o Basic sai por R$ 39,90/mês sem limite de chamados nem de clientes. No anual são 12 meses pelo preço de 10. Os demais planos aparecem dentro do sistema."
             />
             <a className="m-button" href="/InitialChoice">
               Criar conta gratuita
