@@ -20,6 +20,15 @@ import { ErrorState, FilterEmptyState, PageHeader, PageShell } from "@/component
 import { useEmpresa } from "@/hooks/useEmpresa";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
 
+// O Free tem limite zero: dizer "inclui PMOC para 0 cliente(s)" soa a bug.
+function mensagemDeLimitePmoc(limite) {
+  if (!limite) {
+    return '⚠️ O PMOC não entra no plano Free. O Basic, por R$ 39,90/mês, libera o PMOC de 1 cliente.';
+  }
+  return `⚠️ Seu plano inclui PMOC para ${limite} cliente(s). `
+    + 'Suba de plano em Planos para atender mais clientes com PMOC.';
+}
+
 export default function EquipamentosPage() {
   const { atingiuLimite, temModulo } = useEmpresa();
   const [showForm, setShowForm] = useState(false);
@@ -210,8 +219,7 @@ export default function EquipamentosPage() {
 
     if (ligandoPmocEmClienteNovo && atingiuLimite('limite_clientes_pmoc', clientesComPmoc.size)) {
       toast({
-        description: `⚠️ Seu plano inclui PMOC para ${empresa?.limite_clientes_pmoc} cliente(s). `
-          + `Suba de plano em Planos para atender mais clientes com PMOC.`,
+        description: mensagemDeLimitePmoc(empresa?.limite_clientes_pmoc),
         variant: "destructive",
       });
       return;
@@ -237,8 +245,7 @@ export default function EquipamentosPage() {
 
     if (ligandoPmocEmClienteNovo && atingiuLimite('limite_clientes_pmoc', clientesComPmoc.size)) {
       toast({
-        description: `⚠️ Seu plano inclui PMOC para ${empresa?.limite_clientes_pmoc} cliente(s). `
-          + `Suba de plano em Planos para atender mais clientes com PMOC.`,
+        description: mensagemDeLimitePmoc(empresa?.limite_clientes_pmoc),
         variant: "destructive",
       });
       return;
