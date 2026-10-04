@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
         const sub = await stripeGet(`subscriptions/${obj.subscription}`);
         const priceId = sub.items?.data?.[0]?.price?.id;
-        const plano = planoDoPrice(priceId) ?? obj.metadata?.plano;
+        const plano = (await planoDoPrice(priceId)) ?? obj.metadata?.plano;
         if (!plano) break;
 
         await aplicarPlano(empresaId, plano, {
@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         const empresa = await empresaPorSubscription(obj.id, obj.customer);
         if (!empresa) break;
         const priceId = obj.items?.data?.[0]?.price?.id;
-        const plano = planoDoPrice(priceId);
+        const plano = await planoDoPrice(priceId);
         if (plano && plano !== empresa.plano) {
           await aplicarPlano(empresa.id, plano, {
             data_vencimento_plano: dataVencimento(obj.current_period_end),

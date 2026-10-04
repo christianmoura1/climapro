@@ -1,4 +1,5 @@
 // Helpers do Stripe via REST puro (sem SDK — leve e suficiente para Deno).
+import { supabaseAdmin } from './clients.ts';
 
 // Secrets colados no dashboard podem vir com caracteres invisíveis (NBSP,
 // zero-width) que tornam o header Authorization inválido — o fetch do Deno
@@ -35,11 +36,79 @@ export const PRECOS_POR_PLANO: Record<string, { mensal?: string; anual?: string 
   corporativo: { mensal: limparSecret(Deno.env.get('STRIPE_PRICE_CORPORATIVO')) },
 };
 
+// Valor que cada price DEVE ter, em centavos, espelhando src/lib/planos.js.
+// Serve de conferência: o price vive no Stripe e o preço de tabela vive aqui,
+// e já aconteceu de os dois saírem de sincronia numa troca de preço. Com esta
+// tabela o checkout recusa em vez de cobrar o valor errado em silêncio.
+export const VALORES_POR_PLANO: Record<string, { mensal?: number; anual?: number }> = {
+  basic: { mensal: 4790, anual: 47880 },
+  profissional: { mensal: 9590, anual: 95880 },
+  empresa: { mensal: 23690, anual: 236400 },
+};
+
+// Mapa de prices. A fonte preferida é a tabela `configuracao_integracao`, nas
+// chaves stripe_price_<plano>_<ciclo>; os secrets ficam como reserva para os
+// planos antigos, que ainda têm assinatura viva.
+//
+// Está no banco, e não em secret, porque trocar preço era editar seis secrets
+// no painel e republicar duas functions. Agora é um update e pronto.
+export async function carregarPrecos(): Promise<Record<string, { mensal?: string; anual?: string }>> {
+  const mapa: Record<string, { mensal?: string; anual?: string }> = {};
+  for (const [plano, precos] of Object.entries(PRECOS_POR_PLANO)) {
+    mapa[plano] = { ...precos };
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('configuracao_integracao')
+    .select('chave, valor')
+    .like('chave', 'stripe_price_%');
+  if (error) {
+    // Banco fora não pode derrubar o checkout: cai para os secrets.
+    console.error('Não consegui ler os prices do banco, usando os secrets:', error.message);
+    return mapa;
+  }
+
+  for (const linha of data ?? []) {
+    const casou = /^stripe_price_(.+)_(mensal|anual)$/.exec(linha.chave);
+    if (!casou) continue;
+    const [, plano, ciclo] = casou;
+    const id = limparSecret(linha.valor);
+    if (!id) continue;
+    mapa[plano] = { ...(mapa[plano] ?? {}), [ciclo]: id };
+  }
+  return mapa;
+}
+
 // Price do plano no ciclo pedido. Ciclo desconhecido cai no mensal.
-export function priceDoPlano(plano: string, ciclo?: string): string | undefined {
-  const precos = PRECOS_POR_PLANO[plano];
+export async function priceDoPlano(plano: string, ciclo?: string): Promise<string | undefined> {
+  const precos = (await carregarPrecos())[plano];
   if (!precos) return undefined;
   return (ciclo === 'anual' ? precos.anual : precos.mensal) || undefined;
+}
+
+// Confere no Stripe que o price cobra o valor e a frequência que a página de
+// Planos anunciou. Devolve null quando está tudo certo, ou o motivo.
+export async function conferirPrice(priceId: string, plano: string, ciclo: string): Promise<string | null> {
+  const esperado = VALORES_POR_PLANO[plano]?.[ciclo === 'anual' ? 'anual' : 'mensal'];
+  // Plano sem valor de referência (os descontinuados) passa sem conferência.
+  if (!esperado) return null;
+
+  const price = await stripeGet(`prices/${priceId}`);
+  const intervaloEsperado = ciclo === 'anual' ? 'year' : 'month';
+
+  if (price.unit_amount !== esperado) {
+    return `o price ${priceId} cobra ${price.unit_amount} centavos e o plano ${plano} ${ciclo} anuncia ${esperado}`;
+  }
+  if (price.recurring?.interval !== intervaloEsperado) {
+    return `o price ${priceId} é cobrado por ${price.recurring?.interval} e o ciclo ${ciclo} precisa de ${intervaloEsperado}`;
+  }
+  if (price.recurring?.interval_count && price.recurring.interval_count !== 1) {
+    return `o price ${priceId} cobra a cada ${price.recurring.interval_count} ${price.recurring.interval}`;
+  }
+  if (price.active === false) {
+    return `o price ${priceId} está arquivado no Stripe`;
+  }
+  return null;
 }
 
 // Preço do técnico avulso, cobrado por quantidade acima do que o plano inclui.
@@ -48,8 +117,8 @@ export const PRECO_TECNICO_ADICIONAL = limparSecret(Deno.env.get('STRIPE_PRICE_T
 // O webhook recebe só o price da assinatura, então mensal e anual do mesmo
 // plano precisam cair no mesmo nome: o que a pessoa recebe é igual nos dois,
 // o que muda é a frequência da cobrança.
-export function planoDoPrice(priceId: string): string | null {
-  for (const [plano, precos] of Object.entries(PRECOS_POR_PLANO)) {
+export async function planoDoPrice(priceId: string): Promise<string | null> {
+  for (const [plano, precos] of Object.entries(await carregarPrecos())) {
     if (precos.mensal && precos.mensal === priceId) return plano;
     if (precos.anual && precos.anual === priceId) return plano;
   }
