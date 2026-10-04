@@ -15,13 +15,15 @@ import {
   User,
   FileText,
   Edit,
-  Mail,
+  MessageCircle,
   Clock
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
-import { notificarPorEmail } from "@/lib/notificacoes";
+import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/api/supabaseClient";
+import { previewNumero } from "@/lib/whatsapp";
 
 export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
@@ -32,7 +34,11 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
   const [dataLembrete, setDataLembrete] = useState(chamado.data_lembrete_proxima_manutencao || "");
   const [horaLembrete, setHoraLembrete] = useState(chamado.hora_lembrete_proxima_manutencao || "");
   const [emailCliente, setEmailCliente] = useState(cliente?.email || "");
+  const [whatsappCliente, setWhatsappCliente] = useState(cliente?.whatsapp || cliente?.telefone || "");
+  const [enviarWhatsapp, setEnviarWhatsapp] = useState(!!(cliente?.whatsapp || cliente?.telefone));
   const queryClient = useQueryClient();
+
+  const numeroFinal = previewNumero(whatsappCliente);
 
   const aprovarMutation = useMutation({
     mutationFn: async () => {
@@ -67,43 +73,49 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, onClo
         });
       }
 
-      // 3. Enviar relatório completo ao cliente
-      const emailDestino = emailCliente || cliente?.email;
-      if (emailDestino) {
-        await notificarPorEmail({
-          to: emailDestino,
-          subject: `✅ Chamado Concluído - ${chamado.titulo} - ClimaPro`,
-          body: `Prezado(a) ${nomeCliente},
-
-O chamado de serviço foi concluído com sucesso:
-
-📋 Chamado: ${chamado.titulo}
-🔧 Técnico: ${tecnico?.nome}
-📅 Finalizado em: ${format(new Date(chamado.data_finalizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-
-📸 Fotos do serviço: ${chamado.fotos_finalizacao?.length || 0}
-🎥 Vídeos do serviço: ${chamado.videos_finalizacao?.length || 0}
-✍️ Confirmado por: ${chamado.nome_cliente_confirmacao}
-
-${observacoesTecnico ? `📝 Observações do Técnico:\n${observacoesTecnico}\n\n` : ''}
-${observacoesEmpresa ? `💼 Observações da Empresa:\n${observacoesEmpresa}\n\n` : ''}
-
-Para visualizar o relatório completo com todas as fotos, vídeos e assinatura, acesse:
-👉 https://geradordepmoc.com.br
-
-Obrigado pela preferência!
-
-Atenciosamente,
-ClimaPro`
-        });
+      // 3. Relatório para o cliente, pelo WhatsApp.
+      //
+      // Aqui ficava um notificarPorEmail(), que é no-op desde que o envio de
+      // e-mail foi desligado. A tela dizia que o cliente tinha sido notificado
+      // e não saía nada.
+      //
+      // A falha do envio não desfaz a aprovação: o chamado já está finalizado
+      // no banco e reverter por causa de uma mensagem seria pior. O aviso sobe
+      // no toast para o operador decidir o que fazer.
+      let avisoEnvio = null;
+      if (enviarWhatsapp) {
+        if (!numeroFinal) {
+          avisoEnvio = 'Relatório não enviado: número de WhatsApp em branco ou incompleto.';
+        } else {
+          const { error } = await supabase.rpc('whatsapp_enviar_relatorio', {
+            p_chamado_id: chamado.id,
+            p_destino: whatsappCliente,
+          });
+          if (error) avisoEnvio = `Chamado aprovado, mas o relatório não saiu: ${error.message}`;
+        }
       }
+
+      if (cliente?.id && whatsappCliente && whatsappCliente !== cliente.whatsapp) {
+        await base44.entities.Cliente.update(cliente.id, { whatsapp: whatsappCliente });
+      }
+
+      return { avisoEnvio };
     },
-    onSuccess: () => {
+    onSuccess: ({ avisoEnvio }) => {
       queryClient.invalidateQueries(['chamados']);
       queryClient.invalidateQueries(['agenda-eventos']);
       queryClient.invalidateQueries(['meus-chamados-cliente']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
-      toast({ description: "✅ Chamado aprovado! Cliente foi notificado por email.", variant: "success" });
+      if (avisoEnvio) {
+        toast({ description: `⚠️ ${avisoEnvio}`, variant: "destructive" });
+      } else {
+        toast({
+          description: enviarWhatsapp
+            ? "✅ Chamado aprovado e relatório enviado ao cliente no WhatsApp."
+            : "✅ Chamado aprovado.",
+          variant: "success",
+        });
+      }
       onClose();
     }
   });
@@ -115,28 +127,14 @@ ClimaPro`
         motivo_reabertura: motivo
       });
 
-      // Notificar técnico
-      if (tecnico?.email) {
-        await notificarPorEmail({
-          to: tecnico.email,
-          subject: `⚠️ Chamado Reaberto - ${chamado.titulo}`,
-          body: `Olá ${tecnico.nome},
-
-O chamado foi reaberto pela empresa para correção.
-
-Motivo: ${motivo}
-
-Por favor, revise e execute novamente o serviço.
-
-Atenciosamente,
-ClimaPro`
-        });
-      }
+      // Aqui havia um e-mail para o técnico, que não sai desde que o envio
+      // foi desligado. O chamado volta para ele no painel e no app; avisar
+      // também no WhatsApp é um passo à parte, ainda não feito.
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['chamados']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
-      toast({ description: "⚠️ Chamado reaberto! O técnico foi notificado.", variant: "warning" });
+      toast({ description: "⚠️ Chamado reaberto. Ele volta para o painel do técnico.", variant: "warning" });
       onClose();
     }
   });
@@ -329,29 +327,71 @@ ClimaPro`
             </Card>
           )}
 
-          {/* Email do Cliente */}
-          <Card className="border-2 border-cyan-200 bg-cyan-50">
+          {/* Envio do relatório ao cliente */}
+          <Card className="border-2 border-green-200 bg-green-50">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Mail className="w-5 h-5" />
-                Email do Cliente
+                <MessageCircle className="w-5 h-5" />
+                Enviar relatório ao cliente
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <Label htmlFor="email-cliente">
-                Email para envio do relatório e lembretes de manutenção:
-              </Label>
-              <Input
-                id="email-cliente"
-                type="email"
-                value={emailCliente}
-                onChange={(e) => setEmailCliente(e.target.value)}
-                placeholder="cliente@email.com"
-                className="mt-2 max-w-md"
-              />
-              <p className="text-xs text-cyan-700 mt-2">
-                💡 O relatório de conclusão e os lembretes de manutenção serão enviados para este email.
-              </p>
+            <CardContent className="space-y-4">
+              <div className="flex items-start justify-between gap-4 rounded-lg border bg-white p-3">
+                <div>
+                  <p className="font-medium text-sm">Mandar por WhatsApp ao aprovar</p>
+                  <p className="text-xs text-muted-foreground">
+                    Sai do número do ClimaPro com o resumo do que foi feito.
+                  </p>
+                </div>
+                <Switch
+                  checked={enviarWhatsapp}
+                  onCheckedChange={setEnviarWhatsapp}
+                  aria-label="Enviar relatório por WhatsApp"
+                />
+              </div>
+
+              {enviarWhatsapp && (
+                <div>
+                  <Label htmlFor="whatsapp-cliente">WhatsApp do cliente</Label>
+                  <Input
+                    id="whatsapp-cliente"
+                    value={whatsappCliente}
+                    onChange={(e) => setWhatsappCliente(e.target.value)}
+                    placeholder="(27) 99999-9999"
+                    inputMode="tel"
+                    className="mt-2 max-w-md"
+                  />
+                  {numeroFinal ? (
+                    <p className="text-xs text-green-700 mt-2">
+                      Vai para <span className="font-mono">{numeroFinal}</span>.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-700 mt-2">
+                      Preencha com DDD, senão nada é enviado.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <Label htmlFor="email-cliente">E-mail do cliente</Label>
+                <Input
+                  id="email-cliente"
+                  type="email"
+                  value={emailCliente}
+                  onChange={(e) => setEmailCliente(e.target.value)}
+                  placeholder="cliente@email.com"
+                  className="mt-2 max-w-md"
+                />
+                {/* O envio por e-mail está desligado no sistema desde o erro do
+                    Resend. O campo continua porque guarda o contato na ficha do
+                    cliente, mas prometer envio aqui era mentira: a tela dizia
+                    "Cliente foi notificado por email" e não saía nada. */}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Fica salvo na ficha do cliente. O envio automático por e-mail está desligado
+                  hoje; o relatório vai pelo WhatsApp.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -391,7 +431,7 @@ ClimaPro`
                 </div>
               </div>
               <p className="text-xs text-teal-700 mt-2">
-                💡 Na data escolhida, você verá um alerta no painel e o cliente receberá um email de lembrete.
+                💡 Na data escolhida, você verá um alerta no painel.
               </p>
             </CardContent>
           </Card>
@@ -454,7 +494,7 @@ ClimaPro`
                 <li><strong>Editar</strong> as observações do técnico antes de enviar ao cliente</li>
                 <li><strong>Adicionar</strong> observações da empresa</li>
                 <li><strong>Reabrir</strong> o chamado se algo precisa ser corrigido</li>
-                <li><strong>Aprovar</strong> para enviar o relatório completo ao cliente por email</li>
+                <li><strong>Aprovar</strong> para finalizar e mandar o relatório ao cliente no WhatsApp</li>
               </ul>
             </div>
           </div>

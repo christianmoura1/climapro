@@ -13,6 +13,7 @@ import { MessageCircle, Send, Save, CheckCircle2, AlertCircle, Clock } from "luc
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
+import { previewNumero } from "@/lib/whatsapp";
 
 const EVENTOS = [
   {
@@ -39,17 +40,6 @@ const STATUS = {
   erro: { rotulo: "Falhou", cor: "bg-red-100 text-red-800", Icone: AlertCircle },
   cancelado: { rotulo: "Cancelado", cor: "bg-muted text-foreground", Icone: AlertCircle },
 };
-
-// Mesma regra do normalizar_whatsapp() do banco, só que aqui serve para mostrar
-// ao usuário o número exato que vai ser usado. Se os dois discordarem, quem
-// manda é o banco — este aqui é enfeite, não validação.
-function previewNumero(bruto) {
-  const digitos = String(bruto || "").replace(/\D/g, "");
-  if (!digitos) return null;
-  if (digitos.length >= 12 && digitos.startsWith("55")) return digitos;
-  if (digitos.length === 10 || digitos.length === 11) return `55${digitos}`;
-  return digitos;
-}
 
 export default function NotificacoesWhatsApp({ empresa }) {
   const queryClient = useQueryClient();
