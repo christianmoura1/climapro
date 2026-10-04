@@ -76,7 +76,6 @@ export function validarLote({ comum = {}, localizacoes = [] }) {
   if (!comum.cliente_id) erros.push('Escolha o cliente.');
   if (!comum.tipo) erros.push('Escolha o tipo de equipamento.');
   if (!String(comum.marca || '').trim()) erros.push('Preencha a marca.');
-  if (!String(comum.modelo || '').trim()) erros.push('Preencha o modelo.');
   if (localizacoes.length === 0) erros.push('Adicione pelo menos uma localização.');
   if (localizacoes.length > MAXIMO_POR_LOTE) {
     erros.push(`São ${localizacoes.length} localizações e o limite por lote é ${MAXIMO_POR_LOTE}. Divida em duas levas.`);

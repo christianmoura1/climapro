@@ -11,6 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
 import { BotaoUpload } from "@/components/ui/botao-upload";
 
+const MAX_FOTOS = 4;
+
 export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCancel, isLoading }) {
   const [formData, setFormData] = useState(equipamento || {
     cliente_id: "",
@@ -23,7 +25,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     estabelecimento_nome: "",
     data_instalacao: "",
     numero_serie: "",
-    foto_url: "",
+    fotos_urls: [],
     observacoes: "",
     periodicidade_pmoc: "",
     pmoc_ativo: false
@@ -63,13 +65,34 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     });
   };
 
-  const handlePhotoUpload = async (file) => {
-    if (!file) return;
+  // Equipamento antigo tem só `foto_url`; o novo tem o array. A tela trabalha
+  // sempre com o array e o gatilho no banco mantém `foto_url` igual à primeira.
+  const fotos = formData.fotos_urls?.length
+    ? formData.fotos_urls
+    : (formData.foto_url ? [formData.foto_url] : []);
+
+  const handlePhotoUpload = async (arquivos) => {
+    const lista = Array.isArray(arquivos) ? arquivos : [arquivos];
+    const vagas = MAX_FOTOS - fotos.length;
+    if (vagas <= 0) return;
+
+    if (lista.length > vagas) {
+      toast({
+        description: `Dá para anexar ${MAX_FOTOS} fotos no total. Vou subir as ${vagas} primeiras.`,
+        variant: "default",
+      });
+    }
 
     setUploadingPhoto(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setFormData({ ...formData, foto_url: result.file_url });
+      // Sequencial: o upload vai para o Storage do Supabase e disparar quatro
+      // de uma vez no 4G do celular do técnico costuma dar timeout.
+      const novas = [];
+      for (const arquivo of lista.slice(0, vagas)) {
+        const result = await base44.integrations.Core.UploadFile({ file: arquivo });
+        novas.push(result.file_url);
+      }
+      setFormData((atual) => ({ ...atual, fotos_urls: [...fotos, ...novas] }));
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
@@ -78,9 +101,16 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
     }
   };
 
+  const removerFoto = (indice) => {
+    setFormData((atual) => ({ ...atual, fotos_urls: fotos.filter((_, i) => i !== indice) }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    // foto_url vai explícito junto do array. Sem isso, apagar todas as fotos
+    // não funcionaria: o payload ainda levaria o foto_url antigo da linha, e o
+    // gatilho do banco ressuscitaria a foto a partir dele.
+    onSubmit({ ...formData, fotos_urls: fotos, foto_url: fotos[0] || null });
   };
 
   return (
@@ -175,13 +205,12 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="modelo-equipamento">Modelo *</Label>
+              <Label htmlFor="modelo-equipamento">Modelo</Label>
               <Input
                 id="modelo-equipamento"
-                value={formData.modelo}
+                value={formData.modelo || ""}
                 onChange={(e) => setFormData({...formData, modelo: e.target.value})}
                 placeholder="Ex: 42BQA018515LS"
-                required
               />
             </div>
           </div>
@@ -254,24 +283,45 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="foto-upload">Foto do equipamento</Label>
-            <div className="relative flex gap-4 items-center">
+            <Label htmlFor="foto-upload">Fotos do equipamento</Label>
+            <div className="flex flex-wrap items-center gap-3">
               <BotaoUpload
                 id="foto-upload"
                 onArquivos={handlePhotoUpload}
-                disabled={uploadingPhoto}
+                multiple
+                disabled={uploadingPhoto || fotos.length >= MAX_FOTOS}
               >
                 <Upload className="w-4 h-4 mr-2" />
-                {uploadingPhoto ? 'Enviando...' : 'Selecionar Foto'}
+                {uploadingPhoto ? 'Enviando...' : fotos.length ? 'Adicionar foto' : 'Selecionar fotos'}
               </BotaoUpload>
-              {formData.foto_url && (
-                <img
-                  src={formData.foto_url}
-                  alt="Foto atual do equipamento"
-                  className="w-20 h-20 object-cover rounded border-2 border-border"
-                />
-              )}
+
+              {fotos.map((url, indice) => (
+                <div key={url} className="relative">
+                  <img
+                    src={url}
+                    alt={`Foto ${indice + 1} do equipamento`}
+                    className="w-20 h-20 object-cover rounded border-2 border-border"
+                  />
+                  {indice === 0 && (
+                    <span className="absolute bottom-0 left-0 right-0 rounded-b bg-black/60 text-[10px] text-white text-center">
+                      principal
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removerFoto(indice)}
+                    aria-label={`Remover foto ${indice + 1}`}
+                    className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Até {MAX_FOTOS} fotos. A primeira é a que aparece na lista e no portal do cliente.
+              {fotos.length > 0 && ` ${fotos.length} de ${MAX_FOTOS}.`}
+            </p>
           </div>
 
           <div className="space-y-2">
