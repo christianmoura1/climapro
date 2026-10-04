@@ -416,6 +416,48 @@ export default function ClienteDashboard() {
           )}
         </Card>
 
+        {/* Cadastro, histórico e QR Code dos ativos */}
+        <Card id="equipamentos" className="mb-8 border-none shadow-lg scroll-mt-6">
+          <CardHeader className="border-b">
+            <CardTitle>Meus Equipamentos ({equipamentos.length})</CardTitle>
+            <p className="text-sm text-muted-foreground">Consulte os dados, o histórico de manutenção e o QR Code de cada ativo.</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            {/* Atalho para o histórico. Com quinze aparelhos, achar o cartão
+                certo no meio da grade e depois clicar em "Histórico" é busca
+                visual; aqui o cliente digita três letras e chega direto. */}
+            {equipamentos.length > 1 && (
+              <div className="mb-6 rounded-lg border bg-muted/40 p-4">
+                <Label htmlFor="busca-historico" className="text-sm font-medium">
+                  Ver o histórico de um equipamento
+                </Label>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  Digite o número, a marca ou o local para encontrar.
+                </p>
+                <SelectBuscavel
+                  id="busca-historico"
+                  itens={itensBuscaEquipamento}
+                  valor=""
+                  onChange={(id) => {
+                    const alvo = equipamentos.find((e) => e.id === id);
+                    if (alvo) handleVisualizarEquipamento(alvo);
+                  }}
+                  placeholder="Escolha o equipamento"
+                  textoBusca="Número, marca, modelo ou local..."
+                  textoVazio="Nenhum equipamento com esse termo."
+                  className="bg-background"
+                />
+              </div>
+            )}
+
+            <EquipamentosClientePortal
+              equipamentos={equipamentos}
+              onHistorico={handleVisualizarEquipamento}
+              onQrCode={setQrEquipamento}
+            />
+          </CardContent>
+        </Card>
+
         {/* Meus Chamados */}
         <Card className="shadow-lg border-none mb-8">
           <CardHeader className="border-b">
@@ -509,47 +551,6 @@ export default function ClienteDashboard() {
           </CardContent>
         </Card>
 
-        {/* Cadastro, histórico e QR Code dos ativos */}
-        <Card id="equipamentos" className="mb-8 border-none shadow-lg scroll-mt-6">
-          <CardHeader className="border-b">
-            <CardTitle>Meus Equipamentos ({equipamentos.length})</CardTitle>
-            <p className="text-sm text-muted-foreground">Consulte os dados, o histórico de manutenção e o QR Code de cada ativo.</p>
-          </CardHeader>
-          <CardContent className="p-6">
-            {/* Atalho para o histórico. Com quinze aparelhos, achar o cartão
-                certo no meio da grade e depois clicar em "Histórico" é busca
-                visual; aqui o cliente digita três letras e chega direto. */}
-            {equipamentos.length > 1 && (
-              <div className="mb-6 rounded-lg border bg-muted/40 p-4">
-                <Label htmlFor="busca-historico" className="text-sm font-medium">
-                  Ver o histórico de um equipamento
-                </Label>
-                <p className="mb-2 text-xs text-muted-foreground">
-                  Digite o número, a marca ou o local para encontrar.
-                </p>
-                <SelectBuscavel
-                  id="busca-historico"
-                  itens={itensBuscaEquipamento}
-                  valor=""
-                  onChange={(id) => {
-                    const alvo = equipamentos.find((e) => e.id === id);
-                    if (alvo) handleVisualizarEquipamento(alvo);
-                  }}
-                  placeholder="Escolha o equipamento"
-                  textoBusca="Número, marca, modelo ou local..."
-                  textoVazio="Nenhum equipamento com esse termo."
-                  className="bg-background"
-                />
-              </div>
-            )}
-
-            <EquipamentosClientePortal
-              equipamentos={equipamentos}
-              onHistorico={handleVisualizarEquipamento}
-              onQrCode={setQrEquipamento}
-            />
-          </CardContent>
-        </Card>
         {/* Meus PMOCs */}
         <Card className="shadow-lg border-none">
           <CardHeader className="border-b">
