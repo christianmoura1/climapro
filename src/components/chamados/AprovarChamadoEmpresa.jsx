@@ -25,6 +25,8 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/api/supabaseClient";
 import { previewNumero } from "@/lib/whatsapp";
 import { gerarRelatorioPdf, nomeDoArquivo } from "@/lib/relatorioPdf";
+import { notificarPorEmail, explicarFalhaDeEmail } from "@/lib/notificacoes";
+import { montarEmailRelatorio } from "@/lib/emailRelatorio";
 
 export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empresa, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
@@ -37,6 +39,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
   const [emailCliente, setEmailCliente] = useState(cliente?.email || "");
   const [whatsappCliente, setWhatsappCliente] = useState(cliente?.whatsapp || cliente?.telefone || "");
   const [enviarWhatsapp, setEnviarWhatsapp] = useState(!!(cliente?.whatsapp || cliente?.telefone));
+  const [enviarEmail, setEnviarEmail] = useState(!!cliente?.email);
   const queryClient = useQueryClient();
 
   const numeroFinal = previewNumero(whatsappCliente);
@@ -83,41 +86,58 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
       // A falha do envio não desfaz a aprovação: o chamado já está finalizado
       // no banco e reverter por causa de uma mensagem seria pior. O aviso sobe
       // no toast para o operador decidir o que fazer.
-      let avisoEnvio = null;
+      // O chamado já está finalizado no banco neste ponto. Nada daqui para
+      // baixo pode desfazer isso, então cada falha vira aviso, nunca exceção.
+      const avisos = [];
+      const chamadoCompleto = {
+        ...chamado,
+        observacoes_tecnico: observacoesTecnico,
+        observacoes_empresa: observacoesEmpresa,
+      };
+
+      // O PDF é um só e serve aos dois canais, então é gerado uma vez.
+      let urlRelatorio = null;
+      if (enviarWhatsapp || enviarEmail) {
+        try {
+          const pdf = await gerarRelatorioPdf({ chamado: chamadoCompleto, cliente, tecnico, empresa });
+          const arquivo = new File([pdf], nomeDoArquivo(chamado), { type: 'application/pdf' });
+          const enviado = await base44.integrations.Core.UploadFile({ file: arquivo });
+          urlRelatorio = enviado?.file_url || null;
+        } catch (erro) {
+          console.error('[aprovar] falhou ao gerar/subir o PDF:', erro);
+          avisos.push('O PDF não foi gerado; seguiu só o resumo.');
+        }
+      }
+
       if (enviarWhatsapp) {
         if (!numeroFinal) {
-          avisoEnvio = 'Relatório não enviado: número de WhatsApp em branco ou incompleto.';
+          avisos.push('WhatsApp não enviado: número em branco ou incompleto.');
         } else {
-          // O PDF é gerado aqui no navegador e sobe para o bucket público. Se
-          // falhar, a mensagem sai mesmo assim com o resumo em texto: perder o
-          // anexo é bem melhor do que o cliente não receber nada.
-          let urlRelatorio = null;
-          try {
-            const pdf = await gerarRelatorioPdf({
-              chamado: { ...chamado, observacoes_tecnico: observacoesTecnico, observacoes_empresa: observacoesEmpresa },
-              cliente,
-              tecnico,
-              empresa,
-            });
-            const arquivo = new File([pdf], nomeDoArquivo(chamado), { type: 'application/pdf' });
-            const enviado = await base44.integrations.Core.UploadFile({ file: arquivo });
-            urlRelatorio = enviado?.file_url || null;
-          } catch (erro) {
-            console.error('[aprovar] falhou ao gerar/subir o PDF:', erro);
-          }
-
           const { error } = await supabase.rpc('whatsapp_enviar_relatorio', {
             p_chamado_id: chamado.id,
             p_destino: whatsappCliente,
             p_url_relatorio: urlRelatorio,
           });
-          if (error) {
-            avisoEnvio = `Chamado aprovado, mas o relatório não saiu: ${error.message}`;
-          } else if (!urlRelatorio) {
-            avisoEnvio = 'Chamado aprovado e resumo enviado, mas o PDF não foi gerado. Reenvie pela tela do chamado.';
+          if (error) avisos.push(`WhatsApp não saiu: ${error.message}`);
+        }
+      }
+
+      if (enviarEmail) {
+        const destino = (emailCliente || cliente?.email || '').trim();
+        if (!destino) {
+          avisos.push('E-mail não enviado: endereço em branco.');
+        } else {
+          const { assunto, corpo } = montarEmailRelatorio({
+            chamado: chamadoCompleto, cliente, tecnico, empresa, urlRelatorio,
+          });
+          const resultado = await notificarPorEmail({ to: destino, subject: assunto, body: corpo });
+          if (!resultado.enviado) {
+            avisos.push(`E-mail não saiu. ${explicarFalhaDeEmail(resultado.motivo)}`);
           }
         }
       }
+
+      const avisoEnvio = avisos.length > 0 ? avisos.join(' ') : null;
 
       if (cliente?.id && whatsappCliente && whatsappCliente !== cliente.whatsapp) {
         await base44.entities.Cliente.update(cliente.id, { whatsapp: whatsappCliente });
@@ -133,9 +153,10 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
       if (avisoEnvio) {
         toast({ description: `⚠️ ${avisoEnvio}`, variant: "destructive" });
       } else {
+        const canais = [enviarWhatsapp && 'WhatsApp', enviarEmail && 'e-mail'].filter(Boolean);
         toast({
-          description: enviarWhatsapp
-            ? "✅ Chamado aprovado e relatório enviado ao cliente no WhatsApp."
+          description: canais.length
+            ? `✅ Chamado aprovado e relatório enviado por ${canais.join(' e ')}.`
             : "✅ Chamado aprovado.",
           variant: "success",
         });
@@ -397,25 +418,36 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
                 </div>
               )}
 
-              <div>
-                <Label htmlFor="email-cliente">E-mail do cliente</Label>
-                <Input
-                  id="email-cliente"
-                  type="email"
-                  value={emailCliente}
-                  onChange={(e) => setEmailCliente(e.target.value)}
-                  placeholder="cliente@email.com"
-                  className="mt-2 max-w-md"
+              <div className="flex items-start justify-between gap-4 rounded-lg border bg-white p-3">
+                <div>
+                  <p className="font-medium text-sm">Mandar por e-mail ao aprovar</p>
+                  <p className="text-xs text-muted-foreground">
+                    Mesmo conteúdo, com o PDF em anexo por link.
+                  </p>
+                </div>
+                <Switch
+                  checked={enviarEmail}
+                  onCheckedChange={setEnviarEmail}
+                  aria-label="Enviar relatório por e-mail"
                 />
-                {/* O envio por e-mail está desligado no sistema desde o erro do
-                    Resend. O campo continua porque guarda o contato na ficha do
-                    cliente, mas prometer envio aqui era mentira: a tela dizia
-                    "Cliente foi notificado por email" e não saía nada. */}
-                <p className="text-xs text-muted-foreground mt-2">
-                  Fica salvo na ficha do cliente. O envio automático por e-mail está desligado
-                  hoje; o relatório vai pelo WhatsApp.
-                </p>
               </div>
+
+              {enviarEmail && (
+                <div>
+                  <Label htmlFor="email-cliente">E-mail do cliente</Label>
+                  <Input
+                    id="email-cliente"
+                    type="email"
+                    value={emailCliente}
+                    onChange={(e) => setEmailCliente(e.target.value)}
+                    placeholder="cliente@email.com"
+                    className="mt-2 max-w-md"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Também fica salvo na ficha do cliente.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
