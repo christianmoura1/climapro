@@ -1,8 +1,8 @@
-// Cria uma sessão de Checkout do Stripe (assinatura mensal) para o plano
-// escolhido e devolve a URL de pagamento. Chamada pelo front-end (Planos.jsx).
+// Cria uma sessão de Checkout do Stripe para o plano e o ciclo escolhidos e
+// devolve a URL de pagamento. Chamada pelo front-end (Planos.jsx).
 import { corsHeaders } from '../_shared/cors.ts';
 import { supabaseAdmin, getRequestingProfile } from '../_shared/clients.ts';
-import { stripePost, PRECOS_POR_PLANO } from '../_shared/stripe.ts';
+import { stripePost, priceDoPlano } from '../_shared/stripe.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,10 +24,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { plano } = await req.json();
-    const priceId = PRECOS_POR_PLANO[plano];
+    const corpo = await req.json();
+    const plano = corpo?.plano;
+    // Qualquer coisa que não seja 'anual' é cobrada no mensal: um ciclo
+    // digitado errado não pode virar uma cobrança de doze meses.
+    const ciclo = corpo?.ciclo === 'anual' ? 'anual' : 'mensal';
+    const priceId = priceDoPlano(plano, ciclo);
     if (!priceId) {
-      return new Response(JSON.stringify({ error: `Plano inválido ou sem preço configurado: ${plano}` }), {
+      return new Response(JSON.stringify({ error: `Plano ${plano} não tem preço ${ciclo} configurado.` }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -62,7 +66,9 @@ Deno.serve(async (req) => {
       allow_promotion_codes: 'true',
       'metadata[empresa_id]': empresa.id,
       'metadata[plano]': plano,
+      'metadata[ciclo]': ciclo,
       'subscription_data[metadata][empresa_id]': empresa.id,
+      'subscription_data[metadata][ciclo]': ciclo,
       success_url: `${siteUrl}/Planos?checkout=sucesso`,
       cancel_url: `${siteUrl}/Planos?checkout=cancelado`,
     });

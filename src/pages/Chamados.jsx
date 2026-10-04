@@ -401,7 +401,7 @@ ClimaPro - Sistema de Gestão`
         if (atingiuLimite('limite_chamados_mes', chamadosDoMes(chamados))) {
           toast({
             description: `Seu plano permite ${empresaAtual?.limite_chamados_mes} chamado(s) por mês e você já abriu ${chamadosDoMes(chamados)}. `
-              + 'O plano Basic, por R$ 29,90/mês, deixa ilimitado.',
+              + 'O plano Basic, por R$ 39,90/mês, deixa ilimitado.',
             variant: 'default',
           });
           return;

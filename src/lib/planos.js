@@ -7,6 +7,27 @@
 
 export const ILIMITADO = 999999;
 
+// Ciclos de cobrança. O anual é "12 meses pelo preço de 10": dois meses de
+// graça, que dá 17% de desconto e é mais fácil de explicar numa ligação do
+// que uma porcentagem quebrada.
+export const MESES_PAGOS_NO_ANUAL = 10;
+
+export function valorAnual(plano) {
+  return plano?.valor ? plano.valor * MESES_PAGOS_NO_ANUAL : 0;
+}
+
+export function economiaAnual(plano) {
+  return plano?.valor ? plano.valor * (12 - MESES_PAGOS_NO_ANUAL) : 0;
+}
+
+export function percentualDesconto() {
+  return Math.round(((12 - MESES_PAGOS_NO_ANUAL) / 12) * 100);
+}
+
+export function reais(valor) {
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
 // Rótulo de cada módulo, usado nas telas de bloqueio ("o módulo Estoque está
 // disponível a partir do plano Empresa").
 export const NOME_MODULO = {
@@ -47,13 +68,13 @@ export const PLANOS = [
   {
     id: 'basic',
     nome: 'Basic',
-    preco: 'R$ 29,90/mês',
-    valor: 29.9,
+    preco: 'R$ 39,90/mês',
+    valor: 39.9,
     resumo: 'Para quem passou do volume do Free',
     tecnicos: 1,
     destaque: false,
+    herda: 'Free',
     inclui: [
-      'Tudo do Free',
       'Chamados ilimitados',
       'Clientes ilimitados',
     ],
@@ -68,8 +89,8 @@ export const PLANOS = [
     tecnicos: 3,
     tecnicoAdicional: 29,
     destaque: true,
+    herda: 'Basic',
     inclui: [
-      'Tudo do Basic',
       'PMOC ilimitado, com cronograma anual e caderno de manutenção',
       'Até 3 técnicos (adicional R$ 29/mês cada)',
       'Agenda com Google Calendar',
@@ -87,8 +108,8 @@ export const PLANOS = [
     tecnicos: 10,
     tecnicoAdicional: 29,
     destaque: false,
+    herda: 'Profissional',
     inclui: [
-      'Tudo do Profissional',
       'Até 10 técnicos (adicional R$ 29/mês cada)',
       'Financeiro com entradas, saídas e relatórios',
       'Estoque de peças com custo médio',
