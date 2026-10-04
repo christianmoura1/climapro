@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2, Cpu, Clock } from "lucide-react";
+import { Save, X, Upload, MapPin, Navigation, Image as ImageIcon, Video, Trash2, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
@@ -432,109 +432,6 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                 </div>
               )}
 
-              {/* Equipamentos do cliente */}
-              {equipamentosCliente.length > 0 && (
-                <div>
-                  {/* Filtro por estabelecimento */}
-                  {(() => {
-                    const nomesEstabelecimentos = [...new Set(equipamentosCliente.filter(e => e.estabelecimento_nome).map(e => e.estabelecimento_nome))];
-                    const temEstabelecimentos = nomesEstabelecimentos.length > 0;
-                    const equipamentosFiltrados = estabelecimentoAtivo
-                      ? equipamentosCliente.filter(e => e.estabelecimento_nome === estabelecimentoAtivo.nome)
-                      : equipamentosCliente;
-
-                    return (
-                      <>
-                        {temEstabelecimentos && (
-                          <div className="mb-3">
-                            <p className="text-xs font-semibold text-blue-700 mb-1">🏠 Filtrar por Estabelecimento:</p>
-                            <div className="flex flex-wrap gap-2">
-                              {nomesEstabelecimentos.map((nome) => (
-                                <button
-                                  key={nome}
-                                  type="button"
-                                  onClick={() => {
-                                    const est = clienteSelecionado.estabelecimentos?.find(e => e.nome === nome);
-                                    if (est) handleSelecionarEstabelecimento(est);
-                                  }}
-                                  className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
-                                    estabelecimentoAtivo?.nome === nome
-                                      ? 'bg-blue-600 text-white border-blue-600'
-                                      : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
-                                  }`}
-                                >
-                                  📍 {nome} ({equipamentosCliente.filter(e => e.estabelecimento_nome === nome).length})
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        <p className="text-xs font-semibold text-blue-700 mb-2">
-                          <Cpu className="w-3 h-3 inline mr-1" />
-                          Equipamentos ({equipamentosFiltrados.length}) — clique para ver histórico:
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {equipamentosFiltrados.map((eq) => (
-                            <button
-                              key={eq.id}
-                              type="button"
-                              onClick={() => handleVerHistoricoEquipamento(eq)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border shadow-sm transition-colors ${
-                                historicoEquipamento?.equipamento?.id === eq.id
-                                  ? 'bg-indigo-600 text-white border-indigo-600'
-                                  : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'
-                              }`}
-                            >
-                              ❄️ {eq.marca} {eq.modelo}
-                              {eq.localizacao && <span className="ml-1 opacity-70">({eq.localizacao})</span>}
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    );
-                  })()}
-
-                  {/* Histórico do equipamento selecionado */}
-                  {historicoEquipamento && (
-                    <div className="mt-3 border border-indigo-200 rounded-lg bg-white overflow-hidden">
-                      <div className="bg-indigo-50 px-3 py-2 flex items-center justify-between">
-                        <span className="text-xs font-semibold text-indigo-800">
-                          📋 Histórico: {historicoEquipamento.equipamento.marca} {historicoEquipamento.equipamento.modelo}
-                        </span>
-                        <button type="button" onClick={() => setHistoricoEquipamento(null)} className="text-indigo-500 hover:text-indigo-700">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <div className="p-2 max-h-48 overflow-y-auto">
-                        {loadingHistorico ? (
-                          <p className="text-xs text-muted-foreground text-center py-3">Carregando...</p>
-                        ) : historicoEquipamento.chamados.length === 0 ? (
-                          <p className="text-xs text-muted-foreground text-center py-3">Nenhum chamado registrado para este equipamento.</p>
-                        ) : (
-                          <div className="divide-y">
-                            {historicoEquipamento.chamados.map((c) => {
-                              const cfg = STATUS_CHAMADO[c.status] || STATUS_CHAMADO.pendente;
-                              return (
-                                <div key={c.id} className="py-2 flex items-center justify-between gap-2">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-foreground truncate">{c.numero_chamado} — {c.titulo}</p>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                      <Clock className="w-3 h-3" />
-                                      {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
-                                    </p>
-                                  </div>
-                                  <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
@@ -608,7 +505,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                         }
                         className="mt-0.5 h-4 w-4 shrink-0"
                       />
-                      <span className="min-w-0">
+                      <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">
                           {[equip.numero_equipamento, equip.marca, equip.modelo].filter(Boolean).join(' · ')}
                         </span>
@@ -618,10 +515,64 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
                           </span>
                         )}
                       </span>
+                      {/* O histórico vivia num segundo seletor de equipamento,
+                          logo acima deste. Escolher o aparelho duas vezes, em
+                          dois lugares, confundia; agora é um botão na própria
+                          linha. */}
+                      <button
+                        type="button"
+                        onClick={(evento) => {
+                          evento.preventDefault();
+                          handleVerHistoricoEquipamento(equip);
+                        }}
+                        className="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
+                        title="Ver histórico deste equipamento"
+                      >
+                        histórico
+                      </button>
                     </label>
                   );
                 })}
               </div>
+
+              {/* Histórico do equipamento selecionado */}
+              {historicoEquipamento && (
+                <div className="mt-3 border border-indigo-200 rounded-lg bg-white overflow-hidden">
+                  <div className="bg-indigo-50 px-3 py-2 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-indigo-800">
+                      📋 Histórico: {historicoEquipamento.equipamento.marca} {historicoEquipamento.equipamento.modelo}
+                    </span>
+                    <button type="button" onClick={() => setHistoricoEquipamento(null)} className="text-indigo-500 hover:text-indigo-700">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="p-2 max-h-48 overflow-y-auto">
+                    {loadingHistorico ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">Carregando...</p>
+                    ) : historicoEquipamento.chamados.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">Nenhum chamado registrado para este equipamento.</p>
+                    ) : (
+                      <div className="divide-y">
+                        {historicoEquipamento.chamados.map((c) => {
+                          const cfg = STATUS_CHAMADO[c.status] || STATUS_CHAMADO.pendente;
+                          return (
+                            <div key={c.id} className="py-2 flex items-center justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground truncate">{c.numero_chamado} — {c.titulo}</p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                  <Clock className="w-3 h-3" />
+                                  {c.created_date ? format(new Date(c.created_date), "dd/MM/yyyy", { locale: ptBR }) : "N/A"}
+                                </p>
+                              </div>
+                              <Badge className={cfg.color + " text-xs shrink-0"}>{cfg.label}</Badge>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
