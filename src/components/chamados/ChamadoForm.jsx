@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
 import { idsDoChamado, vinculoDeEquipamentos } from "@/lib/equipamentosDoChamado";
+import { filtrarPorEstabelecimento } from "@/lib/estabelecimentos";
 import { BotaoUpload } from "@/components/ui/botao-upload";
 
 const STATUS_CHAMADO = {
@@ -271,6 +272,20 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     setCurrentChamado(prev => ({ ...prev, videos_finalizacao: newVideos }));
   };
 
+  // Só os aparelhos do estabelecimento escolhido. Sem isso, o cliente com 15
+  // endereços via os 16 aparelhos de uma vez e tinha que achar o certo na
+  // marra, que é justamente o que os botões de local existem para evitar.
+  const equipamentosDoLocal = filtrarPorEstabelecimento(
+    equipamentosCliente,
+    estabelecimentoAtivo?.nome || null
+  );
+
+  // Marcado em outro local continua valendo (a preventiva pode passar em dois
+  // endereços), mas sai da lista visível. Contar evita o sumiço silencioso.
+  const selecionadosForaDoLocal = equipamentosSelecionados.filter(
+    (id) => !equipamentosDoLocal.some((e) => e.id === id)
+  ).length;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -527,17 +542,28 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               Este campo não existia, e por isso 213 dos 215 chamados nasceram
               sem vínculo: o histórico por equipamento, a página do QR code e o
               caderno de manutenção ficavam todos vazios. */}
-          {clienteSelecionado && equipamentosCliente.length > 0 && (
+          {clienteSelecionado && equipamentosDoLocal.length > 0 && (
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <Label>Equipamentos atendidos</Label>
+                <Label>
+                  Equipamentos atendidos
+                  {estabelecimentoAtivo && (
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      em {estabelecimentoAtivo.nome}
+                    </span>
+                  )}
+                </Label>
                 <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setEquipamentosSelecionados(equipamentosCliente.map((e) => e.id))}
+                    onClick={() =>
+                      setEquipamentosSelecionados((atual) => [
+                        ...new Set([...atual, ...equipamentosDoLocal.map((e) => e.id)]),
+                      ])
+                    }
                     className="text-xs font-medium text-blue-700 hover:underline"
                   >
-                    Marcar todos ({equipamentosCliente.length})
+                    Marcar todos ({equipamentosDoLocal.length})
                   </button>
                   {equipamentosSelecionados.length > 0 && (
                     <button
@@ -552,9 +578,16 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               </div>
               <p className="text-xs text-muted-foreground">
                 É o que faz o serviço aparecer no histórico do aparelho e no caderno de manutenção.
+                {selecionadosForaDoLocal > 0 && (
+                  <span className="ml-1 font-medium text-blue-700">
+                    {selecionadosForaDoLocal} já marcado{selecionadosForaDoLocal > 1 ? 's' : ''} em
+                    {' '}outro{selecionadosForaDoLocal > 1 ? 's' : ''} local
+                    {selecionadosForaDoLocal > 1 ? 'is' : ''}, fora desta lista.
+                  </span>
+                )}
               </p>
               <div className="grid gap-2 rounded-lg border p-3 sm:grid-cols-2 max-h-56 overflow-y-auto">
-                {equipamentosCliente.map((equip) => {
+                {equipamentosDoLocal.map((equip) => {
                   const marcado = equipamentosSelecionados.includes(equip.id);
                   return (
                     <label
