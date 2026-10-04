@@ -10,14 +10,16 @@ import { Check, X, AlertTriangle, CreditCard, Star, Users, Building2, ClipboardL
 import { createPageUrl } from "@/utils";
 import { PageLoading } from "@/components/ui/page-loading";
 import { PageHeader, PageShell } from "@/components/ui/page-shell";
-import { PLANOS, valorAnual, economiaAnual, percentualDesconto, reais, nomeDoPlano, ehIlimitado, formatarLimite, ILIMITADO } from "@/lib/planos";
+import { PLANOS, valorAnual, economiaAnual, mensalidadeNoAnual, descontoDoAnual, reais, nomeDoPlano, ehIlimitado, formatarLimite, ILIMITADO } from "@/lib/planos";
 import { chamadosDoMes } from "@/lib/limitesPlano";
 
 export default function PlanosPage() {
   const [user, setUser] = useState(null);
   const [empresa, setEmpresa] = useState(null);
   const [processando, setProcessando] = useState(null);
-  const [anual, setAnual] = useState(false);
+  // Começa no anual: é o preço de tabela, o que a propaganda anuncia e o que
+  // a empresa deveria contratar. O mensal é a exceção, não o padrão.
+  const [anual, setAnual] = useState(true);
 
   useEffect(() => {
     const carregar = async () => {
@@ -229,9 +231,7 @@ export default function PlanosPage() {
         </div>
       )}
 
-      {/* Mensal x anual. O anual vem desmarcado: quem está decidindo quer ver
-          primeiro o valor da mensalidade, e o desconto aparece do lado como
-          motivo para trocar. */}
+      {/* Mensal x anual. */}
       <div className="mb-6 flex flex-col items-center gap-2">
         <div className="inline-flex rounded-full border bg-muted p-1">
           <button
@@ -252,12 +252,12 @@ export default function PlanosPage() {
           >
             Anual
             <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800">
-              -{percentualDesconto()}%
+              -{descontoDoAnual()}%
             </span>
           </button>
         </div>
         <p className="text-xs text-muted-foreground">
-          No anual você paga 12 meses pelo preço de 10.
+          No anual você economiza quase dois meses. O mensal é 20% mais caro.
         </p>
       </div>
 
@@ -295,10 +295,10 @@ export default function PlanosPage() {
                         com ela que o cliente compara com o concorrente. O
                         total do ano vem logo abaixo para não parecer pegadinha. */}
                     <p className="mt-2 text-sm text-muted-foreground line-through">
-                      {reais(plano.valor)}/mês
+                      {reais(plano.valor)}/mês no mensal
                     </p>
                     <p className="text-3xl font-bold text-foreground">
-                      {reais(valorAnual(plano) / 12)}
+                      {reais(mensalidadeNoAnual(plano))}
                       <span className="text-base font-normal text-muted-foreground">/mês</span>
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -355,7 +355,7 @@ export default function PlanosPage() {
                       : plano.id === 'free'
                         ? 'Gratuito'
                         : atual
-                          ? 'Mudar para o anual'
+                          ? 'Mudar o ciclo para anual'
                           : empresa?.stripe_subscription_id
                             ? 'Trocar para este plano'
                             : anual
