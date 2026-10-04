@@ -275,10 +275,18 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
   // Só os aparelhos do estabelecimento escolhido. Sem isso, o cliente com 15
   // endereços via os 16 aparelhos de uma vez e tinha que achar o certo na
   // marra, que é justamente o que os botões de local existem para evitar.
-  const equipamentosDoLocal = filtrarPorEstabelecimento(
+  const filtradosPeloLocal = filtrarPorEstabelecimento(
     equipamentosCliente,
     estabelecimentoAtivo?.nome || null
   );
+
+  // Se o filtro não casar com nada, mostra o parque inteiro em vez de sumir
+  // com o campo. Esconder o único jeito de vincular equipamento ao chamado é
+  // pior que mostrar aparelho de outro endereço — foi assim que o campo
+  // desapareceu quando o nome do local divergia entre ficha e equipamento.
+  const localSemEquipamento = !!estabelecimentoAtivo && filtradosPeloLocal.length === 0
+    && equipamentosCliente.length > 0;
+  const equipamentosDoLocal = localSemEquipamento ? equipamentosCliente : filtradosPeloLocal;
 
   // Marcado em outro local continua valendo (a preventiva pode passar em dois
   // endereços), mas sai da lista visível. Contar evita o sumiço silencioso.
@@ -444,7 +452,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Label>
                   Equipamentos atendidos
-                  {estabelecimentoAtivo && (
+                  {estabelecimentoAtivo && !localSemEquipamento && (
                     <span className="ml-1 font-normal text-muted-foreground">
                       em {estabelecimentoAtivo.nome}
                     </span>
@@ -475,6 +483,12 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
               </div>
               <p className="text-xs text-muted-foreground">
                 É o que faz o serviço aparecer no histórico do aparelho e no caderno de manutenção.
+                {localSemEquipamento && (
+                  <span className="ml-1 font-medium text-amber-700">
+                    Nenhum aparelho cadastrado em {estabelecimentoAtivo.nome}; mostrando todos os
+                    do cliente.
+                  </span>
+                )}
                 {selecionadosForaDoLocal > 0 && (
                   <span className="ml-1 font-medium text-blue-700">
                     {selecionadosForaDoLocal} já marcado{selecionadosForaDoLocal > 1 ? 's' : ''} em
