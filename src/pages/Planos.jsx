@@ -117,7 +117,7 @@ export default function PlanosPage() {
 
   const planoAtualId = empresa?.plano || 'free';
   const limiteTecnicos = empresa?.limite_tecnicos ?? 1;
-  const limitePmoc = empresa?.limite_clientes_pmoc ?? 1;
+  const limitePmoc = empresa?.limite_clientes_pmoc ?? 0;
 
   const limiteChamados = empresa?.limite_chamados_mes ?? ILIMITADO;
   const limiteClientes = empresa?.limite_clientes ?? ILIMITADO;

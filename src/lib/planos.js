@@ -56,14 +56,13 @@ export const PLANOS = [
     tecnicos: 1,
     destaque: false,
     inclui: [
-      'Até 40 chamados por mês',
-      'Até 20 clientes',
+      'Até 10 chamados por mês',
+      'Até 10 clientes',
       'Cadastro de equipamentos',
       '1 técnico',
-      'PMOC de 1 cliente',
       'Fecha chamado com foto e assinatura, mesmo sem internet',
     ],
-    naoInclui: ['Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
+    naoInclui: ['PMOC', 'Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
   },
   {
     id: 'basic',
@@ -77,6 +76,7 @@ export const PLANOS = [
     inclui: [
       'Chamados ilimitados',
       'Clientes ilimitados',
+      'PMOC de 1 cliente, com cronograma e caderno de manutenção',
     ],
     naoInclui: ['Agenda', 'Orçamentos', 'QR Code', 'Financeiro', 'Estoque', 'Ponto eletrônico'],
   },
@@ -141,6 +141,7 @@ export function nomeDoPlano(id) {
 // dizer a partir de qual plano o recurso existe.
 export function planoQueLibera(modulo) {
   const porModulo = {
+    pmoc: 'basic',
     agenda: 'profissional',
     orcamentos: 'profissional',
     qr_equipamento: 'profissional',
@@ -165,13 +166,18 @@ export function planoQueLiberaVolume() {
 // estavam, que é o bug que esta rodada de mudanças veio corrigir.
 const MODULOS_FREE = {
   chamados: true, clientes: true, equipamentos: true, tecnicos: true,
-  pmoc: true, agenda: false, ponto_eletronico: false,
+  pmoc: false, agenda: false, ponto_eletronico: false,
   orcamentos: false, estoque: false, qr_equipamento: false,
   financeiro: false, notas_fiscais: false, multiempresa: false,
   api: false, white_label: false,
 };
 
-const MODULOS_PROFISSIONAL = { ...MODULOS_FREE, agenda: true, orcamentos: true, qr_equipamento: true };
+// PMOC é o que o Basic entrega além do volume. No Free a tela fica fechada:
+// deixar montar o cronograma inteiro para barrar na hora de ligar o primeiro
+// equipamento é pior do que dizer não na porta.
+const MODULOS_BASIC = { ...MODULOS_FREE, pmoc: true };
+
+const MODULOS_PROFISSIONAL = { ...MODULOS_BASIC, agenda: true, orcamentos: true, qr_equipamento: true };
 
 const MODULOS_EMPRESA = {
   ...MODULOS_PROFISSIONAL,
@@ -179,14 +185,14 @@ const MODULOS_EMPRESA = {
   financeiro: true, notas_fiscais: true, multiempresa: true,
 };
 
-// O Free passa a ter teto de volume: é o que separa ele do Basic, já que os
-// dois entregam exatamente os mesmos módulos.
-export const LIMITE_CHAMADOS_FREE = 40;
-export const LIMITE_CLIENTES_FREE = 20;
+// Teto do Free. Enxuto de propósito: ele serve para a pessoa ver o fluxo
+// rodando com os clientes reais dela, não para tocar a empresa de graça.
+export const LIMITE_CHAMADOS_FREE = 10;
+export const LIMITE_CLIENTES_FREE = 10;
 
 const APLICACAO_POR_PLANO = {
-  free: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: LIMITE_CHAMADOS_FREE, limite_clientes: LIMITE_CLIENTES_FREE, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_FREE },
-  basic: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_FREE },
+  free: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: LIMITE_CHAMADOS_FREE, limite_clientes: LIMITE_CLIENTES_FREE, limite_clientes_pmoc: 0, modulos_ativos: MODULOS_FREE },
+  basic: { limite_tecnicos: 1, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: 1, modulos_ativos: MODULOS_BASIC },
   profissional: { limite_tecnicos: 3, limite_empresas: 1, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_PROFISSIONAL },
   empresa: { limite_tecnicos: 10, limite_empresas: 3, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: MODULOS_EMPRESA },
   enterprise: { limite_tecnicos: ILIMITADO, limite_empresas: ILIMITADO, limite_chamados_mes: ILIMITADO, limite_clientes: ILIMITADO, limite_clientes_pmoc: ILIMITADO, modulos_ativos: { ...MODULOS_EMPRESA, api: true, white_label: true } },
@@ -202,10 +208,8 @@ export function aplicacaoDoPlano(planoId) {
 
 // Página → módulo que ela exige. Aplicado nas rotas em PrivateApplication.jsx.
 // Páginas fora deste mapa são abertas para qualquer plano.
-//
-// PMOC não entra: o módulo é true em todos os planos e o que separa o Free é o
-// limite de clientes com PMOC, cobrado na hora de ativar o equipamento.
 export const MODULO_POR_PAGINA = {
+  PMOC: 'pmoc',
   Agenda: 'agenda',
   Orcamentos: 'orcamentos',
   Estoque: 'estoque',
