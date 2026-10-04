@@ -76,6 +76,11 @@ export default function ClientesPage() {
   const empresaId = user?.data?.empresa_id || user?.empresa_id;
   const { atingiuLimite } = useEmpresa();
 
+  // Link direto para um cliente: /Clientes?cliente=<id>. É por aqui que o
+  // alerta abre o cliente de que ele fala, em vez de largar na lista de 134.
+  const [abriuPorLink, setAbriuPorLink] = useState(false);
+
+
   const { data: clientes = [], isLoading, error: clientesError, refetch: refetchClientes } = useQuery({
     queryKey: ['clientes', empresaId],
     queryFn: async () => {
@@ -87,6 +92,16 @@ export default function ClientesPage() {
     },
     enabled: !!user
   });
+  useEffect(() => {
+    if (abriuPorLink || clientes.length === 0) return;
+    const alvo = new URLSearchParams(window.location.search).get('cliente');
+    if (!alvo) return;
+    const cliente = clientes.find((c) => c.id === alvo);
+    if (cliente) setViewingCliente(cliente);
+    // Marca mesmo quando não acha: o cliente pode ter sido excluído, e tentar
+    // de novo a cada render deixaria o efeito em laço.
+    setAbriuPorLink(true);
+  }, [clientes, abriuPorLink]);
 
   const { data: equipamentos = [] } = useQuery({
     queryKey: ['equipamentos', empresaId],

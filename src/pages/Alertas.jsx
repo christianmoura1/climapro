@@ -20,6 +20,7 @@ import { PageHeader, PageShell } from "@/components/ui/page-shell";
 import { PageLoading } from "@/components/ui/page-loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useAlertas } from "@/hooks/useAlertas";
+import { destinoDoAlerta } from "@/lib/alertaDestino";
 
 // Para onde o alerta leva. Alerta que não tem para onde ir vira só reclamação:
 // o valor está em abrir já na tela onde dá para resolver.
@@ -92,11 +93,22 @@ export default function Alertas() {
             const sev = CONFIG_SEVERIDADE[alerta.severidade] || CONFIG_SEVERIDADE.baixa;
             const Icone = tipo.icone;
             const encerrado = alerta.status === 'resolvido' || alerta.status === 'dispensado';
+            // Abrir o alerta já conta como ter visto. Sem isso o contador do
+            // sino fica preso em "novo" mesmo depois de você ir olhar.
+            const marcarLido = () => {
+              if (alerta.status === 'novo') mudarStatus.mutate({ id: alerta.id, status: 'lido' });
+            };
 
             return (
               <Card key={alerta.id} className={`border-2 shadow-sm ${encerrado ? 'border-border bg-muted/30' : sev.cor}`}>
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex flex-1 items-start gap-3">
+                  {/* O texto inteiro é o link. Obrigar a mirar no botão
+                      "Abrir" é atrito à toa num cartão deste tamanho. */}
+                  <Link
+                    to={destinoDoAlerta(alerta)}
+                    onClick={marcarLido}
+                    className="flex flex-1 items-start gap-3 rounded-md text-left hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
                     <Icone className="mt-0.5 h-5 w-5 shrink-0 text-foreground/70" aria-hidden="true" />
                     <div className="flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -117,20 +129,13 @@ export default function Alertas() {
                         {tipo.rotulo} · detectado em {format(new Date(alerta.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </p>
                     </div>
-                  </div>
+                  </Link>
 
                   {!encerrado && (
                     <div className="flex shrink-0 flex-wrap gap-2">
                       <Button asChild size="sm" variant="outline" className="bg-card">
-                        <Link
-                          to={createPageUrl(tipo.pagina)}
-                          onClick={() => {
-                            if (alerta.status === 'novo') {
-                              mudarStatus.mutate({ id: alerta.id, status: 'lido' });
-                            }
-                          }}
-                        >
-                          Resolver
+                        <Link to={destinoDoAlerta(alerta)} onClick={marcarLido}>
+                          Abrir
                         </Link>
                       </Button>
                       <Button

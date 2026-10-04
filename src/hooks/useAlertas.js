@@ -10,7 +10,14 @@ export function useAlertas() {
 
   const { data: alertas = [], isLoading } = useQuery({
     queryKey: ['alertas', empresa?.id],
-    queryFn: () => base44.entities.Alerta.filter({ empresa_id: empresa.id }, '-created_date'),
+    // Só os alertas endereçados à empresa. A policy deixa o admin VER os
+    // alertas de cliente, e eles estavam aparecendo aqui com texto escrito
+    // para o cliente ("Nossa equipe vai atender", "Você pode aprovar pelo
+    // portal"). Pior: a policy de update não permite alterá-los, então o
+    // botão de resolver respondia 406 e o alerta não saía da lista.
+    queryFn: () => base44.entities.Alerta.filter(
+      { empresa_id: empresa.id, destinatario: 'empresa' }, '-created_date'
+    ),
     enabled: !!empresa?.id,
     // A rotina roda uma vez por dia, mas o alerta pode se resolver sozinho a
     // qualquer momento (o técnico executou, o cliente respondeu). Um minuto de
