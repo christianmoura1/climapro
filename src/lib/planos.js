@@ -136,6 +136,7 @@ export const PLANOS = [
       'Ponto eletrônico',
       'Multiempresa',
       'Registro de notas fiscais',
+      'IA especialista em refrigeração',
     ],
     naoInclui: [],
   },
