@@ -19,16 +19,16 @@ const STRIPE_SECRET_KEY = limparSecret(Deno.env.get('STRIPE_SECRET_KEY'));
 // e a pessoa vê um erro claro, em vez de ser cobrada no valor errado.
 export const PRECOS_POR_PLANO: Record<string, { mensal?: string; anual?: string }> = {
   basic: {
-    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC')),
-    anual: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC_ANUAL')),
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC')) || 'price_1UQ2lxAHTVHNRkaxgqiLtxSu',
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_BASIC_ANUAL')) || 'price_1UQ2lyAHTVHNRkaxVht4Ecoy',
   },
   profissional: {
-    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')),
-    anual: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL_ANUAL')),
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL')) || 'price_1UQ2lyAHTVHNRkaxsWMpK8QJ',
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_PROFISSIONAL_ANUAL')) || 'price_1UQ2lyAHTVHNRkax8kRJtQbN',
   },
   empresa: {
-    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA')),
-    anual: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA_ANUAL')),
+    mensal: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA')) || 'price_1UQ2lyAHTVHNRkaxo7PFAzGm',
+    anual: limparSecret(Deno.env.get('STRIPE_PRICE_EMPRESA_ANUAL')) || 'price_1UQ2lzAHTVHNRkaxAFSf6rdH',
   },
   // Planos antigos: mantidos para o webhook reconhecer assinaturas que já
   // existem. Não aparecem mais na página de Planos.
