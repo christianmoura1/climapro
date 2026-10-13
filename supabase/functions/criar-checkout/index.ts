@@ -63,34 +63,60 @@ Deno.serve(async (req) => {
       .single();
     if (empresaError) throw empresaError;
 
-    // Reusa o customer do Stripe se a empresa já tem um
+    // Reusa o customer do Stripe se a empresa já tem um. Se o customer
+    // gravado não existir mais na conta Stripe atual (troca de chave/conta),
+    // cria um novo e atualiza o banco — senão o checkout falha com
+    // "No such customer".
     let customerId = empresa.stripe_customer_id as string | null;
-    if (!customerId) {
+
+    const siteUrl = Deno.env.get('SITE_URL') || 'https://climapro-rho.vercel.app';
+
+    async function criarCustomer(): Promise<string> {
       const customer = await stripePost('customers', {
         email: user.email ?? '',
         name: empresa.nome,
         'metadata[empresa_id]': empresa.id,
       });
-      customerId = customer.id;
-      await supabaseAdmin.from('empresa').update({ stripe_customer_id: customerId }).eq('id', empresa.id);
+      await supabaseAdmin.from('empresa').update({ stripe_customer_id: customer.id }).eq('id', empresa.id);
+      return customer.id;
     }
 
-    const siteUrl = Deno.env.get('SITE_URL') || 'https://climapro-rho.vercel.app';
-    const session = await stripePost('checkout/sessions', {
-      mode: 'subscription',
-      customer: customerId!,
-      'line_items[0][price]': priceId,
-      'line_items[0][quantity]': '1',
-      locale: 'pt-BR',
-      allow_promotion_codes: 'true',
-      'metadata[empresa_id]': empresa.id,
-      'metadata[plano]': plano,
-      'metadata[ciclo]': ciclo,
-      'subscription_data[metadata][empresa_id]': empresa.id,
-      'subscription_data[metadata][ciclo]': ciclo,
-      success_url: `${siteUrl}/Planos?checkout=sucesso`,
-      cancel_url: `${siteUrl}/Planos?checkout=cancelado`,
-    });
+    async function abrirCheckout(custId: string) {
+      return stripePost('checkout/sessions', {
+        mode: 'subscription',
+        customer: custId,
+        'line_items[0][price]': priceId,
+        'line_items[0][quantity]': '1',
+        locale: 'pt-BR',
+        allow_promotion_codes: 'true',
+        'metadata[empresa_id]': empresa.id,
+        'metadata[plano]': plano,
+        'metadata[ciclo]': ciclo,
+        'subscription_data[metadata][empresa_id]': empresa.id,
+        'subscription_data[metadata][ciclo]': ciclo,
+        success_url: `${siteUrl}/Planos?checkout=sucesso`,
+        cancel_url: `${siteUrl}/Planos?checkout=cancelado`,
+      });
+    }
+
+    let session;
+    if (!customerId) {
+      customerId = await criarCustomer();
+      session = await abrirCheckout(customerId);
+    } else {
+      try {
+        session = await abrirCheckout(customerId);
+      } catch (checkoutError) {
+        const msg = String(checkoutError?.message ?? '');
+        if (msg.includes('No such customer')) {
+          console.warn('Customer gravado não existe no Stripe, criando novo:', customerId);
+          customerId = await criarCustomer();
+          session = await abrirCheckout(customerId);
+        } else {
+          throw checkoutError;
+        }
+      }
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
