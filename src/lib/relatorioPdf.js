@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf";
+import { comprimirDataUrl, LADO_PDF } from "@/lib/comprimirImagem";
 
 // Relatório de conclusão do chamado em PDF.
 //
@@ -86,9 +87,14 @@ function formatoDaImagem(dataUrl) {
   return ["JPEG", "PNG", "WEBP"].includes(tipo) ? tipo : null;
 }
 
-async function prepararImagem(url) {
-  const dados = await comoDataUrl(url);
-  if (!dados) return null;
+// A foto entra no PDF no tamanho em que foi tirada, e era isso que fazia um
+// relatório de quatro fotos pesar 31 MB — mais do que todo o banco de dados.
+// No papel ela ocupa uns 90mm, então 1000px já sobra; o base64 ainda engorda
+// tudo em um terço, o que torna o desperdício pior do que parece.
+async function prepararImagem(url, ladoMaximo = LADO_PDF) {
+  const bruto = await comoDataUrl(url);
+  if (!bruto) return null;
+  const dados = await comprimirDataUrl(bruto, { ladoMaximo });
   const formato = formatoDaImagem(dados);
   if (!formato) {
     console.warn("[relatorioPdf] formato de imagem não suportado pelo PDF:", dados.slice(0, 30));

@@ -4,6 +4,7 @@
 // para o schema real por trás de cada entidade.
 import { supabase } from '@/api/supabaseClient';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
+import { comprimirImagem } from '@/lib/comprimirImagem';
 
 const ENTITY_TABLE_MAP = {
   AgendaEvento: 'agenda_evento',
@@ -224,8 +225,16 @@ async function SendEmail({ to, subject, body }) {
 }
 
 async function UploadFile({ file }) {
-  const path = `${crypto.randomUUID()}-${file.name}`;
-  const { error: uploadError } = await supabase.storage.from('attachments').upload(path, file, {
+  // Comprime antes de subir. Foto de celular chega com 1,7 MB e sai com uns
+  // 200 KB, sem diferença visível na tela nem no relatório impresso.
+  //
+  // Vídeo passa intocado: `chamado.videos_finalizacao` é coluna de verdade e
+  // os técnicos usam, são 999 MB de vídeo de serviço anexado hoje. Comprimir
+  // vídeo no navegador não é viável; o caminho é guardar fora do Supabase.
+  const enviar = await comprimirImagem(file);
+
+  const path = `${crypto.randomUUID()}-${enviar.name}`;
+  const { error: uploadError } = await supabase.storage.from('attachments').upload(path, enviar, {
     cacheControl: '3600',
     upsert: false,
   });
