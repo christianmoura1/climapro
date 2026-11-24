@@ -164,7 +164,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setPhotoPreview(newPhotos);
       } catch (error) {
         console.error('Erro ao fazer upload da foto:', error);
-        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
+        toast({ description: error?.message || `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingPhoto(false);
       }
@@ -202,7 +202,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setCurrentChamado(prev => ({ ...prev, fotos_finalizacao: newPhotos }));
       } catch (error) {
         console.error('Erro ao fazer upload:', error);
-        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
+        toast({ description: error?.message || `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingPhoto(false);
       }
@@ -240,7 +240,7 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
         setCurrentChamado(prev => ({ ...prev, videos_finalizacao: newVideos }));
       } catch (error) {
         console.error('Erro ao fazer upload:', error);
-        toast({ description: `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
+        toast({ description: error?.message || `❌ Erro ao fazer upload de ${file.name}`, variant: "destructive" });
       } finally {
         setUploadingVideo(false);
       }

@@ -1,6 +1,8 @@
 #env
 .env
 .env.*
+# Chave do R2 e service role do script de migração. O modelo sem segredo é scripts/r2.env.example.
+scripts/r2.env
 
 # Logs
 logs

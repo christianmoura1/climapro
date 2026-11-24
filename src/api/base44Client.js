@@ -3,8 +3,10 @@
 // as ~270 chamadas espalhadas pelas páginas/componentes. Ver supabase/migrations
 // para o schema real por trás de cada entidade.
 import { supabase } from '@/api/supabaseClient';
+import { provedorStorage } from '@/lib/arquivos';
 import { invokeEdgeFunction } from '@/lib/edgeFunctions';
 import { comprimirImagem } from '@/lib/comprimirImagem';
+import { enviarParaR2 } from '@/lib/uploadR2';
 
 const ENTITY_TABLE_MAP = {
   AgendaEvento: 'agenda_evento',
@@ -228,10 +230,16 @@ async function UploadFile({ file }) {
   // Comprime antes de subir. Foto de celular chega com 1,7 MB e sai com uns
   // 200 KB, sem diferença visível na tela nem no relatório impresso.
   //
-  // Vídeo passa intocado: `chamado.videos_finalizacao` é coluna de verdade e
-  // os técnicos usam, são 999 MB de vídeo de serviço anexado hoje. Comprimir
-  // vídeo no navegador não é viável; o caminho é guardar fora do Supabase.
+  // Vídeo passa intocado: comprimir vídeo no navegador não é viável. Com
+  // VITE_STORAGE_PROVIDER=r2 os bytes vão para o Cloudflare, que é o que
+  // tira esse peso do Storage do Supabase. Sem a variável, segue o bucket
+  // `attachments` — assim um deploy novo não muda nada antes da chave do
+  // R2 existir.
   const enviar = await comprimirImagem(file);
+
+  if (provedorStorage() === 'r2') {
+    return enviarParaR2(enviar, (body) => invokeEdgeFunction('arquivo', body));
+  }
 
   const path = `${crypto.randomUUID()}-${enviar.name}`;
   const { error: uploadError } = await supabase.storage.from('attachments').upload(path, enviar, {

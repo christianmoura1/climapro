@@ -6,6 +6,19 @@
 import bcrypt from 'npm:bcryptjs@2';
 import { corsHeaders } from '../_shared/cors.ts';
 import { supabaseAdmin } from '../_shared/clients.ts';
+import { exporReferenciasR2 } from '../_shared/arquivos.js';
+import { urlPublicaOuAssinada } from '../_shared/r2.js';
+
+// Link http(s) — Storage antigo ou domínio público do R2 — segue igual.
+// r2:// vira URL que o navegador consegue abrir. Sem segredo do R2
+// configurado, a referência fica como está e o resto da página carrega.
+async function responder(body: unknown, status = 200) {
+  const exposto = await exporReferenciasR2(body, (chave) => urlPublicaOuAssinada(chave));
+  return new Response(JSON.stringify(exposto), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -61,9 +74,7 @@ Deno.serve(async (req) => {
     };
 
     if (!codigo_acesso || !cliente?.senha_acesso_publico_hash) {
-      return new Response(JSON.stringify(resposta), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return responder(resposta);
     }
 
     // O hash foi gerado no Postgres via pgcrypto (crypt/gen_salt('bf')) — é um
@@ -71,9 +82,7 @@ Deno.serve(async (req) => {
     // precisar de uma function nova no banco só pra comparar a senha.
     const senhaConfere = await bcrypt.compare(codigo_acesso, cliente.senha_acesso_publico_hash);
     if (!senhaConfere) {
-      return new Response(JSON.stringify(resposta), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return responder(resposta);
     }
 
     const [chamadosDireto, chamadosArray, manutencoes] = await Promise.all([
@@ -129,9 +138,7 @@ Deno.serve(async (req) => {
       })),
     };
 
-    return new Response(JSON.stringify(resposta), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return responder(resposta);
   } catch (error) {
     console.error('[equipamento-publico] erro:', error);
     return new Response(JSON.stringify({ error: String(error) }), {

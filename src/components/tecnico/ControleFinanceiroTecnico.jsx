@@ -99,7 +99,7 @@ ClimaPro`
       setFormData({ ...formData, comprovante_url: result.file_url });
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
+      toast({ description: error?.message || 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingFile(false);
     }
