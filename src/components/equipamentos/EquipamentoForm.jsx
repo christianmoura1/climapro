@@ -95,7 +95,7 @@ export default function EquipamentoForm({ equipamento, clientes, onSubmit, onCan
       setFormData((atual) => ({ ...atual, fotos_urls: [...fotos, ...novas] }));
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      toast({ description: 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
+      toast({ description: error?.message || 'Erro ao fazer upload. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingPhoto(false);
     }

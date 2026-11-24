@@ -84,7 +84,7 @@ export default function CompanySettings() {
       toast({ description: '✅ Logo carregada com sucesso! Lembre-se de clicar em "Salvar Alterações" para confirmar.', variant: "success" });
     } catch (error) {
       console.error('Erro ao fazer upload da logo:', error);
-      toast({ description: '❌ Erro ao fazer upload da logo. Tente novamente.', variant: "destructive" });
+      toast({ description: error?.message || '❌ Erro ao fazer upload da logo. Tente novamente.', variant: "destructive" });
     } finally {
       setUploadingLogo(false);
     }

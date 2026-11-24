@@ -197,7 +197,9 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
           urlRelatorio = enviado?.file_url || null;
         } catch (erro) {
           console.error('[aprovar] falhou ao gerar/subir o PDF:', erro);
-          avisos.push('O PDF não foi gerado; seguiu só o resumo.');
+          avisos.push(erro?.message
+            ? `O PDF não foi gerado; seguiu só o resumo. ${erro.message}`
+            : 'O PDF não foi gerado; seguiu só o resumo.');
         }
       }
 

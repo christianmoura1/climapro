@@ -217,7 +217,7 @@ export default function ExecutarManutencaoModal({ pmoc, cliente, onClose }) {
       }));
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
-      toast({ description: '❌ Erro ao fazer upload da foto', variant: "destructive" });
+      toast({ description: error?.message || '❌ Erro ao fazer upload da foto', variant: "destructive" });
     } finally {
       setUploadingFoto(null);
     }

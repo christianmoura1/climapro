@@ -52,7 +52,7 @@ export default function DocumentosCliente({ cliente }) {
       toast({ description: "Documento enviado com sucesso!", variant: "default" });
     } catch (error) {
       console.error("Erro ao fazer upload:", error);
-      toast({ description: "Erro ao enviar documento. Tente novamente.", variant: "destructive" });
+      toast({ description: error?.message || "Erro ao enviar documento. Tente novamente.", variant: "destructive" });
     } finally {
       setUploading(false);
     }

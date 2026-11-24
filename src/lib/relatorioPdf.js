@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf";
 import { comprimirDataUrl, LADO_PDF } from "@/lib/comprimirImagem";
 import { rotuloEquipamento } from "@/lib/equipamentosDoChamado";
+import { resolverUrlArquivo } from "@/lib/resolverArquivo";
 
 // Relatório de conclusão do chamado em PDF.
 //
@@ -52,9 +53,12 @@ function formatarData(valor) {
 // carrega não pode derrubar o relatório inteiro.
 async function comoDataUrl(url) {
   if (!url) return null;
-  if (url.startsWith("data:")) return url;
+  if (String(url).startsWith("data:")) return url;
   try {
-    const resposta = await fetch(url);
+    // Link antigo do Supabase e link público do R2 já abrem direto.
+    // r2:// precisa de uma URL assinada antes do fetch.
+    const endereco = await resolverUrlArquivo(url);
+    const resposta = await fetch(endereco);
     if (!resposta.ok) return null;
     const blob = await resposta.blob();
     return await new Promise((resolve) => {
