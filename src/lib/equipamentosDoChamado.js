@@ -1,3 +1,5 @@
+import { base44 } from '@/api/base44Client';
+
 // Vínculo entre chamado e equipamento.
 //
 // O chamado guarda isso em dois lugares: `equipamento_id` (um só, do tempo em
@@ -36,4 +38,25 @@ export function vinculoDeEquipamentos(ids = []) {
 // Chamados de um equipamento, na ordem em que vieram.
 export function chamadosDoEquipamento(chamados = [], equipamentoId) {
   return chamados.filter((c) => chamadoTemEquipamento(c, equipamentoId));
+}
+
+// "AC-04 · Springer · 12.000" com o cômodo no fim, quando existe.
+export function rotuloEquipamento(equipamento) {
+  if (!equipamento) return '';
+  const nome = [equipamento.numero_equipamento, equipamento.marca, equipamento.modelo]
+    .filter(Boolean)
+    .join(' · ');
+  const onde = equipamento.localizacao || equipamento.estabelecimento_nome;
+  return [nome, onde].filter(Boolean).join(' · ');
+}
+
+// O adapter só compara igualdade de coluna. Uma busca por `equipamento_id`
+// perde o chamado que está só no array (o segundo aparelho da visita, por
+// exemplo). Por isso a lista sai do cliente e o filtro acontece aqui.
+export async function buscarChamadosDoEquipamento(equipamento, ordenacao = '-data_finalizacao') {
+  if (!equipamento?.id) return [];
+  const lista = equipamento.cliente_id
+    ? await base44.entities.Chamado.filter({ cliente_id: equipamento.cliente_id }, ordenacao)
+    : await base44.entities.Chamado.filter({ equipamento_id: equipamento.id }, ordenacao);
+  return chamadosDoEquipamento(lista, equipamento.id);
 }

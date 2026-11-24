@@ -101,6 +101,12 @@ export default function HistoricoChamadosEquipamento({
     ${chamado.fotos_finalizacao.map((url, i) => `<div class="photo-item"><img src="${url}"/></div>`).join('')}
   </div>` : ''}
 
+  ${chamado.videos_finalizacao?.length > 0 ? `
+  <h2>Vídeos (${chamado.videos_finalizacao.length})</h2>
+  <ul>
+    ${chamado.videos_finalizacao.map((url, i) => `<li><a href="${url}">Vídeo ${i + 1}</a></li>`).join('')}
+  </ul>` : ''}
+
   ${chamado.assinatura_cliente ? `
   <div class="signature-box">
     <h3>✍️ Assinatura</h3>

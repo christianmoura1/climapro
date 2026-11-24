@@ -11,7 +11,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
-import { idsDoChamado, vinculoDeEquipamentos } from "@/lib/equipamentosDoChamado";
+import { chamadoTemEquipamento, idsDoChamado, vinculoDeEquipamentos } from "@/lib/equipamentosDoChamado";
 import { filtrarPorEstabelecimento, iconeEstabelecimento } from "@/lib/estabelecimentos";
 import { BotaoUpload } from "@/components/ui/botao-upload";
 
@@ -130,15 +130,10 @@ export default function ChamadoForm({ chamado, clientes, tecnicos, onSubmit, onC
     setLoadingHistorico(true);
     setHistoricoEquipamento({ equipamento, chamados: [] });
     try {
-      // Busca por equipamento_id principal
       const chamados = await base44.entities.Chamado.filter(
         { cliente_id: clienteSelecionado.id }, '-created_date', 100
       );
-      // Filtra os que têm este equipamento em equipamento_id ou equipamentos_ids
-      const filtrados = chamados.filter(c =>
-        c.equipamento_id === equipamento.id ||
-        (Array.isArray(c.equipamentos_ids) && c.equipamentos_ids.includes(equipamento.id))
-      );
+      const filtrados = chamados.filter((c) => chamadoTemEquipamento(c, equipamento.id));
       setHistoricoEquipamento({ equipamento, chamados: filtrados });
     } finally {
       setLoadingHistorico(false);

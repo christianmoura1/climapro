@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,9 @@ import {
   FileText,
   Edit,
   MessageCircle,
-  Clock
+  Clock,
+  Trash2,
+  Video
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,6 +29,20 @@ import { previewNumero } from "@/lib/whatsapp";
 import { gerarRelatorioPdf, nomeDoArquivo } from "@/lib/relatorioPdf";
 import { notificarPorEmail, explicarFalhaDeEmail } from "@/lib/notificacoes";
 import { montarEmailRelatorio } from "@/lib/emailRelatorio";
+import { BotaoUpload } from "@/components/ui/botao-upload";
+import { idsDoChamado, rotuloEquipamento, vinculoDeEquipamentos } from "@/lib/equipamentosDoChamado";
+import {
+  filtrarPorEstabelecimento,
+  iconeEstabelecimento,
+  listarEstabelecimentos,
+  mesmoLocal,
+  rotuloDoEstabelecimento,
+} from "@/lib/estabelecimentos";
+
+const LIMITE_FOTOS = 10;
+const LIMITE_VIDEOS = 2;
+const MAX_FOTO_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
 export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empresa, onClose }) {
   const [observacoesEmpresa, setObservacoesEmpresa] = useState("");
@@ -40,19 +56,86 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
   const [whatsappCliente, setWhatsappCliente] = useState(cliente?.whatsapp || cliente?.telefone || "");
   const [enviarWhatsapp, setEnviarWhatsapp] = useState(!!(cliente?.whatsapp || cliente?.telefone));
   const [enviarEmail, setEnviarEmail] = useState(!!cliente?.email);
+  const [equipamentosCliente, setEquipamentosCliente] = useState([]);
+  const [carregandoEquipamentos, setCarregandoEquipamentos] = useState(false);
+  const [estabelecimentoAtivo, setEstabelecimentoAtivo] = useState(null);
+  const [equipamentosSelecionados, setEquipamentosSelecionados] = useState(() => idsDoChamado(chamado));
+  const [fotosNovas, setFotosNovas] = useState([]);
+  const [videosNovos, setVideosNovos] = useState([]);
+  const midiaNovaRef = useRef({ fotos: [], videos: [] });
+  midiaNovaRef.current = { fotos: fotosNovas, videos: videosNovos };
   const queryClient = useQueryClient();
+
+  const fotosJaNoChamado = chamado.fotos_finalizacao || [];
+  const videosJaNoChamado = chamado.videos_finalizacao || [];
+
+  useEffect(() => {
+    let vivo = true;
+    if (!cliente?.id) return undefined;
+    setCarregandoEquipamentos(true);
+    base44.entities.Equipamento.filter({ cliente_id: cliente.id })
+      .then((lista) => {
+        if (!vivo) return;
+        setEquipamentosCliente(lista);
+        const local = (chamado.local || "").trim();
+        const ests = listarEstabelecimentos(cliente, lista);
+        const match = local
+          ? ests.find((est) => (est.endereco || "").trim() === local || mesmoLocal(est.nome, local))
+          : null;
+        if (match) setEstabelecimentoAtivo(match.nome);
+      })
+      .catch(() => {
+        if (vivo) setEquipamentosCliente([]);
+      })
+      .finally(() => {
+        if (vivo) setCarregandoEquipamentos(false);
+      });
+    return () => {
+      vivo = false;
+    };
+  }, [cliente, chamado.local]);
+
+  useEffect(() => () => {
+    const { fotos, videos } = midiaNovaRef.current;
+    [...fotos, ...videos].forEach((item) => {
+      if (item?.preview) URL.revokeObjectURL(item.preview);
+    });
+  }, []);
 
   const numeroFinal = previewNumero(whatsappCliente);
 
   const aprovarMutation = useMutation({
     mutationFn: async () => {
-      const user = await base44.auth.me();
+      await base44.auth.me();
+
+      const fotosNovasUrls = [];
+      for (const item of fotosNovas) {
+        const enviado = await base44.integrations.Core.UploadFile({ file: item.file });
+        if (!enviado?.file_url) throw new Error("Não consegui guardar uma das fotos.");
+        fotosNovasUrls.push(enviado.file_url);
+      }
+      const videosNovosUrls = [];
+      for (const item of videosNovos) {
+        const enviado = await base44.integrations.Core.UploadFile({ file: item.file });
+        if (!enviado?.file_url) throw new Error("Não consegui guardar um dos vídeos.");
+        videosNovosUrls.push(enviado.file_url);
+      }
+
+      const fotos = [...fotosJaNoChamado, ...fotosNovasUrls];
+      const videos = [...videosJaNoChamado, ...videosNovosUrls];
+      const vinculo = vinculoDeEquipamentos(equipamentosSelecionados);
+      const equipamentosRelatorio = equipamentosCliente.filter((eq) =>
+        equipamentosSelecionados.includes(eq.id)
+      );
       
       // 1. Atualizar chamado para finalizado com as observações editadas
       const updateData = {
         status: 'finalizado',
         observacoes_empresa: observacoesEmpresa,
-        observacoes_tecnico: observacoesTecnico
+        observacoes_tecnico: observacoesTecnico,
+        fotos_finalizacao: fotos,
+        videos_finalizacao: videos,
+        ...vinculo,
       };
       if (dataLembrete) {
         updateData.data_lembrete_proxima_manutencao = dataLembrete;
@@ -93,13 +176,22 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
         ...chamado,
         observacoes_tecnico: observacoesTecnico,
         observacoes_empresa: observacoesEmpresa,
+        fotos_finalizacao: fotos,
+        videos_finalizacao: videos,
+        ...vinculo,
       };
 
       // O PDF é um só e serve aos dois canais, então é gerado uma vez.
       let urlRelatorio = null;
       if (enviarWhatsapp || enviarEmail) {
         try {
-          const pdf = await gerarRelatorioPdf({ chamado: chamadoCompleto, cliente, tecnico, empresa });
+          const pdf = await gerarRelatorioPdf({
+            chamado: chamadoCompleto,
+            cliente,
+            tecnico,
+            empresa,
+            equipamentos: equipamentosRelatorio,
+          });
           const arquivo = new File([pdf], nomeDoArquivo(chamado), { type: 'application/pdf' });
           const enviado = await base44.integrations.Core.UploadFile({ file: arquivo });
           urlRelatorio = enviado?.file_url || null;
@@ -129,6 +221,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
         } else {
           const { assunto, corpo } = montarEmailRelatorio({
             chamado: chamadoCompleto, cliente, tecnico, empresa, urlRelatorio,
+            equipamentos: equipamentosRelatorio,
           });
           const resultado = await notificarPorEmail({ to: destino, subject: assunto, body: corpo });
           if (!resultado.enviado) {
@@ -150,6 +243,7 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
       queryClient.invalidateQueries(['agenda-eventos']);
       queryClient.invalidateQueries(['meus-chamados-cliente']);
       queryClient.invalidateQueries(['chamados-aguardando-aprovacao']);
+      queryClient.invalidateQueries(['chamados-equipamento']);
       if (avisoEnvio) {
         toast({ description: `⚠️ ${avisoEnvio}`, variant: "destructive" });
       } else {
@@ -162,7 +256,16 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
         });
       }
       onClose();
-    }
+    },
+    onError: (erro) => {
+      console.error("[aprovar] falhou antes de concluir:", erro);
+      toast({
+        description: erro?.message
+          ? `Não consegui aprovar: ${erro.message}`
+          : "Não consegui aprovar o chamado. Tente de novo.",
+        variant: "destructive",
+      });
+    },
   });
 
   const reabrirMutation = useMutation({
@@ -189,6 +292,60 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
     if (motivo && motivo.trim()) {
       reabrirMutation.mutate(motivo.trim());
     }
+  };
+
+  const estabelecimentos = listarEstabelecimentos(cliente, equipamentosCliente);
+  const filtradosPeloLocal = filtrarPorEstabelecimento(
+    equipamentosCliente,
+    estabelecimentoAtivo
+  );
+  const localSemEquipamento = !!estabelecimentoAtivo
+    && filtradosPeloLocal.length === 0
+    && equipamentosCliente.length > 0;
+  const equipamentosDoLocal = localSemEquipamento ? equipamentosCliente : filtradosPeloLocal;
+  const equipamentosVisiveis = [
+    ...equipamentosDoLocal,
+    ...equipamentosCliente.filter((eq) =>
+      equipamentosSelecionados.includes(eq.id)
+      && !equipamentosDoLocal.some((item) => item.id === eq.id)
+    ),
+  ];
+
+  const alternarEquipamento = (id) => {
+    setEquipamentosSelecionados((atual) =>
+      atual.includes(id) ? atual.filter((item) => item !== id) : [...atual, id]
+    );
+  };
+
+  const aceitarArquivos = (arquivos, { existentes, atuais, limite, tipo, maxBytes, rotulo, guardar }) => {
+    const files = Array.isArray(arquivos) ? arquivos : [arquivos];
+    if (existentes + atuais.length + files.length > limite) {
+      toast({
+        description: `O chamado aceita no máximo ${limite} ${rotulo}.`,
+        variant: "warning",
+      });
+      return;
+    }
+    const aceitos = [];
+    for (const file of files) {
+      if (!file.type.startsWith(tipo)) {
+        toast({ description: `${file.name} não é um arquivo válido.`, variant: "warning" });
+        continue;
+      }
+      if (file.size > maxBytes) {
+        const mega = Math.round(maxBytes / (1024 * 1024));
+        toast({ description: `${file.name} passa de ${mega} MB.`, variant: "warning" });
+        continue;
+      }
+      aceitos.push({ file, preview: URL.createObjectURL(file) });
+    }
+    if (aceitos.length > 0) guardar((prev) => [...prev, ...aceitos]);
+  };
+
+  const removerArquivo = (lista, guardar, index) => {
+    const alvo = lista[index];
+    if (alvo?.preview) URL.revokeObjectURL(alvo.preview);
+    guardar(lista.filter((_, i) => i !== index));
   };
 
   return (
@@ -260,6 +417,121 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
             </CardContent>
           </Card>
 
+          <Card className="border-2 border-indigo-200 bg-indigo-50">
+            <CardHeader>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-base">Equipamentos atendidos</CardTitle>
+                {equipamentosDoLocal.length > 0 && (
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEquipamentosSelecionados((atual) => [
+                          ...new Set([...atual, ...equipamentosDoLocal.map((eq) => eq.id)]),
+                        ])
+                      }
+                      className="text-xs font-medium text-indigo-700 hover:underline"
+                    >
+                      Marcar todos ({equipamentosDoLocal.length})
+                    </button>
+                    {equipamentosSelecionados.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setEquipamentosSelecionados([])}
+                        className="text-xs text-muted-foreground hover:underline"
+                      >
+                        Limpar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Marque o aparelho em que o serviço foi feito. Ao aprovar, o chamado entra no histórico desse equipamento, na página do QR e no relatório do cliente.
+                {equipamentosSelecionados.length > 0 && (
+                  <span className="ml-1 font-medium text-indigo-800">
+                    {equipamentosSelecionados.length} selecionado{equipamentosSelecionados.length > 1 ? "s" : ""}.
+                  </span>
+                )}
+              </p>
+
+              {estabelecimentos.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEstabelecimentoAtivo(null)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${
+                      estabelecimentoAtivo
+                        ? "bg-white text-indigo-700 border-indigo-300"
+                        : "bg-indigo-600 text-white border-indigo-600"
+                    }`}
+                  >
+                    Todos ({equipamentosCliente.length})
+                  </button>
+                  {estabelecimentos.map((est) => (
+                    <button
+                      key={est.nome}
+                      type="button"
+                      onClick={() => setEstabelecimentoAtivo(est.nome)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border ${
+                        estabelecimentoAtivo === est.nome
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-indigo-700 border-indigo-300"
+                      }`}
+                    >
+                      {iconeEstabelecimento(est.nome)} {rotuloDoEstabelecimento(est)} ({est.quantidade})
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {localSemEquipamento && (
+                <p className="text-xs font-medium text-amber-700">
+                  Nenhum aparelho cadastrado em {estabelecimentoAtivo}. A lista abaixo é a do cliente inteiro.
+                </p>
+              )}
+              {!localSemEquipamento && equipamentosVisiveis.length > equipamentosDoLocal.length && (
+                <p className="text-xs font-medium text-indigo-800">
+                  {equipamentosVisiveis.length - equipamentosDoLocal.length} aparelho(s) já marcado(s) em outro local continuam na lista.
+                </p>
+              )}
+
+              {carregandoEquipamentos ? (
+                <p className="text-sm text-muted-foreground">Carregando equipamentos do cliente...</p>
+              ) : equipamentosCliente.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Este cliente não tem equipamento cadastrado. O chamado segue sem vínculo de aparelho.
+                </p>
+              ) : (
+                <div className="grid gap-2 rounded-lg border bg-white p-3 sm:grid-cols-2 max-h-64 overflow-y-auto">
+                  {equipamentosVisiveis.map((equip) => {
+                    const marcado = equipamentosSelecionados.includes(equip.id);
+                    return (
+                      <label
+                        key={equip.id}
+                        className={`flex cursor-pointer items-start gap-2 rounded-md border p-2 text-sm ${
+                          marcado ? "border-indigo-400 bg-indigo-50" : "border-transparent hover:bg-muted/60"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={marcado}
+                          onChange={() => alternarEquipamento(equip.id)}
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                        />
+                        <span className="min-w-0">
+                          <span className="block truncate font-medium">{rotuloEquipamento(equip)}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Observações do Técnico - EDITÁVEL */}
           <Card className="border-2 border-blue-200 bg-blue-50">
             <CardHeader>
@@ -300,25 +572,21 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
             </CardContent>
           </Card>
 
-          {/* Fotos de Finalização */}
-          {chamado.fotos_finalizacao && chamado.fotos_finalizacao.length > 0 && (
-            <Card className="border-2 border-green-200 bg-green-50">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" />
-                  Fotos do Serviço ({chamado.fotos_finalizacao.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card className="border-2 border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ImageIcon className="w-5 h-5" />
+                Fotos do Serviço ({fotosJaNoChamado.length + fotosNovas.length}/{LIMITE_FOTOS})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                As fotos novas entram no chamado e no relatório do cliente. O tamanho é reduzido antes do envio, do mesmo jeito que no celular do técnico.
+              </p>
+              {fotosJaNoChamado.length > 0 && (
                 <div className="grid grid-cols-3 gap-3">
-                  {chamado.fotos_finalizacao.map((url, index) => (
-                    <a
-                      key={index}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
+                  {fotosJaNoChamado.map((url, index) => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block">
                       <img
                         src={url}
                         alt={`Foto ${index + 1}`}
@@ -327,28 +595,97 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
                     </a>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Vídeos de Finalização */}
-          {chamado.videos_finalizacao && chamado.videos_finalizacao.length > 0 && (
-            <Card className="border-2 border-purple-200 bg-purple-50">
-              <CardHeader>
-                <CardTitle className="text-base">🎥 Vídeos do Serviço ({chamado.videos_finalizacao.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {chamado.videos_finalizacao.map((url, index) => (
-                    <div key={index}>
-                      <p className="text-sm font-semibold mb-2">Vídeo {index + 1}:</p>
-                      <video src={url} controls className="w-full rounded-lg" />
+              )}
+              {fotosNovas.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {fotosNovas.map((item, index) => (
+                    <div key={item.preview} className="relative">
+                      <img
+                        src={item.preview}
+                        alt={`Foto nova ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border-2 border-green-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removerArquivo(fotosNovas, setFotosNovas, index)}
+                        className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-red-600 shadow"
+                        aria-label={`Remover foto nova ${index + 1}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+              <BotaoUpload
+                multiple
+                accept="image/*"
+                disabled={aprovarMutation.isPending || fotosJaNoChamado.length + fotosNovas.length >= LIMITE_FOTOS}
+                onArquivos={(arquivos) => aceitarArquivos(arquivos, {
+                  existentes: fotosJaNoChamado.length,
+                  atuais: fotosNovas,
+                  limite: LIMITE_FOTOS,
+                  tipo: "image/",
+                  maxBytes: MAX_FOTO_BYTES,
+                  rotulo: "fotos",
+                  guardar: setFotosNovas,
+                })}
+              >
+                Anexar fotos
+              </BotaoUpload>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-purple-200 bg-purple-50">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Video className="w-5 h-5" />
+                Vídeos do Serviço ({videosJaNoChamado.length + videosNovos.length}/{LIMITE_VIDEOS})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Vídeo segue inteiro, sem compressão. Máximo de 50 MB e 2 vídeos no chamado, para não estourar o espaço. O link vai no relatório.
+              </p>
+              {videosJaNoChamado.map((url, index) => (
+                <div key={url}>
+                  <p className="text-sm font-semibold mb-2">Vídeo {index + 1}</p>
+                  <video src={url} controls preload="metadata" className="w-full rounded-lg" />
+                </div>
+              ))}
+              {videosNovos.map((item, index) => (
+                <div key={item.preview}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-sm font-semibold">Vídeo novo {index + 1}</p>
+                    <button
+                      type="button"
+                      onClick={() => removerArquivo(videosNovos, setVideosNovos, index)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  <video src={item.preview} controls preload="metadata" className="w-full rounded-lg" />
+                </div>
+              ))}
+              <BotaoUpload
+                multiple
+                accept="video/*"
+                disabled={aprovarMutation.isPending || videosJaNoChamado.length + videosNovos.length >= LIMITE_VIDEOS}
+                onArquivos={(arquivos) => aceitarArquivos(arquivos, {
+                  existentes: videosJaNoChamado.length,
+                  atuais: videosNovos,
+                  limite: LIMITE_VIDEOS,
+                  tipo: "video/",
+                  maxBytes: MAX_VIDEO_BYTES,
+                  rotulo: "vídeos",
+                  guardar: setVideosNovos,
+                })}
+              >
+                Anexar vídeos
+              </BotaoUpload>
+            </CardContent>
+          </Card>
 
           {/* Assinatura do Cliente */}
           {chamado.assinatura_cliente && (
@@ -547,6 +884,8 @@ export default function AprovarChamadoEmpresa({ chamado, cliente, tecnico, empre
             <div className="inline-block text-sm text-blue-800">
               <p className="font-semibold mb-1">💡 Você pode:</p>
               <ul className="list-disc ml-5 space-y-1">
+                <li><strong>Marcar</strong> o equipamento atendido, para o serviço entrar no histórico do aparelho</li>
+                <li><strong>Anexar</strong> fotos e vídeos que faltaram na visita</li>
                 <li><strong>Editar</strong> as observações do técnico antes de enviar ao cliente</li>
                 <li><strong>Adicionar</strong> observações da empresa</li>
                 <li><strong>Reabrir</strong> o chamado se algo precisa ser corrigido</li>

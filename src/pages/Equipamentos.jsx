@@ -19,6 +19,7 @@ import { Card } from "@/components/ui/card";
 import { ErrorState, FilterEmptyState, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { useEmpresa } from "@/hooks/useEmpresa";
 import { SelectBuscavel } from "@/components/ui/select-buscavel";
+import { buscarChamadosDoEquipamento, chamadoTemEquipamento } from "@/lib/equipamentosDoChamado";
 
 // O Free tem limite zero: dizer "inclui PMOC para 0 cliente(s)" soa a bug.
 function mensagemDeLimitePmoc(limite) {
@@ -96,9 +97,7 @@ export default function EquipamentosPage() {
     queryKey: ['chamados-equipamento', visualizandoEquipamento?.id],
     queryFn: async () => {
       if (!visualizandoEquipamento) return [];
-      return base44.entities.Chamado.filter({
-        equipamento_id: visualizandoEquipamento.id
-      }, '-data_finalizacao');
+      return buscarChamadosDoEquipamento(visualizandoEquipamento);
     },
     enabled: !!visualizandoEquipamento
   });
@@ -176,10 +175,7 @@ export default function EquipamentosPage() {
         empresa_id: user.empresa_id 
       });
       
-      const chamadosVinculados = chamadosResult.filter(c => 
-        c.equipamento_id === equipamentoId || 
-        (Array.isArray(c.equipamentos_ids) && c.equipamentos_ids.includes(equipamentoId))
-      );
+      const chamadosVinculados = chamadosResult.filter((c) => chamadoTemEquipamento(c, equipamentoId));
       
       const pmocsVinculados = pmocsResult.filter(p => 
         Array.isArray(p.equipamentos_ids) && p.equipamentos_ids.includes(equipamentoId)

@@ -127,6 +127,13 @@ export default function HistoricoManutencaoPublico({ historico }) {
                       ))}
                     </div>
                   )}
+                  {chamado.videos?.length > 0 && (
+                    <div className="space-y-2 mb-2">
+                      {chamado.videos.map((url, idx) => (
+                        <video key={idx} src={url} controls preload="metadata" className="w-full rounded border" />
+                      ))}
+                    </div>
+                  )}
                   {chamado.assinatura_cliente && (
                     <div className="text-center border-t pt-2 mt-2">
                       <img src={chamado.assinatura_cliente} alt="Assinatura do cliente" className="max-w-[140px] max-h-16 border rounded bg-white mx-auto" />

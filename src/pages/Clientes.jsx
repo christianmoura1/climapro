@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "@/components/ui/use-toast";
 import { ErrorState, FilterEmptyState, InlineLoading, PageHeader, PageShell } from "@/components/ui/page-shell";
 import { mensagemDeLimite } from "@/lib/limitesPlano";
+import { buscarChamadosDoEquipamento } from "@/lib/equipamentosDoChamado";
 import { useEmpresa } from "@/hooks/useEmpresa";
 
 // O payload do cliente era montado campo a campo, e isso já engoliu coluna
@@ -141,9 +142,7 @@ export default function ClientesPage() {
     queryKey: ['chamados-equipamento', visualizandoEquipamento?.id],
     queryFn: async () => {
       if (!visualizandoEquipamento) return [];
-      return base44.entities.Chamado.filter({
-        equipamento_id: visualizandoEquipamento.id
-      }, '-data_finalizacao');
+      return buscarChamadosDoEquipamento(visualizandoEquipamento);
     },
     enabled: !!visualizandoEquipamento
   });
