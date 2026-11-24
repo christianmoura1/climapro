@@ -28,6 +28,7 @@ import {
   SourceLinks,
 } from "@/marketing/components/MarketingElements";
 import { getPublicPage } from "@/marketing/site-config";
+import { LIMITE_CHAMADOS_FREE, LIMITE_CLIENTES_FREE } from "@/lib/planos";
 
 const officialSources = [
   {
@@ -413,7 +414,7 @@ const technicianFaq = [
   {
     question: "Dá para usar sozinho?",
     answer:
-      "Sim. O plano Free configurado no produto prevê um técnico, um cliente e até cinco chamados por mês.",
+      `Sim. O plano Free prevê 1 técnico, até ${LIMITE_CLIENTES_FREE} clientes e até ${LIMITE_CHAMADOS_FREE} chamados por mês.`,
   },
   {
     question: "Posso registrar foto e assinatura no celular?",
@@ -455,7 +456,11 @@ export function TechnicianLandingPage() {
           label: "Baixar modelo de OS",
           href: "/recursos/modelo-ordem-servico-ar-condicionado",
         }}
-        notes={["1 técnico no plano Free", "Até 5 chamados por mês", "Uso pelo navegador"]}
+        notes={[
+          "1 técnico no plano Free",
+          `Até ${LIMITE_CHAMADOS_FREE} chamados por mês`,
+          `Até ${LIMITE_CLIENTES_FREE} clientes`,
+        ]}
         visual={<TechnicianPreview />}
       />
 
@@ -529,9 +534,9 @@ export function TechnicianLandingPage() {
             <span className="m-eyebrow m-eyebrow--light">Plano Free</span>
             <h2>Comece pequeno e confira se o fluxo cabe na sua rotina</h2>
             <p>
-              A configuração atual do plano gratuito inclui até 5 chamados por mês, 1 técnico,
-              1 cliente e agenda básica. Consulte os planos dentro do sistema quando precisar
-              ampliar a operação.
+              O plano gratuito inclui até {LIMITE_CHAMADOS_FREE} chamados por mês, até {LIMITE_CLIENTES_FREE} clientes,
+              1 técnico e o cadastro de equipamentos, com foto e assinatura no encerramento.
+              PMOC, agenda e orçamento estão nos planos pagos, dentro do sistema.
             </p>
             <a className="m-button m-button--light" href="/InitialChoice">
               Criar conta gratuita
@@ -540,9 +545,9 @@ export function TechnicianLandingPage() {
           </div>
           <div className="m-free-meter">
             <span>CAPACIDADE DO FREE</span>
-            <div><strong>5</strong><small>chamados / mês</small></div>
+            <div><strong>{LIMITE_CHAMADOS_FREE}</strong><small>chamados / mês</small></div>
+            <div><strong>{LIMITE_CLIENTES_FREE}</strong><small>clientes</small></div>
             <div><strong>1</strong><small>técnico</small></div>
-            <div><strong>1</strong><small>cliente</small></div>
           </div>
         </div>
       </section>

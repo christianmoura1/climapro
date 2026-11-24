@@ -43,8 +43,6 @@ export default function PlanosPage() {
     enabled: !!empresa,
   });
 
-  // Clientes com PMOC: os que têm ao menos um equipamento no plano. É o
-  // limite que separa o Free (1 cliente) dos planos pagos.
   // Consumo do mês, para o Free enxergar quanto falta para o teto.
   const { data: chamados = [] } = useQuery({
     queryKey: ['chamados-empresa-planos', empresa?.id],
@@ -58,6 +56,7 @@ export default function PlanosPage() {
     enabled: !!empresa?.id,
   });
 
+  // Clientes com PMOC: os que têm ao menos um equipamento com pmoc_ativo.
   const { data: clientesComPmoc = 0 } = useQuery({
     queryKey: ['clientes-com-pmoc', empresa?.id],
     queryFn: async () => {
