@@ -12,3 +12,5 @@ Disallow: /TecnicoDashboard
 Disallow: /ClienteDashboard
 
 Sitemap: https://geradordepmoc.com.br/sitemap.xml
+
+# Descrição para modelos de linguagem: https://geradordepmoc.com.br/llms.txt

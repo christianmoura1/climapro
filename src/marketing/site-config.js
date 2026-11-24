@@ -1,3 +1,5 @@
+import { PLANOS, mensalidadeNoAnual, valorAnual } from "../lib/planos.js";
+
 export const SITE_URL = "https://geradordepmoc.com.br";
 
 export const publicPages = [
@@ -147,6 +149,50 @@ export function getBreadcrumbs(pathname) {
   ];
 }
 
+function precoSchema(valor) {
+  return (Math.round(valor * 100) / 100).toFixed(2);
+}
+
+// Ofertas em BRL para o JSON-LD. O anual é o preço de tabela; o mensal fica
+// numa oferta separada para o número não se misturar.
+export function softwareOffers() {
+  const offers = [];
+
+  for (const plano of PLANOS) {
+    const detalhes = plano.inclui.join("; ");
+    if (!plano.valor) {
+      offers.push({
+        "@type": "Offer",
+        name: plano.nome,
+        price: "0.00",
+        priceCurrency: "BRL",
+        url: SITE_URL,
+        description: detalhes,
+      });
+      continue;
+    }
+
+    offers.push({
+      "@type": "Offer",
+      name: `${plano.nome} mensal`,
+      price: precoSchema(plano.valor),
+      priceCurrency: "BRL",
+      url: SITE_URL,
+      description: `${plano.resumo}. Cobrança mensal. ${detalhes}`,
+    });
+    offers.push({
+      "@type": "Offer",
+      name: `${plano.nome} anual`,
+      price: precoSchema(valorAnual(plano)),
+      priceCurrency: "BRL",
+      url: SITE_URL,
+      description: `${plano.resumo}. Cobrança anual, equivalente a ${precoSchema(mensalidadeNoAnual(plano))} BRL por mês. ${detalhes}`,
+    });
+  }
+
+  return offers;
+}
+
 export function structuredDataFor(page) {
   const canonical = canonicalUrl(page.path);
   const organization = {
@@ -170,6 +216,23 @@ export function structuredDataFor(page) {
           inLanguage: "pt-BR",
           description: page.description,
           publisher: { "@id": `${SITE_URL}/#organization` },
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": `${SITE_URL}/#software`,
+          name: "ClimaPro",
+          applicationCategory: "BusinessApplication",
+          operatingSystem: "Web",
+          url: SITE_URL,
+          inLanguage: "pt-BR",
+          description: page.description,
+          provider: {
+            "@type": "Organization",
+            "@id": `${SITE_URL}/#organization`,
+            name: "ClimaPro",
+            url: SITE_URL,
+          },
+          offers: softwareOffers(),
         },
       ],
     };

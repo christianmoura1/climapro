@@ -1,0 +1,60 @@
+# ClimaPro
+
+> Software brasileiro de gestão da manutenção em climatização e refrigeração. Organiza chamados, PMOC, equipamentos, orçamentos e a rotina de quem está em campo.
+
+O ClimaPro em https://geradordepmoc.com.br é um SaaS para técnicos autônomos, empresas de climatização e gestores de hotéis, condomínios e redes. A interface está em português do Brasil e o uso é pelo navegador.
+
+Este produto não é o aplicativo polonês chamado Clima Pro. Também não é um serviço de dados climáticos ou ambientais: não fornece previsão do tempo, série histórica de clima nem monitoramento ambiental.
+
+No plano Free o teto é de 10 chamados por mês e 10 clientes, com 1 técnico. O preço de tabela dos planos pagos é o anual. O mensal é a cobrança de quem prefere pagar mês a mês. Valores em reais (BRL).
+
+## Planos e preços
+
+- **Free** — gratuito (R$ 0). Para experimentar e sair do caderno.
+  Limites: 10 chamados por mês, 10 clientes, nenhum cliente com PMOC, 1 técnico incluso, 1 empresa.
+  Inclui: Até 10 chamados por mês; Até 10 clientes; Cadastro de equipamentos; 1 técnico; Fecha chamado com foto e assinatura, mesmo sem internet.
+  Ainda não entra neste plano: PMOC; Agenda; Orçamentos; QR Code; Financeiro; Estoque; Ponto eletrônico.
+- **Basic** — R$ 47,90/mês, ou R$ 39,90/mês no plano anual (R$ 478,80 cobrados uma vez por ano). Para quem passou do volume do Free.
+  Limites: chamados ilimitados por mês, clientes ilimitados, 2 clientes com PMOC, 1 técnico incluso, 1 empresa.
+  Inclui o plano Free e mais: Chamados ilimitados; Clientes ilimitados; PMOC de 2 clientes, com cronograma e caderno de manutenção.
+  Ainda não entra neste plano: Agenda; Orçamentos; QR Code; Financeiro; Estoque; Ponto eletrônico.
+- **Profissional** — R$ 95,90/mês, ou R$ 79,90/mês no plano anual (R$ 958,80 cobrados uma vez por ano). Para a empresa que já tem contrato de PMOC.
+  Limites: chamados ilimitados por mês, clientes ilimitados, clientes com PMOC ilimitados, 3 técnicos inclusos, 1 empresa.
+  Técnico adicional: R$ 29,00/mês.
+  Inclui o plano Basic e mais: PMOC ilimitado, com cronograma anual e caderno de manutenção; Até 3 técnicos (adicional R$ 29/mês cada); Agenda com Google Calendar; Orçamento com aprovação e assinatura do cliente por link; QR Code por equipamento.
+  Ainda não entra neste plano: Financeiro; Estoque; Ponto eletrônico; Multiempresa.
+- **Empresa** — R$ 236,90/mês, ou R$ 197,00/mês no plano anual (R$ 2.364,00 cobrados uma vez por ano). Para quem tem equipe em campo e controla custo.
+  Limites: chamados ilimitados por mês, clientes ilimitados, clientes com PMOC ilimitados, 10 técnicos inclusos, 3 empresas.
+  Técnico adicional: R$ 29,00/mês.
+  Inclui o plano Profissional e mais: Até 10 técnicos (adicional R$ 29/mês cada); Financeiro com entradas, saídas e relatórios; Estoque de peças com custo médio; Ponto eletrônico; Multiempresa; Registro de notas fiscais; IA especialista em refrigeração.
+
+## Páginas públicas
+
+- [ClimaPro | Gestão de PMOC, chamados e equipes de climatização](https://geradordepmoc.com.br): Organize chamados, PMOC, agenda e equipe técnica no ClimaPro. Registre a execução do serviço e acompanhe a rotina da sua empresa.
+- [Sistema PMOC para planejar e registrar manutenções | ClimaPro](https://geradordepmoc.com.br/solucoes/sistema-pmoc): Monte o cronograma anual, execute checklists por equipamento e reúna fotos, assinaturas e histórico das manutenções PMOC.
+- [Ordem de serviço para ar-condicionado com fotos e assinatura | ClimaPro](https://geradordepmoc.com.br/solucoes/ordem-servico-ar-condicionado): Abra, agende e acompanhe ordens de serviço de ar-condicionado. A equipe registra fotos, vídeos, assinatura do cliente e status do atendimento.
+- [Sistema para técnico de ar-condicionado autônomo | ClimaPro](https://geradordepmoc.com.br/para/tecnico-autonomo): Organize os chamados, agenda e registros das visitas de ar-condicionado. Comece com o plano gratuito do ClimaPro.
+- [Modelo de ordem de serviço para ar-condicionado | Baixe grátis](https://geradordepmoc.com.br/recursos/modelo-ordem-servico-ar-condicionado): Baixe um modelo de ordem de serviço para manutenção de ar-condicionado e saiba quais campos registrar no atendimento.
+- [Checklist de manutenção preventiva de ar-condicionado | Grátis](https://geradordepmoc.com.br/recursos/checklist-manutencao-preventiva-ar-condicionado): Use este checklist de manutenção preventiva de ar-condicionado para planejar a visita, registrar observações e orientar a rotina da equipe.
+- [Guia PMOC: o que é, quando avaliar e como organizar | ClimaPro](https://geradordepmoc.com.br/recursos/guia-pmoc): Entenda o que é PMOC, o que a lei prevê para ambientes climatizados e como organizar plano, execução e registros com revisão técnica.
+- [Calculadora de preço de PMOC: estime custos e margem | ClimaPro](https://geradordepmoc.com.br/recursos/calculadora-preco-pmoc): Estime mão de obra, deslocamento, insumos, custos indiretos e margem para formar uma referência de preço de PMOC.
+- [PMOC para hotéis e condomínios: levantamento gratuito | ClimaPro](https://geradordepmoc.com.br/pmoc-para-hoteis): Hotel, condomínio ou rede com muitos aparelhos de ar-condicionado? Agende um levantamento gratuito do parque, veja como está sua documentação de PMOC e acompanhe cada visita por um portal.
+- [PMOC em Curitiba: guia e sistema para empresas | ClimaPro](https://geradordepmoc.com.br/pmoc/curitiba): Entenda o PMOC em Curitiba e organize clientes, equipamentos, cronograma, checklist, fotos e assinaturas em um sistema para climatização.
+- [PMOC em São Paulo: guia e sistema de gestão | ClimaPro](https://geradordepmoc.com.br/pmoc/sao-paulo): Saiba como funciona o PMOC em São Paulo e controle contratos, equipes, equipamentos, cronogramas e evidências de manutenção no ClimaPro.
+- [PMOC em Vitória e Vila Velha ES: guia e sistema | ClimaPro](https://geradordepmoc.com.br/pmoc/vitoria-vila-velha): Entenda o PMOC em Vitória e Vila Velha e organize equipamentos, agenda, checklist, fotos e assinaturas da equipe de climatização.
+
+## Arquivos gratuitos
+
+- [Modelo de ordem de serviço editável (.doc)](https://geradordepmoc.com.br/downloads/modelo-ordem-servico-ar-condicionado.doc): Arquivo para registrar cliente, equipamento, diagnóstico, serviço, peças, valores, evidências e aceite.
+- [Modelo de ordem de serviço para imprimir](https://geradordepmoc.com.br/downloads/modelo-ordem-servico-ar-condicionado.html): Versão HTML do mesmo modelo, para preencher à mão ou salvar como PDF pelo navegador.
+- [Checklist de manutenção preventiva (.csv)](https://geradordepmoc.com.br/downloads/checklist-manutencao-preventiva-ar-condicionado.csv): Lista editável para a visita de preventiva de ar-condicionado.
+- [Checklist de manutenção preventiva para imprimir](https://geradordepmoc.com.br/downloads/checklist-manutencao-preventiva-ar-condicionado.html): Versão HTML do checklist, para usar em campo ou salvar como PDF.
+
+## Opcional
+
+- [Descrição completa](https://geradordepmoc.com.br/llms-full.txt): planos, limites, módulos e páginas com o texto inteiro.
+- [Sitemap](https://geradordepmoc.com.br/sitemap.xml): as mesmas páginas públicas, com data de atualização.
+- [Robots](https://geradordepmoc.com.br/robots.txt): rastreio liberado para buscadores e para bots de IA. Painéis logados ficam de fora.
+- [Criar conta](https://geradordepmoc.com.br/InitialChoice): o plano Free não pede cartão.
+- [Entrar](https://geradordepmoc.com.br/Login): acesso de quem já tem conta.
+- [WhatsApp](https://wa.me/5541992572743): conversa para operação com mais técnicos do que o plano Empresa inclui.

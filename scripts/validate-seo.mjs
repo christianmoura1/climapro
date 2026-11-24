@@ -1,6 +1,8 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
-import { canonicalUrl, publicPages } from "../src/marketing/site-config.js";
+import { LIMITE_CHAMADOS_FREE, LIMITE_CLIENTES_FREE, PLANOS } from "../src/lib/planos.js";
+import { llmsFullTxt, llmsTxt } from "./llms-txt.mjs";
+import { canonicalUrl, publicPages, structuredDataFor } from "../src/marketing/site-config.js";
 
 const root = process.cwd();
 const dist = path.join(root, "dist");
@@ -85,15 +87,34 @@ for (const page of publicPages) {
 }
 
 const sitemap = await readFile(path.join(dist, "sitemap.xml"), "utf8");
+const today = new Date().toISOString().slice(0, 10);
+const lastmods = [...sitemap.matchAll(/<lastmod>([^<]*)<\/lastmod>/g)].map((match) => match[1]);
+if (lastmods.length !== publicPages.length) {
+  fail(`sitemap: ${lastmods.length} datas para ${publicPages.length} páginas`);
+}
+for (const lastmod of lastmods) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(lastmod)) fail(`sitemap: lastmod inválido (${lastmod})`);
+  if (lastmod > today) fail(`sitemap: lastmod no futuro (${lastmod})`);
+}
 for (const page of publicPages) {
   if (!sitemap.includes(`<loc>${canonicalUrl(page.path)}</loc>`)) {
     fail(`sitemap: URL ausente ${page.path}`);
   }
 }
+const prerenderSource = await readFile(path.join(root, "scripts", "prerender.mjs"), "utf8");
+if (prerenderSource.includes("<lastmod>2026-08-02</lastmod>")) {
+  fail("sitemap: data fixa ainda está no gerador");
+}
 
 const robots = await readFile(path.join(dist, "robots.txt"), "utf8");
 if (!robots.includes("Sitemap: https://geradordepmoc.com.br/sitemap.xml")) {
   fail("robots.txt: sitemap ausente");
+}
+if (!/^User-agent:\s*\*\s*\nAllow:\s*\/\s*$/m.test(robots)) {
+  fail("robots.txt: precisa continuar liberando todos os user-agents");
+}
+if (!robots.includes("https://geradordepmoc.com.br/llms.txt")) {
+  fail("robots.txt: link para llms.txt ausente");
 }
 
 const appShell = await readFile(path.join(dist, "__app.html"), "utf8");
@@ -111,6 +132,18 @@ if (/<script type="module"/.test(notFound)) fail("404: JavaScript do app não de
 const vercel = JSON.parse(await readFile(path.join(root, "vercel.json"), "utf8"));
 if (vercel.rewrites?.some((rewrite) => rewrite.source === "/(.*)")) {
   fail("vercel.json: catch-all reintroduz soft 404");
+}
+for (const file of ["/llms.txt", "/llms-full.txt", "/robots.txt", "/sitemap.xml"]) {
+  if (vercel.rewrites?.some((rewrite) => rewrite.source === file)) {
+    fail(`vercel.json: rewrite engole ${file}`);
+  }
+}
+for (const file of ["/llms.txt", "/llms-full.txt"]) {
+  const header = vercel.headers?.find((entry) => entry.source === file);
+  const contentType = header?.headers?.find((item) => item.key === "Content-Type")?.value;
+  if (contentType !== "text/plain; charset=utf-8") {
+    fail(`vercel.json: ${file} precisa de Content-Type text/plain; charset=utf-8`);
+  }
 }
 if (vercel.rewrites?.some((rewrite) => rewrite.destination !== "/__app")) {
   fail("vercel.json: rotas privadas devem apontar para /__app com cleanUrls ativo");
@@ -132,6 +165,110 @@ for (const download of [
   if (hasEncodingCorruption(content)) fail(`download com encoding corrompido: ${download}`);
 }
 
+const homeHtml = await readFile(fileFor("/"), "utf8");
+const homeSchema = structuredDataFor(publicPages.find((page) => page.path === "/"));
+const software = homeSchema["@graph"]?.find((node) => node["@type"] === "SoftwareApplication");
+const homeTypes = homeSchema["@graph"]?.map((node) => node["@type"]) ?? [];
+if (!homeTypes.includes("Organization") || !homeTypes.includes("WebSite")) {
+  fail("home: JSON-LD perdeu Organization ou WebSite");
+}
+if (!software) fail("home: SoftwareApplication ausente");
+if (software?.name !== "ClimaPro") fail("home: SoftwareApplication com nome errado");
+if (software?.applicationCategory !== "BusinessApplication") {
+  fail("home: applicationCategory incorreta");
+}
+if (software?.operatingSystem !== "Web") fail("home: operatingSystem precisa ser Web");
+if (software?.url !== "https://geradordepmoc.com.br") fail("home: url do software incorreta");
+if (software?.inLanguage !== "pt-BR") fail("home: inLanguage precisa ser pt-BR");
+if (software?.provider?.["@type"] !== "Organization" || software?.provider?.name !== "ClimaPro") {
+  fail("home: provider precisa ser a Organization ClimaPro");
+}
+if (!Array.isArray(software?.offers) || software.offers.length < PLANOS.length) {
+  fail("home: ofertas do software incompletas");
+}
+for (const offer of software?.offers ?? []) {
+  if (offer.priceCurrency !== "BRL") fail(`home: oferta ${offer.name} fora do BRL`);
+  if (!/^\d+\.\d{2}$/.test(offer.price)) fail(`home: preço inválido em ${offer.name}`);
+}
+const freeOffer = software?.offers?.find((offer) => offer.name === "Free");
+if (freeOffer?.price !== "0.00") fail("home: plano Free precisa custar 0.00");
+for (const plano of PLANOS.filter((item) => item.valor > 0)) {
+  const mensal = software?.offers?.find((offer) => offer.name === `${plano.nome} mensal`);
+  const anual = software?.offers?.find((offer) => offer.name === `${plano.nome} anual`);
+  if (!mensal || !anual) fail(`home: oferta mensal/anual ausente para ${plano.nome}`);
+  if (mensal?.description && !plano.inclui.every((item) => mensal.description.includes(item))) {
+    fail(`home: oferta ${plano.nome} sem os itens do plano`);
+  }
+}
+if (software && !homeHtml.includes(JSON.stringify(software).replaceAll("<", "\\u003c"))) {
+  fail("home: HTML pré-renderizado sem o SoftwareApplication");
+}
+
+const free = PLANOS.find((plano) => plano.id === "free");
+const homeText = homeHtml
+  .replace(/<script[\s\S]*?<\/script>/g, " ")
+  .replace(/<[^>]+>/g, " ");
+for (const item of free.inclui) {
+  if (!homeText.includes(item)) fail(`home: texto público sem “${item}”`);
+}
+
+const tecnicoHtml = await readFile(fileFor("/para/tecnico-autonomo"), "utf8");
+const tecnicoText = tecnicoHtml
+  .replace(/<script[\s\S]*?<\/script>/g, " ")
+  .replace(/<[^>]+>/g, " ");
+if (/até 5 chamados|cinco chamados|agenda básica|\b1 cliente\b|\bum cliente\b/i.test(tecnicoText)) {
+  fail("técnico autônomo: descrição do Free ainda diverge de planos.js");
+}
+if (!tecnicoText.includes(`${free.inclui[0]}`) || !tecnicoText.includes("10 clientes")) {
+  fail("técnico autônomo: teto do Free ausente no HTML");
+}
+
+for (const [name, render] of [
+  ["llms.txt", llmsTxt],
+  ["llms-full.txt", llmsFullTxt],
+]) {
+  const distText = await readFile(path.join(dist, name), "utf8");
+  const publicText = await readFile(path.join(root, "public", name), "utf8");
+  const expected = render();
+  if (distText !== expected || publicText !== expected) {
+    fail(`${name}: build divergiu do gerador`);
+  }
+  if (!/aplicativo polonês chamado Clima Pro/i.test(distText)) {
+    fail(`${name}: falta deixar claro que não é o app polonês`);
+  }
+  if (!/dados climáticos ou ambientais/i.test(distText)) {
+    fail(`${name}: falta deixar claro que não é produto de dados climáticos`);
+  }
+  for (const page of publicPages) {
+    if (!distText.includes(canonicalUrl(page.path))) fail(`${name}: falta ${page.path}`);
+  }
+  for (const plano of PLANOS) {
+    for (const item of plano.inclui) {
+      if (!distText.includes(item)) fail(`${name}: falta item do ${plano.nome}: ${item}`);
+    }
+    if (plano.valor && !distText.includes(plano.preco)) {
+      fail(`${name}: falta o preço de ${plano.nome}`);
+    }
+    if (plano.valorAnualMes) {
+      const anual = (Math.round(plano.valorAnualMes * 100) / 100).toFixed(2).replace(".", ",");
+      if (!distText.includes(anual)) fail(`${name}: falta o preço anual de ${plano.nome}`);
+    }
+  }
+  if (!distText.includes(`No plano Free o teto é de ${LIMITE_CHAMADOS_FREE} chamados por mês e ${LIMITE_CLIENTES_FREE} clientes`)) {
+    fail(`${name}: teto do Free ausente`);
+  }
+  for (const download of [
+    "/downloads/modelo-ordem-servico-ar-condicionado.doc",
+    "/downloads/modelo-ordem-servico-ar-condicionado.html",
+    "/downloads/checklist-manutencao-preventiva-ar-condicionado.csv",
+    "/downloads/checklist-manutencao-preventiva-ar-condicionado.html",
+  ]) {
+    if (!distText.includes(`https://geradordepmoc.com.br${download}`)) {
+      fail(`${name}: falta ${download}`);
+    }
+  }
+}
+
 if (errors.length) {
   console.error("Validação SEO falhou:");
   errors.forEach((error) => console.error(`- ${error}`));
@@ -139,5 +276,5 @@ if (errors.length) {
 }
 
 console.log(
-  `SEO validado: ${publicPages.length} páginas únicas, sitemap, robots, 404, app-shell e 4 downloads.`,
+  `SEO validado: ${publicPages.length} páginas únicas, sitemap, robots, llms.txt, 404, app-shell e 4 downloads.`,
 );

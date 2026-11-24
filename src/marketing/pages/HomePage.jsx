@@ -8,7 +8,6 @@ import {
   FileCheck2,
   Gauge,
   MapPinned,
-  UsersRound,
 } from "lucide-react";
 import MarketingLayout from "@/marketing/components/MarketingLayout";
 import {
@@ -21,8 +20,10 @@ import {
   SectionHeading,
 } from "@/marketing/components/MarketingElements";
 import { getPublicPage } from "@/marketing/site-config";
+import { planoPorId } from "@/lib/planos";
 
 const page = getPublicPage("/");
+const planoFree = planoPorId("free");
 
 const features = [
   {
@@ -185,9 +186,9 @@ export default function HomePage() {
             <strong>R$ 0</strong>
             <p>Para conhecer o fluxo antes de contratar.</p>
             <ul>
-              <li><ClipboardCheck aria-hidden="true" /> Até 5 chamados por mês</li>
-              <li><UsersRound aria-hidden="true" /> 1 técnico e 1 cliente</li>
-              <li><CalendarDays aria-hidden="true" /> Agenda básica</li>
+              {planoFree.inclui.map((item) => (
+                <li key={item}><ClipboardCheck aria-hidden="true" /> {item}</li>
+              ))}
             </ul>
           </aside>
         </div>
