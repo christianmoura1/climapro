@@ -33,7 +33,24 @@ function bloco(titulo, texto) {
     <p style="margin:0;color:#1f2937;font-size:14px;line-height:1.6;">${paraHtml(texto)}</p>`;
 }
 
-export function montarEmailRelatorio({ chamado, cliente, tecnico, empresa, urlRelatorio }) {
+function nomesDosEquipamentos(equipamentos) {
+  return (equipamentos || [])
+    .map((eq) => [eq?.numero_equipamento, eq?.marca, eq?.modelo].filter(Boolean).join(" "))
+    .filter(Boolean)
+    .join(", ");
+}
+
+function blocoVideos(urls) {
+  if (!urls?.length) return "";
+  const links = urls
+    .map((url, indice) => `<a href="${escapar(url)}" style="color:#2563eb;">Vídeo ${indice + 1}</a>`)
+    .join(" · ");
+  return `
+    <p style="margin:18px 0 0;color:#6b7280;font-size:11px;letter-spacing:.6px;text-transform:uppercase;font-weight:700;">Vídeos do serviço</p>
+    <p style="margin:4px 0 0;font-size:14px;line-height:1.6;">${links}</p>`;
+}
+
+export function montarEmailRelatorio({ chamado, cliente, tecnico, empresa, urlRelatorio, equipamentos = [] }) {
   const numero = chamado?.numero_chamado || chamado?.id?.slice(0, 8) || "";
   const nomeEmpresa = empresa?.nome || "ClimaPro";
 
@@ -92,6 +109,7 @@ export function montarEmailRelatorio({ chamado, cliente, tecnico, empresa, urlRe
             ${linha("Técnico", tecnico?.nome)}
             ${linha("Concluído em", concluido)}
             ${linha("Local", chamado?.local || cliente?.endereco)}
+            ${linha("Equipamentos", nomesDosEquipamentos(equipamentos))}
             ${linha("Acompanhado por", chamado?.nome_cliente_confirmacao)}
           </table>
         </td></tr>
@@ -100,6 +118,7 @@ export function montarEmailRelatorio({ chamado, cliente, tecnico, empresa, urlRe
           ${bloco("Problema relatado", chamado?.descricao)}
           ${bloco("O que foi feito", chamado?.observacoes_tecnico)}
           ${bloco("Observações da empresa", chamado?.observacoes_empresa)}
+          ${blocoVideos(chamado?.videos_finalizacao)}
         </td></tr>
 
         ${proxima ? `

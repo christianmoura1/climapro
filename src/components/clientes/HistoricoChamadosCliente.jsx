@@ -9,6 +9,7 @@ import { ptBR } from "date-fns/locale";
 import { Clock, User, Eye, Plus, AlertCircle, Cpu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { idsDoChamado } from "@/lib/equipamentosDoChamado";
 
 const statusConfig = {
   pendente: { label: "Pendente", color: "bg-orange-100 text-orange-800" },
@@ -144,7 +145,9 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {chamados.map((chamado) => {
                   const tecnico = tecnicos.find(t => t.id === chamado.tecnico_id);
-                  const equipamento = equipamentos.find(e => e.id === chamado.equipamento_id);
+                  const ligados = idsDoChamado(chamado)
+                    .map((id) => equipamentos.find((e) => e.id === id))
+                    .filter(Boolean);
                   const status = statusConfig[chamado.status] || statusConfig.pendente;
 
                   return (
@@ -171,11 +174,11 @@ export default function HistoricoChamadosCliente({ clienteId, cliente, user }) {
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        {equipamento ? (
+                        {ligados.length > 0 ? (
                           <div className="flex items-center gap-2">
                             <Cpu className="w-4 h-4 text-muted-foreground" />
                             <span className="text-sm text-foreground">
-                              {equipamento.numero_equipamento}
+                              {ligados.map((item) => item.numero_equipamento || [item.marca, item.modelo].filter(Boolean).join(" ")).join(", ")}
                             </span>
                           </div>
                         ) : (

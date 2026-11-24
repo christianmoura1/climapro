@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MapPin, Phone, User, Navigation, Image as ImageIcon, CheckCircle, Download, Cpu, Clock, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { buscarChamadosDoEquipamento } from "@/lib/equipamentosDoChamado";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -64,7 +65,11 @@ export default function DetalhesChamadoTecnico({ chamado, cliente, onVoltar, onF
     }
     setEquipExpandido(equipId);
     if (!chamadosPorEquip[equipId]) {
-      const chs = await base44.entities.Chamado.filter({ equipamento_id: equipId }, '-created_date', 10);
+      const equipamento = equipamentosCliente.find((eq) => eq.id === equipId) || {
+        id: equipId,
+        cliente_id: cliente.id,
+      };
+      const chs = (await buscarChamadosDoEquipamento(equipamento, '-created_date')).slice(0, 10);
       setChamadosPorEquip(prev => ({ ...prev, [equipId]: chs }));
     }
   };

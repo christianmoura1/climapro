@@ -7,6 +7,15 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { LABEL_PERIODICIDADE, statusManutencao, STATUS_MANUTENCAO_CONFIG, ROTULO_RESULTADO, resultadoChecklistItem } from "@/lib/pmocChecklist";
+import { idsDoChamado, rotuloEquipamento } from "@/lib/equipamentosDoChamado";
+
+function escaparHtml(valor) {
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 // "Livro de Registro de Manutenção" consolidado do cliente: resumo do estado
 // atual dos equipamentos e histórico cronológico das execuções (checklist,
@@ -16,25 +25,37 @@ import { LABEL_PERIODICIDADE, statusManutencao, STATUS_MANUTENCAO_CONFIG, ROTULO
 export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose }) {
   const [empresa, setEmpresa] = useState(null);
   const [execucoes, setExecucoes] = useState(null);
+  const [chamadosServico, setChamadosServico] = useState(null);
   const [gerando, setGerando] = useState(false);
+  const idsDosEquipamentos = equipamentos.map((eq) => eq.id).join(",");
 
   useEffect(() => {
+    let vivo = true;
     const carregar = async () => {
       try {
         const user = await base44.auth.me();
-        const [empresas, historico] = await Promise.all([
+        const [empresas, historico, chamados] = await Promise.all([
           base44.entities.Empresa.list(),
           base44.entities.ManutencaoPMOC.filter({ cliente_id: cliente.id, status: 'concluida' }, '-data_execucao'),
+          base44.entities.Chamado.filter({ cliente_id: cliente.id, status: 'finalizado' }, '-data_finalizacao'),
         ]);
+        if (!vivo) return;
+        const ids = new Set(idsDosEquipamentos.split(",").filter(Boolean));
         setEmpresa(empresas.find((e) => e.id === user.empresa_id) || null);
         setExecucoes(historico);
+        setChamadosServico(
+          chamados.filter((chamado) => idsDoChamado(chamado).some((id) => ids.has(id)))
+        );
       } catch (error) {
         console.error("Erro ao carregar caderno de manutenção:", error);
         toast({ description: "❌ Erro ao carregar histórico de manutenções.", variant: "destructive" });
       }
     };
     carregar();
-  }, [cliente.id]);
+    return () => {
+      vivo = false;
+    };
+  }, [cliente.id, idsDosEquipamentos]);
 
   const gerarDocumento = () => {
     setGerando(true);
@@ -90,6 +111,29 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
             </div>`;
         })
         .join('');
+
+      const blocosChamados = (chamadosServico || [])
+        .map((chamado) => {
+          const nomes = idsDoChamado(chamado)
+            .map((id) => equipamentoPorId[id])
+            .filter(Boolean)
+            .map((eq) => rotuloEquipamento(eq));
+          const quando = chamado.data_finalizacao
+            ? format(new Date(chamado.data_finalizacao), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+            : "data não informada";
+          const fotos = chamado.fotos_finalizacao || [];
+          const videos = chamado.videos_finalizacao || [];
+          return `
+            <div class="execucao">
+              <h3>${escaparHtml(chamado.numero_chamado || "Chamado")} — ${escaparHtml(chamado.titulo || "Serviço")}</h3>
+              <p class="meta">${escaparHtml(quando)}${nomes.length ? ` · ${escaparHtml(nomes.join("; "))}` : ""}</p>
+              ${chamado.descricao ? `<p>${escaparHtml(chamado.descricao)}</p>` : ""}
+              ${chamado.observacoes_tecnico ? `<p><strong>O que foi feito:</strong> ${escaparHtml(chamado.observacoes_tecnico)}</p>` : ""}
+              ${fotos.length > 0 ? `<div class="fotos-grid">${fotos.map((url) => `<img src="${escaparHtml(url)}" />`).join("")}</div>` : ""}
+              ${videos.length > 0 ? `<p>${videos.map((url, indice) => `<a href="${escaparHtml(url)}">Vídeo ${indice + 1}</a>`).join(" · ")}</p>` : ""}
+            </div>`;
+        })
+        .join("");
 
       const html = `
 <!DOCTYPE html>
@@ -158,6 +202,9 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
   <h2>Histórico de Execuções (${(execucoes || []).length})</h2>
   ${blocosHistorico || '<p style="color:#9ca3af;">Nenhuma manutenção concluída ainda.</p>'}
 
+  <h2>Chamados de serviço (${(chamadosServico || []).length})</h2>
+  ${blocosChamados || '<p style="color:#9ca3af;">Nenhum chamado finalizado vinculado aos equipamentos.</p>'}
+
   <div class="footer">
     <span>ClimaPro · Caderno de Manutenção · ${cliente.nome}</span><span class="page-number"></span>
   </div>
@@ -203,18 +250,20 @@ export default function CadernoManutencaoPDF({ cliente, equipamentos, onClose })
         <CardContent className="space-y-4 p-5 sm:p-6">
           <p className="text-sm text-muted-foreground">
             Gera um documento único com o resumo de todos os {equipamentos.length} equipamento(s)
-            de <strong>{cliente.nome}</strong> e o histórico completo de manutenções já
-            concluídas. Revise os dados antes de imprimir ou compartilhar.
+            de <strong>{cliente.nome}</strong>, as manutenções preventivas concluídas e os
+            chamados de serviço vinculados aos aparelhos. Revise os dados antes de imprimir ou compartilhar.
           </p>
-          {execucoes === null ? (
+          {execucoes === null || chamadosServico === null ? (
             <p className="text-sm text-muted-foreground">Carregando histórico...</p>
           ) : (
-            <p className="text-sm text-foreground">{execucoes.length} execução(ões) concluída(s) encontrada(s).</p>
+            <p className="text-sm text-foreground">
+              {execucoes.length} execução(ões) de PMOC e {chamadosServico.length} chamado(s) de serviço.
+            </p>
           )}
           <Button
             className="min-h-12 w-full bg-purple-600 hover:bg-purple-700"
             onClick={gerarDocumento}
-            disabled={gerando || execucoes === null}
+            disabled={gerando || execucoes === null || chamadosServico === null}
           >
             <Download className="w-4 h-4 mr-2" />
             {gerando ? 'Preparando documento...' : 'Abrir versão para impressão'}

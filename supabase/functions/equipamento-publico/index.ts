@@ -77,8 +77,8 @@ Deno.serve(async (req) => {
     }
 
     const [chamadosDireto, chamadosArray, manutencoes] = await Promise.all([
-      supabaseAdmin.from('chamado').select('id, numero_chamado, titulo, descricao, tipo_problema, data_abertura, data_finalizacao, tecnico_id, fotos_finalizacao, assinatura_cliente, nome_cliente_confirmacao, observacoes_tecnico').eq('equipamento_id', equipamento_id).eq('status', 'finalizado'),
-      supabaseAdmin.from('chamado').select('id, numero_chamado, titulo, descricao, tipo_problema, data_abertura, data_finalizacao, tecnico_id, fotos_finalizacao, assinatura_cliente, nome_cliente_confirmacao, observacoes_tecnico').contains('equipamentos_ids', [equipamento_id]).eq('status', 'finalizado'),
+      supabaseAdmin.from('chamado').select('id, numero_chamado, titulo, descricao, tipo_problema, data_abertura, data_finalizacao, tecnico_id, fotos_finalizacao, videos_finalizacao, assinatura_cliente, nome_cliente_confirmacao, observacoes_tecnico').eq('equipamento_id', equipamento_id).eq('status', 'finalizado'),
+      supabaseAdmin.from('chamado').select('id, numero_chamado, titulo, descricao, tipo_problema, data_abertura, data_finalizacao, tecnico_id, fotos_finalizacao, videos_finalizacao, assinatura_cliente, nome_cliente_confirmacao, observacoes_tecnico').contains('equipamentos_ids', [equipamento_id]).eq('status', 'finalizado'),
       supabaseAdmin.from('manutencao_pmoc').select('id, data_execucao, tecnico_id, checklists_por_equipamento, fotos_por_equipamento, assinatura_tecnico, assinatura_cliente, nome_cliente_confirmacao').contains('equipamentos_ids', [equipamento_id]).eq('status', 'concluida'),
     ]);
     if (chamadosDireto.error) throw chamadosDireto.error;
@@ -112,6 +112,7 @@ Deno.serve(async (req) => {
         data_finalizacao: c.data_finalizacao,
         tecnico_nome: c.tecnico_id ? tecnicoPorId.get(c.tecnico_id as string) ?? null : null,
         fotos: c.fotos_finalizacao ?? [],
+        videos: c.videos_finalizacao ?? [],
         assinatura_cliente: c.assinatura_cliente ?? null,
         nome_cliente_confirmacao: c.nome_cliente_confirmacao ?? null,
         observacoes_tecnico: c.observacoes_tecnico ?? null,

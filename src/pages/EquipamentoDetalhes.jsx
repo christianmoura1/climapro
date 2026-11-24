@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, MapPin, Calendar } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import HistoricoChamadosEquipamento from "../components/equipamentos/HistoricoChamadosEquipamento";
 import { PageLoading } from "@/components/ui/page-loading";
+import { toast } from "@/components/ui/use-toast";
+import { buscarChamadosDoEquipamento } from "@/lib/equipamentosDoChamado";
 
 const tipoConfig = {
   ar_condicionado: { label: "Ar Condicionado", color: "bg-blue-100 text-blue-800" },
@@ -24,6 +26,8 @@ const tipoConfig = {
 
 export default function EquipamentoDetalhesPage() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState(null);
   const equipamentoId = new URLSearchParams(location.search).get('id');
 
@@ -51,6 +55,31 @@ export default function EquipamentoDetalhesPage() {
       return clientes.find(c => c.id === equipamento.cliente_id);
     },
     enabled: !!equipamento?.cliente_id
+  });
+
+  const { data: chamadosEquipamento = [], isLoading: carregandoChamados, isError: erroChamados } = useQuery({
+    queryKey: ['chamados-equipamento', equipamento?.id],
+    queryFn: () => buscarChamadosDoEquipamento(equipamento),
+    enabled: !!equipamento?.id,
+  });
+
+  const { data: tecnicos = [] } = useQuery({
+    queryKey: ['tecnicos', user?.empresa_id],
+    queryFn: async () => {
+      if (!user?.empresa_id) return [];
+      return base44.entities.Tecnico.filter({ empresa_id: user.empresa_id });
+    },
+    enabled: !!user?.empresa_id,
+  });
+
+  const { data: empresa } = useQuery({
+    queryKey: ['empresa', user?.empresa_id],
+    queryFn: async () => {
+      if (!user?.empresa_id) return null;
+      const empresas = await base44.entities.Empresa.list();
+      return empresas.find((item) => item.id === user.empresa_id) || null;
+    },
+    enabled: !!user?.empresa_id,
   });
 
   if (isLoading || !user) {
@@ -226,12 +255,34 @@ export default function EquipamentoDetalhesPage() {
           </Card>
         </div>
 
-        {/* Histórico de Chamados */}
-        <HistoricoChamadosEquipamento 
-          equipamentoId={equipamentoId}
-          equipamento={equipamento}
-          user={user}
-        />
+        {carregandoChamados ? (
+          <p className="text-sm text-muted-foreground">Carregando histórico do equipamento...</p>
+        ) : erroChamados ? (
+          <p className="text-sm text-red-700">Não foi possível carregar o histórico deste equipamento.</p>
+        ) : (
+          <HistoricoChamadosEquipamento
+            equipamento={equipamento}
+            chamados={chamadosEquipamento}
+            clientes={cliente ? [cliente] : []}
+            tecnicos={tecnicos}
+            empresa={empresa}
+            onVoltar={() => navigate(createPageUrl("Equipamentos"))}
+            onEditarChamado={() => {
+              toast({ description: "Para editar o chamado, acesse a página de Chamados", variant: "default" });
+            }}
+            onDeletarChamado={async (chamado) => {
+              if (!window.confirm(`Confirma a exclusão do chamado #${chamado.numero_chamado}?`)) return;
+              try {
+                await base44.entities.Chamado.delete(chamado.id);
+                queryClient.invalidateQueries(['chamados-equipamento', equipamento.id]);
+                toast({ description: "Chamado excluído.", variant: "success" });
+              } catch (error) {
+                console.error("Erro ao excluir chamado:", error);
+                toast({ description: "Erro ao excluir chamado", variant: "destructive" });
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

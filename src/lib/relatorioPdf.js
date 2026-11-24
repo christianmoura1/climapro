@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import { comprimirDataUrl, LADO_PDF } from "@/lib/comprimirImagem";
+import { rotuloEquipamento } from "@/lib/equipamentosDoChamado";
 
 // Relatório de conclusão do chamado em PDF.
 //
@@ -104,7 +105,7 @@ async function prepararImagem(url, ladoMaximo = LADO_PDF) {
   return { dados, formato, w: tamanho?.w || 4, h: tamanho?.h || 3 };
 }
 
-export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa }) {
+export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa, equipamentos = [] }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   let y = 0;
 
@@ -321,6 +322,10 @@ export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa }) 
 
   // ============ SERVIÇO ============
   secao("Serviço executado");
+  const aparelhos = (equipamentos || []).map(rotuloEquipamento).filter(Boolean);
+  if (aparelhos.length > 0) {
+    blocoTexto("Equipamentos atendidos", aparelhos.join("; "));
+  }
   blocoTexto("Problema relatado", chamado?.descricao);
   blocoTexto("O que foi feito", chamado?.observacoes_tecnico);
   blocoTexto("Observações da empresa", chamado?.observacoes_empresa);
@@ -343,8 +348,11 @@ export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa }) 
   // ============ FOTOS ============
   // Carrega tudo antes de desenhar. Assim, se nenhuma foto puder entrar, o
   // título nem é impresso, em vez de sobrar um bloco em branco.
+  // O formulário limita a 10 fotos. O corte antigo em 9 deixava de fora
+  // justamente a foto acrescentada na revisão, quando o técnico já tinha
+  // preenchido a grade.
   const fotos = [];
-  for (const url of (chamado?.fotos_finalizacao || []).slice(0, 9)) {
+  for (const url of (chamado?.fotos_finalizacao || []).slice(0, 12)) {
     const imagem = await prepararImagem(url);
     if (imagem) fotos.push(imagem);
   }
@@ -389,6 +397,24 @@ export async function gerarRelatorioPdf({ chamado, cliente, tecnico, empresa }) 
     });
     if (coluna !== 0) y += alturaBox + 10;
     y += 1;
+  }
+
+  // Vídeo não entra na página como imagem. O link abre o arquivo no celular
+  // de quem recebe o PDF pelo WhatsApp.
+  const videos = chamado?.videos_finalizacao || [];
+  if (videos.length > 0) {
+    secao("Vídeos do serviço");
+    videos.forEach((url, indice) => {
+      espaco(7);
+      const legenda = `Vídeo ${indice + 1}`;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...AZUL);
+      doc.text(legenda, MARGEM, y);
+      doc.link(MARGEM, y - 3.2, doc.getTextWidth(legenda), 4, { url });
+      y += 6;
+    });
+    y += 2;
   }
 
   // ============ ASSINATURA ============
