@@ -238,6 +238,9 @@ async function UploadFile({ file }) {
   const enviar = await comprimirImagem(file);
 
   if (provedorStorage() === 'r2') {
+    // A função escolhe a pasta a partir do perfil: `<empresa_id>/`, ou
+    // `usuarios/<id>/` quando a conta autenticada ainda não tem empresa.
+    // Logo, chamado e os outros envios mandam só o arquivo e guardam file_url.
     return enviarParaR2(enviar, (body) => invokeEdgeFunction('arquivo', body));
   }
 

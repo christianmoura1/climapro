@@ -9,14 +9,16 @@
 // arquiva e o link já mandado no WhatsApp.
 //
 // Leitura assinada (action download) existe para referência r2:// e para
-// conferir o tenant. O caminho tem que começar com o empresa_id de quem
-// chamou. Admin global pode abrir qualquer caminho seguro.
+// conferir o tenant. Quem tem empresa só abre `<empresa_id>/`. Quem está
+// autenticado e ainda não tem empresa só abre `usuarios/<user_id>/`.
+// Admin global abre qualquer caminho seguro. Pedido sem usuário fica 401.
 import { corsHeaders } from '../_shared/cors.ts';
 import { getRequestingProfile } from '../_shared/clients.ts';
 import {
   chaveDeReferenciaR2,
-  chavePermitida,
-  montarChave,
+  escopoArquivo,
+  montarChaveDoEscopo,
+  podeLerChave,
   tipoConteudoPermitido,
   urlPublicaR2,
 } from '../_shared/arquivos.js';
@@ -54,8 +56,8 @@ Deno.serve(async (req) => {
     if (!body || typeof body !== 'object') return json({ error: 'Pedido inválido.' }, 400);
     const action = (body as { action?: string }).action;
 
-    if (action === 'upload') return await upload(profile, body as Record<string, unknown>);
-    if (action === 'download') return await download(profile, body as Record<string, unknown>);
+    if (action === 'upload') return await upload(user.id, profile, body as Record<string, unknown>);
+    if (action === 'download') return await download(user.id, profile, body as Record<string, unknown>);
     return json({ error: 'Ação desconhecida.' }, 400);
   } catch (error) {
     console.error('[arquivo]', error);
@@ -63,9 +65,27 @@ Deno.serve(async (req) => {
   }
 });
 
-async function upload(profile: { empresa_id?: string | null }, body: Record<string, unknown>) {
-  if (!profile.empresa_id) {
-    return json({ error: 'Sua conta não está vinculada a uma empresa.' }, 403);
+function escopoDe(
+  userId: string,
+  profile: { empresa_id?: string | null; tipo_usuario?: string | null },
+) {
+  return escopoArquivo({
+    userId,
+    empresaId: profile.empresa_id,
+    tipoUsuario: profile.tipo_usuario,
+  });
+}
+
+async function upload(
+  userId: string,
+  profile: { empresa_id?: string | null; tipo_usuario?: string | null },
+  body: Record<string, unknown>,
+) {
+  // O cliente não escolhe a pasta. filename com barra vira só o nome, e
+  // um key/path mandado no corpo é ignorado: a pasta sai do perfil.
+  const escopo = escopoDe(userId, profile);
+  if (!escopo.prefixoUpload) {
+    return json({ error: 'Sua conta não pode enviar arquivo.' }, 403);
   }
 
   const tamanho = body.size;
@@ -91,7 +111,7 @@ async function upload(profile: { empresa_id?: string | null }, body: Record<stri
   const nome = typeof body.filename === 'string' ? body.filename.slice(0, 200) : 'arquivo';
   let chave = '';
   try {
-    chave = montarChave(profile.empresa_id, nome, crypto.randomUUID());
+    chave = montarChaveDoEscopo(escopo, nome, crypto.randomUUID());
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Empresa inválida.';
     return json({ error: message }, 403);
@@ -112,7 +132,8 @@ async function upload(profile: { empresa_id?: string | null }, body: Record<stri
 }
 
 async function download(
-  profile: { empresa_id?: string | null; tipo_usuario?: string },
+  userId: string,
+  profile: { empresa_id?: string | null; tipo_usuario?: string | null },
   body: Record<string, unknown>,
 ) {
   let cfg;
@@ -128,8 +149,7 @@ async function download(
   const chave = chaveDeReferenciaR2(bruto, cfg.publicBaseUrl);
   if (!chave) return json({ error: 'Arquivo não informado.' }, 400);
 
-  const adminGlobal = profile.tipo_usuario === 'admin_global';
-  if (!chavePermitida(chave, profile.empresa_id, { adminGlobal })) {
+  if (!podeLerChave(chave, escopoDe(userId, profile))) {
     return json({ error: 'Você não pode abrir este arquivo.' }, 403);
   }
 

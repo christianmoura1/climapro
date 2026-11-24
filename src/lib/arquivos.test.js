@@ -5,8 +5,11 @@ import {
   chaveMigrada,
   chaveOrfa,
   chavePermitida,
+  escopoArquivo,
   montarChave,
+  montarChaveDoEscopo,
   planejarLinha,
+  podeLerChave,
   provedorStorage,
   referenciaSupabase,
   sanitizarNomeArquivo,
@@ -18,6 +21,8 @@ import { enviarParaR2 } from './uploadR2.js';
 const EMPRESA = '11111111-1111-4111-8111-111111111111';
 const OUTRA = '22222222-2222-4222-8222-222222222222';
 const ARQUIVO = '33333333-3333-4333-8333-333333333333';
+const USUARIO = '44444444-4444-4444-8444-444444444444';
+const OUTRO = '55555555-5555-4555-8555-555555555555';
 const BASE = 'https://arquivos.exemplo.com';
 const SUPA = 'https://abc.supabase.co/storage/v1/object/public/attachments/';
 
@@ -62,6 +67,59 @@ test('leitura de outra empresa é recusada', () => {
   assert.equal(chavePermitida(`${EMPRESA}/../${OUTRA}/segredo`, EMPRESA), false);
   assert.equal(chavePermitida(chaveOrfa('solto.jpg'), EMPRESA), false);
   assert.equal(chavePermitida(chave, null, { adminGlobal: true }), true);
+  assert.equal(chavePermitida(`${EMPRESA}/../segredo`, null, { adminGlobal: true }), false);
+});
+
+test('conta sem empresa grava e lê só a própria pasta', () => {
+  const conta = escopoArquivo({ userId: USUARIO, empresaId: null, tipoUsuario: 'admin_empresa' });
+  const chave = montarChaveDoEscopo(conta, 'pasta/../Logo da empresa.PNG', ARQUIVO);
+  assert.equal(chave, `usuarios/${USUARIO}/${ARQUIVO}-Logo-da-empresa.PNG`);
+  assert.equal(podeLerChave(chave, conta), true);
+  assert.equal(podeLerChave(`${EMPRESA}/${ARQUIVO}-foto.jpg`, conta), false);
+  assert.equal(podeLerChave(chaveOrfa('solto.jpg'), conta), false);
+  const outro = escopoArquivo({ userId: OUTRO, empresaId: '', tipoUsuario: 'admin_empresa' });
+  assert.equal(podeLerChave(chave, outro), false);
+  assert.equal(montarChaveDoEscopo(outro, 'a.jpg', ARQUIVO).startsWith(`usuarios/${OUTRO}/`), true);
+});
+
+test('papel admin do cliente não libera a pasta dos outros', () => {
+  const conta = escopoArquivo({ userId: USUARIO.toUpperCase(), empresaId: null, tipoUsuario: 'admin' });
+  assert.equal(conta.adminGlobal, false);
+  const chave = montarChaveDoEscopo(conta, 'logo.png', ARQUIVO);
+  assert.equal(chave, `usuarios/${USUARIO}/${ARQUIVO}-logo.png`);
+  assert.equal(podeLerChave(chave, conta), true);
+  assert.equal(podeLerChave(`usuarios/${OUTRO}/logo.png`, conta), false);
+});
+
+test('admin global lê qualquer pasta e sem empresa grava na própria', () => {
+  const admin = escopoArquivo({ userId: USUARIO, empresaId: null, tipoUsuario: 'admin_global' });
+  const chave = montarChaveDoEscopo(admin, 'logo.png', ARQUIVO);
+  assert.equal(chave, `usuarios/${USUARIO}/${ARQUIVO}-logo.png`);
+  assert.equal(podeLerChave(`${EMPRESA}/a.jpg`, admin), true);
+  assert.equal(podeLerChave(`usuarios/${OUTRO}/a.jpg`, admin), true);
+  assert.equal(podeLerChave(chaveOrfa('solto.jpg'), admin), true);
+  assert.equal(podeLerChave(`${EMPRESA}/../segredo`, admin), false);
+});
+
+test('conta com empresa continua só na pasta da empresa', () => {
+  const conta = escopoArquivo({ userId: USUARIO, empresaId: EMPRESA, tipoUsuario: 'tecnico' });
+  assert.equal(montarChaveDoEscopo(conta, 'foto.jpg', ARQUIVO), `${EMPRESA}/${ARQUIVO}-foto.jpg`);
+  assert.equal(podeLerChave(`${EMPRESA}/${ARQUIVO}-foto.jpg`, conta), true);
+  assert.equal(podeLerChave(`${OUTRA}/a.jpg`, conta), false);
+  assert.equal(podeLerChave(`usuarios/${USUARIO}/a.jpg`, conta), false);
+  assert.equal(podeLerChave(chaveOrfa('solto.jpg'), conta), false);
+
+  const admin = escopoArquivo({ userId: USUARIO, empresaId: EMPRESA, tipoUsuario: 'admin_global' });
+  assert.equal(montarChaveDoEscopo(admin, 'a.jpg', ARQUIVO), `${EMPRESA}/${ARQUIVO}-a.jpg`);
+  assert.equal(podeLerChave(`${OUTRA}/a.jpg`, admin), true);
+});
+
+test('sem usuário e sem empresa não há pasta de envio', () => {
+  const vazio = escopoArquivo({ userId: null, empresaId: 'nao-e-uuid', tipoUsuario: 'admin_empresa' });
+  assert.equal(vazio.prefixoUpload, '');
+  assert.throws(() => montarChaveDoEscopo(vazio, 'a.jpg', ARQUIVO), /não pode enviar arquivo/);
+  assert.equal(podeLerChave(`${EMPRESA}/a.jpg`, vazio), false);
+  assert.equal(podeLerChave(`usuarios/${USUARIO}/a.jpg`, vazio), false);
 });
 
 test('reconhece URL antiga do Storage e ignora data URL e link externo', () => {
