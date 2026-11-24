@@ -75,19 +75,81 @@ export function chaveSegura(chave) {
   return true;
 }
 
+// Pasta de quem ainda não tem empresa. Fica fora de `<empresa_id>/` para
+// um usuário não alcançar o arquivo de outro tenant.
+export const PASTA_USUARIO = 'usuarios';
+
+function idValido(valor) {
+  const texto = String(valor || '').trim();
+  return UUID.test(texto) ? texto.toLowerCase() : '';
+}
+
+function comecaComPasta(chave, pasta) {
+  const prefixo = `${String(pasta).toLowerCase()}/`;
+  return chave.slice(0, prefixo.length).toLowerCase() === prefixo;
+}
+
 // A pasta da empresa é o controle de tenant. Admin global lê qualquer
-// caminho seguro; os demais só o que começa com a própria empresa.
-export function chavePermitida(chave, empresaId, { adminGlobal = false } = {}) {
+// caminho seguro. Os demais leem a própria empresa e, se ainda não têm
+// empresa, só `usuarios/<user_id>/`.
+export function chavePermitida(chave, empresaId, { adminGlobal = false, userId = null } = {}) {
   if (!chaveSegura(chave)) return false;
   if (adminGlobal) return true;
-  if (!UUID.test(String(empresaId || ''))) return false;
-  return chave.startsWith(`${empresaId}/`);
+  const empresa = idValido(empresaId);
+  if (empresa && comecaComPasta(chave, empresa)) return true;
+  const usuario = idValido(userId);
+  if (usuario && comecaComPasta(chave, `${PASTA_USUARIO}/${usuario}`)) return true;
+  return false;
 }
 
 export function montarChave(empresaId, nome, id) {
-  if (!UUID.test(String(empresaId || ''))) throw new Error('Empresa inválida.');
+  const empresa = idValido(empresaId);
+  if (!empresa) throw new Error('Empresa inválida.');
   if (!UUID.test(String(id || ''))) throw new Error('Identificador de arquivo inválido.');
-  return `${empresaId}/${id}-${sanitizarNomeArquivo(nome)}`;
+  return `${empresa}/${id}-${sanitizarNomeArquivo(nome)}`;
+}
+
+export function montarChaveUsuario(userId, nome, id) {
+  const usuario = idValido(userId);
+  if (!usuario) throw new Error('Usuário inválido.');
+  if (!UUID.test(String(id || ''))) throw new Error('Identificador de arquivo inválido.');
+  return `${PASTA_USUARIO}/${usuario}/${id}-${sanitizarNomeArquivo(nome)}`;
+}
+
+// Quem pode gravar e ler. O bucket antigo `attachments` era público e
+// qualquer autenticado inseria, atualizava e apagava qualquer objeto,
+// sem pasta. No R2 a pasta isola o tenant: isso não volta.
+//
+// Com empresa, o envio cai em `<empresa_id>/` e a leitura também. Sem
+// empresa, envio e leitura ficam em `usuarios/<user_id>/`. admin_global
+// lê qualquer caminho seguro. O envio dele usa a empresa, se tiver, e
+// a pasta pessoal se não tiver — o cliente não escolhe a pasta.
+export function escopoArquivo({ userId, empresaId, tipoUsuario } = {}) {
+  const adminGlobal = tipoUsuario === 'admin_global';
+  const empresa = idValido(empresaId);
+  const usuario = idValido(userId);
+  return {
+    adminGlobal,
+    empresaId: empresa,
+    userId: usuario,
+    prefixoUpload: empresa || (usuario ? `${PASTA_USUARIO}/${usuario}` : ''),
+  };
+}
+
+export function podeLerChave(chave, escopo) {
+  if (!escopo) return false;
+  return chavePermitida(chave, escopo.empresaId || null, {
+    adminGlobal: !!escopo.adminGlobal,
+    // Com empresa, a leitura fica na pasta dela. A pasta pessoal só entra
+    // enquanto a conta ainda não tem tenant. admin_global ignora os dois.
+    userId: escopo.empresaId ? null : escopo.userId,
+  });
+}
+
+export function montarChaveDoEscopo(escopo, nome, id) {
+  if (!escopo?.prefixoUpload) throw new Error('Sua conta não pode enviar arquivo.');
+  if (escopo.empresaId) return montarChave(escopo.empresaId, nome, id);
+  return montarChaveUsuario(escopo.userId, nome, id);
 }
 
 function fnv1a(texto) {
