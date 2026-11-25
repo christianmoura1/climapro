@@ -1,4 +1,5 @@
 import React from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import MarketingRoutes from "@/marketing/MarketingRoutes";
 import { isMarketingPath } from "@/marketing/site-config";
@@ -34,6 +35,7 @@ export function RoutedApp() {
 function App() {
   return (
     <Router>
+      <Analytics />
       <RoutedApp />
     </Router>
   );
