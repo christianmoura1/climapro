@@ -25,27 +25,31 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "@/components/ui/use-toast";
 import { useEmpresa } from "@/hooks/useEmpresa";
 import { notificarPorEmail } from "@/lib/notificacoes";
+import { normalizarAgendaPermissao, ROTULO_AGENDA } from "@/lib/agendaPermissao";
+
+const FORMULARIO_TECNICO_VAZIO = {
+  nome: "",
+  email: "",
+  telefone: "",
+  cpf: "",
+  especialidade: "ambos",
+  nivel_acesso: "completo",
+  agenda_permissao: "ver",
+  tem_acesso_sistema: false,
+  senha: "",
+  confirmar_senha: ""
+};
 
 
 export default function GerenciarTecnicosPage() {
-  const { atingiuLimite } = useEmpresa();
+  const { atingiuLimite, temModulo, isLoading: carregandoEmpresa } = useEmpresa();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingTecnico, setEditingTecnico] = useState(null); // New state for editing
   const queryClient = useQueryClient();
 
-  const [formData, setFormData] = useState({
-    nome: "",
-    email: "",
-    telefone: "",
-    cpf: "",
-    especialidade: "ambos",
-    nivel_acesso: "completo",
-    tem_acesso_sistema: false,
-    senha: "",
-    confirmar_senha: ""
-  });
+  const [formData, setFormData] = useState(FORMULARIO_TECNICO_VAZIO);
 
   const [showAdicionarSaldoDialog, setShowAdicionarSaldoDialog] = useState(false);
   const [tecnicoSelecionado, setTecnicoSelecionado] = useState(null);
@@ -114,6 +118,7 @@ export default function GerenciarTecnicosPage() {
         telefone: data.telefone,
         especialidade: data.especialidade,
         nivel_acesso: data.nivel_acesso || 'completo',
+        agenda_permissao: normalizarAgendaPermissao(data.agenda_permissao),
         empresa_id: user.empresa_id,
         status: 'ativo',
         total_atendimentos: 0
@@ -136,18 +141,8 @@ export default function GerenciarTecnicosPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries(['tecnicos']);
       setShowForm(false);
-      setEditingTecnico(null); // Reset editing state
-      setFormData({ 
-        nome: "", 
-        email: "", 
-        telefone: "", 
-        cpf: "", 
-        especialidade: "ambos",
-    nivel_acesso: "completo",
-        tem_acesso_sistema: false,
-        senha: "",
-        confirmar_senha: ""
-      });
+      setEditingTecnico(null);
+      setFormData(FORMULARIO_TECNICO_VAZIO);
       
       if (data.temAcesso) {
         toast({
@@ -179,17 +174,7 @@ export default function GerenciarTecnicosPage() {
       queryClient.invalidateQueries(['tecnicos']);
       setShowForm(false);
       setEditingTecnico(null);
-      setFormData({
-        nome: "",
-        email: "",
-        telefone: "",
-        cpf: "",
-        especialidade: "ambos",
-    nivel_acesso: "completo",
-        tem_acesso_sistema: false,
-        senha: "",
-        confirmar_senha: ""
-      });
+      setFormData(FORMULARIO_TECNICO_VAZIO);
       toast({
         description: senhaAtualizada
           ? "Técnico e senha de acesso atualizados com sucesso!"
@@ -338,7 +323,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           email: formData.email,
           telefone: formData.telefone,
           especialidade: formData.especialidade,
-          nivel_acesso: formData.nivel_acesso
+          nivel_acesso: formData.nivel_acesso,
+          agenda_permissao: normalizarAgendaPermissao(formData.agenda_permissao)
         },
         senha: formData.senha
       });
@@ -356,6 +342,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
       cpf: "", // CPF is not usually editable after creation
       especialidade: tecnico.especialidade,
       nivel_acesso: tecnico.nivel_acesso || 'completo',
+      agenda_permissao: normalizarAgendaPermissao(tecnico.agenda_permissao),
       tem_acesso_sistema: false,
       senha: "",
       confirmar_senha: ""
@@ -419,18 +406,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
           </div>
           <Button
             onClick={() => {
-              setEditingTecnico(null); // Clear editing state when opening for new
-              setFormData({ 
-                nome: "", 
-                email: "", 
-                telefone: "", 
-                cpf: "", 
-                especialidade: "ambos",
-    nivel_acesso: "completo",
-                tem_acesso_sistema: false,
-                senha: "",
-                confirmar_senha: ""
-              });
+              setEditingTecnico(null);
+              setFormData(FORMULARIO_TECNICO_VAZIO);
               setShowForm(!showForm);
             }}
             className="bg-green-600 hover:bg-green-700"
@@ -524,6 +501,30 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                       O bloqueio vale no banco, não só na tela.
                     </p>
                   </div>
+
+                  <div className="space-y-2 md:col-span-3">
+                    <Label htmlFor="agenda_permissao">Permissão da agenda</Label>
+                    <select
+                      id="agenda_permissao"
+                      className="h-11 w-full rounded-md border border-border bg-background p-2 text-sm"
+                      value={formData.agenda_permissao}
+                      onChange={(e) => setFormData({ ...formData, agenda_permissao: e.target.value })}
+                    >
+                      <option value="nenhum">Sem acesso</option>
+                      <option value="ver">Ver</option>
+                      <option value="editar">Ver e editar</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Ver abre a agenda da empresa no celular do técnico, sem alterar horários.
+                      Ver e editar deixa criar, mudar e apagar eventos. Sem acesso esconde a agenda.
+                      O bloqueio vale no banco, não só na tela.
+                    </p>
+                    {!carregandoEmpresa && !temModulo('agenda') && (
+                      <p className="text-xs text-amber-700">
+                        A agenda entra a partir do plano Profissional. A permissão fica guardada e passa a valer quando o plano liberar o módulo.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {!editingTecnico && ( // Only show "access system" checkbox for new creation
@@ -545,7 +546,7 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                           O técnico vai ter acesso ao sistema?
                         </label>
                         <p className="text-xs text-muted-foreground mt-1">
-                          O técnico poderá fazer login com o email cadastrado acima para acessar seus chamados, PMOCs e registrar gastos.
+                          O técnico entra com o e-mail cadastrado para ver chamados, PMOCs, a agenda (quando liberada) e registrar gastos.
                         </p>
                       </div>
                     </div>
@@ -601,18 +602,8 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                     variant="outline" 
                     onClick={() => {
                       setShowForm(false);
-                      setEditingTecnico(null); // Reset editing state
-                      setFormData({ 
-                        nome: "", 
-                        email: "", 
-                        telefone: "", 
-                        cpf: "", 
-                        especialidade: "ambos",
-    nivel_acesso: "completo",
-                        tem_acesso_sistema: false,
-                        senha: "",
-                        confirmar_senha: ""
-                      });
+                      setEditingTecnico(null);
+                      setFormData(FORMULARIO_TECNICO_VAZIO);
                     }}
                   >
                     Cancelar
@@ -652,6 +643,16 @@ ${tecnicos.find(t => t.id === tecnicoId)?.telefone ? '📱 WhatsApp foi aberto c
                           {' • '}
                           <span className={tecnico.nivel_acesso === 'execucao' ? 'text-amber-700' : 'text-emerald-700'}>
                             {tecnico.nivel_acesso === 'execucao' ? 'só execução' : 'acesso completo'}
+                          </span>
+                          {' • agenda: '}
+                          <span className={
+                            normalizarAgendaPermissao(tecnico.agenda_permissao) === 'editar'
+                              ? 'text-indigo-700'
+                              : normalizarAgendaPermissao(tecnico.agenda_permissao) === 'nenhum'
+                                ? 'text-muted-foreground'
+                                : 'text-sky-700'
+                          }>
+                            {ROTULO_AGENDA[normalizarAgendaPermissao(tecnico.agenda_permissao)]}
                           </span>
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">

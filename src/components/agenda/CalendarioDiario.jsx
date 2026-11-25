@@ -72,7 +72,7 @@ export default function CalendarioDiario({ dataAtual, eventos, tecnicos, cliente
                             type="button"
                             key={evento.id}
                             onClick={() => onEventoClick(evento)}
-                            className="w-full rounded-r border-l-4 bg-white py-2 pl-4 text-left transition-shadow hover:shadow-md"
+                            className="min-h-12 w-full rounded-r border-l-4 bg-white py-2 pl-4 text-left transition-shadow hover:shadow-md"
                             style={{ borderColor }}
                           >
                             <div className="font-semibold text-foreground">

@@ -9,7 +9,7 @@
     "build:client": "vite build",
     "build:ssr": "vite build --ssr src/entry-server.jsx --outDir dist-ssr",
     "lint": "eslint . --quiet",
-    "test": "node --test src/lib/arquivos.test.js supabase/functions/_shared/sigv4.test.js",
+    "test": "node --test src/lib/arquivos.test.js src/lib/agendaPermissao.test.js supabase/functions/_shared/sigv4.test.js",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "test:seo": "node scripts/validate-seo.mjs && node scripts/validate-links.mjs",
