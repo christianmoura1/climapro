@@ -291,6 +291,14 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [user, isAdminGlobal, shouldLoadAuth]);
 
+  // A agenda do técnico mora no painel dele. /Agenda é a tela da empresa, com
+  // o menu administrativo. Mandar o técnico para lá misturaria os dois.
+  React.useEffect(function() {
+    if (user?.tipo_usuario === 'tecnico' && currentPageName === 'Agenda') {
+      navigate(createPageUrl('TecnicoDashboard') + '?aba=agenda');
+    }
+  }, [user, currentPageName, navigate]);
+
   const handleLogout = function() {
     // Sem o destino, o adapter encerra a sessão no Supabase e não navega para
     // lugar nenhum — a tela ficava parada como se nada tivesse acontecido.
@@ -321,6 +329,18 @@ export default function Layout({ children, currentPageName }) {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
               <p className="text-gray-600">Carregando...</p>
             </div>
+          </div>
+        </CompatibilityCheck>
+      </BootDiagnostics>
+    );
+  }
+
+  if (user?.tipo_usuario === 'tecnico' && currentPageName === 'Agenda') {
+    return (
+      <BootDiagnostics>
+        <CompatibilityCheck>
+          <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+            <p className="text-center text-gray-600">Abrindo a agenda no seu painel...</p>
           </div>
         </CompatibilityCheck>
       </BootDiagnostics>

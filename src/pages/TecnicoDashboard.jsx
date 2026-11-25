@@ -19,7 +19,10 @@ import {
   Wrench,
   UserPlus
 } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom"; // Added Link import
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import AgendaPage from "./Agenda";
+import { useEmpresa } from "@/hooks/useEmpresa";
+import { podeEditarAgenda, podeVerAgenda } from "@/lib/agendaPermissao";
 
 import MeusChamados from "../components/tecnico/MeusChamados";
 import MeusPMOCs from "../components/tecnico/MeusPMOCs";
@@ -50,6 +53,9 @@ const createPageUrl = (pageName) => {
 
 export default function TecnicoDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const abaPedida = searchParams.get('aba');
+  const { temModulo, isLoading: carregandoEmpresa } = useEmpresa();
   const [user, setUser] = useState(null);
   const [tecnico, setTecnico] = useState(null);
   const [abaSelecionada, setAbaSelecionada] = useState('chamados');
@@ -116,7 +122,11 @@ export default function TecnicoDashboard() {
       }
     };
     loadUser();
-  }, [navigate]); // Added navigate to dependency array for best practice, though it's stable
+  }, [navigate]);
+
+  useEffect(() => {
+    if (abaPedida === 'agenda') setAbaSelecionada('agenda');
+  }, [abaPedida]);
 
   // Ensure all queries are enabled only when `user` and `tecnico` are properly loaded
   const { data: meusChamados = [] } = useQuery({
@@ -301,6 +311,10 @@ export default function TecnicoDashboard() {
 
   const chamadosPendentes = meusChamados.filter(c => c.status === 'pendente' || c.status === 'em_andamento').length;
   const chamadosFinalizados = meusChamados.filter(c => c.status === 'finalizado').length;
+  // A aba só entra no menu quando o plano tem agenda e o técnico não está em
+  // Sem acesso. Enquanto a empresa carrega, o menu espera para não piscar.
+  const consultarAgenda = !carregandoEmpresa && temModulo('agenda') && podeVerAgenda(tecnico.agenda_permissao);
+  const editarAgenda = consultarAgenda && podeEditarAgenda(tecnico.agenda_permissao);
 
   // Determine ponto status based on ultimoPonto
   const isClockedIn = ultimoPonto && !ultimoPonto.data_hora_saida;
@@ -311,7 +325,7 @@ export default function TecnicoDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">
                 Olá, {tecnico.nome}! 👋
@@ -320,7 +334,7 @@ export default function TecnicoDashboard() {
                 {tecnico.especialidade} • Painel do Técnico
               </p>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-wrap items-center gap-2">
               <SinoNotificacoes />
 
               {/* New Ponto Eletrônico Button */}
@@ -508,40 +522,32 @@ export default function TecnicoDashboard() {
         {/* Tabs de navegação */}
         <div className="mb-6">
           <div className="border-b border-border">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setAbaSelecionada('chamados')}
-                className={`${
-                  abaSelecionada === 'chamados'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                <ClipboardList className="w-4 h-4" />
-                Meus Chamados
-              </button>
-              <button
-                onClick={() => setAbaSelecionada('pmocs')}
-                className={`${
-                  abaSelecionada === 'pmocs'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                <Calendar className="w-4 h-4" />
-                Meus PMOCs
-              </button>
-              <button
-                onClick={() => setAbaSelecionada('financeiro')}
-                className={`${
-                  abaSelecionada === 'financeiro'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
-              >
-                <DollarSign className="w-4 h-4" />
-                Controle Financeiro
-              </button>
+            <nav className="-mb-px flex gap-1 overflow-x-auto" aria-label="Seções do painel">
+              {[
+                { id: 'chamados', rotulo: 'Meus chamados', icone: ClipboardList },
+                { id: 'pmocs', rotulo: 'Meus PMOCs', icone: Calendar },
+                ...(consultarAgenda ? [{ id: 'agenda', rotulo: 'Agenda', icone: Calendar }] : []),
+                { id: 'financeiro', rotulo: 'Controle financeiro', icone: DollarSign },
+              ].map((aba) => {
+                const Icone = aba.icone;
+                const ativa = abaSelecionada === aba.id;
+                return (
+                  <button
+                    key={aba.id}
+                    type="button"
+                    onClick={() => setAbaSelecionada(aba.id)}
+                    aria-current={ativa ? 'page' : undefined}
+                    className={`${
+                      ativa
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                    } flex min-h-12 shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-3 text-sm font-medium`}
+                  >
+                    <Icone className="h-4 w-4" />
+                    {aba.rotulo}
+                  </button>
+                );
+              })}
             </nav>
           </div>
         </div>
@@ -567,6 +573,34 @@ export default function TecnicoDashboard() {
             saldoInfo={saldoInfo}
             lancamentos={lancamentos}
           />
+        )}
+
+        {abaSelecionada === 'agenda' && carregandoEmpresa && (
+          <p className="text-sm text-muted-foreground">Carregando a agenda...</p>
+        )}
+
+        {abaSelecionada === 'agenda' && !carregandoEmpresa && consultarAgenda && (
+          <AgendaPage
+            embutida
+            somenteLeitura={!editarAgenda}
+            visualizacaoInicial="dia"
+          />
+        )}
+
+        {abaSelecionada === 'agenda' && !carregandoEmpresa && !consultarAgenda && (
+          <Card className="border-none shadow-lg">
+            <CardContent className="space-y-3 p-5">
+              <h2 className="text-lg font-semibold text-foreground">Agenda</h2>
+              <p className="text-sm text-muted-foreground">
+                {temModulo('agenda')
+                  ? 'A empresa não liberou a agenda para você. O administrador ajusta isso em Técnicos, com as opções Sem acesso, Ver ou Ver e editar.'
+                  : 'A agenda faz parte do plano Profissional. Quando a empresa estiver nesse plano e liberar o seu acesso, os horários aparecem aqui.'}
+              </p>
+              <Button type="button" variant="outline" className="min-h-11" onClick={() => setAbaSelecionada('chamados')}>
+                Voltar para meus chamados
+              </Button>
+            </CardContent>
+          </Card>
         )}
       </div>
 

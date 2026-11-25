@@ -17,7 +17,7 @@ import { notificarPorEmail } from "@/lib/notificacoes";
 // PageNotFound. Usar o utilitário de verdade resolve.
 import { createPageUrl } from "@/utils";
 
-export default function DetalhesEventoModal({ evento, onClose, onUpdate, clientes, tecnicos }) {
+export default function DetalhesEventoModal({ evento, onClose, onUpdate, clientes, tecnicos, somenteLeitura = false, permitirChamado = true }) {
   const [criarChamado, setCriarChamado] = useState(false);
   const queryClient = useQueryClient();
   
@@ -168,21 +168,23 @@ ClimaPro`
               </div>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleExcluirEvento}
-                disabled={deleteEventoMutation.isPending}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                title="Excluir evento"
-              >
-                {deleteEventoMutation.isPending ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-                ) : (
-                  <Trash2 className="w-5 h-5" />
-                )}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={onClose}>
+              {!somenteLeitura && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleExcluirEvento}
+                  disabled={deleteEventoMutation.isPending}
+                  className="min-h-11 min-w-11 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  title="Excluir evento"
+                >
+                  {deleteEventoMutation.isPending ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                  ) : (
+                    <Trash2 className="w-5 h-5" />
+                  )}
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={onClose} aria-label="Fechar">
                 <X className="w-5 h-5" />
               </Button>
             </div>
@@ -265,7 +267,7 @@ ClimaPro`
           )}
 
           {/* Botão para criar chamado se for evento manual e não tiver um chamado vinculado */}
-          {evento.tipo === 'manual' && !evento.chamado_id && (
+          {permitirChamado && !somenteLeitura && evento.tipo === 'manual' && !evento.chamado_id && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -294,21 +296,23 @@ ClimaPro`
                     Este evento está vinculado ao chamado #{evento.chamado_id.slice(-6)}.
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    // Navigate to the Chamados page using the helper function
-                    window.location.href = createPageUrl("Chamados");
-                  }}
-                >
-                  Ver Chamado
-                </Button>
+                {permitirChamado && (
+                  <Button
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => {
+                      window.location.href = createPageUrl("Chamados");
+                    }}
+                  >
+                    Ver chamado
+                  </Button>
+                )}
               </div>
             </div>
           )}
 
-          {/* Existing status update buttons */}
-          <div className="flex gap-2 pt-4 border-t">
+          {!somenteLeitura && (
+          <div className="flex flex-wrap gap-2 border-t pt-4 [&_button]:min-h-11">
             {evento.status === 'pendente' && (
               <>
                 <Button
@@ -352,6 +356,12 @@ ClimaPro`
               </Button>
             )}
           </div>
+          )}
+          {somenteLeitura && (
+            <p className="border-t pt-4 text-sm text-muted-foreground">
+              Somente visualização. Para alterar este horário, a empresa precisa marcar Ver e editar na sua ficha.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
